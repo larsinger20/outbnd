@@ -1,0 +1,538 @@
+<title>outbnd Glas-Probe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: eine App-Seite wie auf dem iPhone, Inhalt scrollt unter einer schwebenden Glas-Leiste. Farben wie der Malta-Planner (Sand + Meerestürkis). */
+:root{
+  --bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#626b6f;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);
+  --lg:rgba(255,255,255,.42);--lgbd:rgba(255,255,255,.8);--lghi:rgba(255,255,255,.95);--lglo:rgba(255,255,255,.35);
+  --lgsh:0 10px 30px rgba(60,50,30,.16),0 2px 6px rgba(60,50,30,.07);--pill:rgba(0,0,0,.07);--lens:rgba(255,255,255,.4);--lring:rgba(0,0,0,.03);--lsh1:rgba(255,255,255,.8);--lsh2:rgba(255,255,255,.55);--lhl:rgba(255,255,255,1);--lhm:rgba(0,0,0,.06);--tbg:rgba(252,252,252,.38);--bev:brightness(1.12) saturate(170%);--shn:rgba(255,255,255,.5);--rim:rgba(255,255,255,.95);--rim2:rgba(0,0,0,.05);--tsh:0 6px 20px rgba(0,0,0,.1);--lrim:rgba(0,0,0,.06);
+  --pop:rgba(255,255,255,.9);--mg:rgba(252,252,252,.5);--msh:rgba(255,255,255,.55);--mrd:#e30000;--mdiv:rgba(0,0,0,.1);--mrim:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);--msub:rgba(60,60,67,.6);--halo:rgba(255,255,255,.75);--hlc:rgba(60,50,30,.09);--press:rgba(60,50,30,.17);--gb:rgba(255,255,255,.55);--gbsh:0 0 0 .5px rgba(60,50,30,.12),0 2px 6px rgba(60,50,30,.12);--gbp:rgba(236,232,224,.75);--glow:rgba(255,255,255,.75);--rd:#c0392b;--btn:rgba(118,118,128,.12);--dim:rgba(40,30,10,.16);--red:#ff3b30;--grn:#1d7a6b;--seg:rgba(120,105,80,.10);--segon:rgba(255,255,255,.88);
+  /* Apple-Systemschrift (SF Pro, wechselt selbst zwischen Text- und Display-Schnitt); Windows: Segoe UI */
+  --font:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;--disp:var(--font);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1b8170;--bd:#333d40;--fill:rgba(255,255,255,.07);
+  --lg:rgba(40,50,53,.42);--lgbd:rgba(255,255,255,.16);--lghi:rgba(255,255,255,.26);--lglo:rgba(255,255,255,.06);
+  --lgsh:0 10px 30px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.3);--pill:rgba(0,0,0,.52);--lens:rgba(255,255,255,.075);--lring:rgba(0,0,0,.12);--lsh1:rgba(255,255,255,.17);--lsh2:rgba(255,255,255,.1);--lhl:rgba(255,255,255,.6);--lhm:rgba(255,255,255,.07);--tbg:rgba(38,38,40,.4);--bev:brightness(1.45) saturate(170%);--shn:rgba(255,255,255,.07);--rim:rgba(255,255,255,.3);--rim2:rgba(255,255,255,.03);--tsh:0 6px 20px rgba(0,0,0,.4);--lrim:rgba(255,255,255,.14);
+  --pop:rgba(34,42,45,.92);--mg:rgba(34,34,36,.44);--msh:rgba(255,255,255,.09);--mrd:#ff453a;--mdiv:rgba(255,255,255,.1);--mrim:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 .5px 0 rgba(255,255,255,.12);--msub:rgba(235,235,245,.5);--halo:rgba(0,0,0,.55);--hlc:rgba(255,255,255,.1);--press:rgba(255,255,255,.24);--gb:rgba(255,255,255,.1);--gbsh:0 0 0 .5px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.35);--gbp:rgba(255,255,255,.22);--glow:rgba(255,255,255,.28);--rd:#ef7b6e;--btn:rgba(118,118,128,.24);--dim:rgba(0,0,0,.38);--red:#ff453a;--grn:#1b8170;--seg:rgba(255,255,255,.08);--segon:rgba(255,255,255,.16);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1b8170;--bd:#333d40;--fill:rgba(255,255,255,.07);
+  --lg:rgba(40,50,53,.42);--lgbd:rgba(255,255,255,.16);--lghi:rgba(255,255,255,.26);--lglo:rgba(255,255,255,.06);
+  --lgsh:0 10px 30px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.3);--pill:rgba(0,0,0,.52);--lens:rgba(255,255,255,.075);--lring:rgba(0,0,0,.12);--lsh1:rgba(255,255,255,.17);--lsh2:rgba(255,255,255,.1);--lhl:rgba(255,255,255,.6);--lhm:rgba(255,255,255,.07);--tbg:rgba(38,38,40,.4);--bev:brightness(1.45) saturate(170%);--shn:rgba(255,255,255,.07);--rim:rgba(255,255,255,.3);--rim2:rgba(255,255,255,.03);--tsh:0 6px 20px rgba(0,0,0,.4);--lrim:rgba(255,255,255,.14);
+  --pop:rgba(34,42,45,.92);--mg:rgba(34,34,36,.44);--msh:rgba(255,255,255,.09);--mrd:#ff453a;--mdiv:rgba(255,255,255,.1);--mrim:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 .5px 0 rgba(255,255,255,.12);--msub:rgba(235,235,245,.5);--halo:rgba(0,0,0,.55);--hlc:rgba(255,255,255,.1);--press:rgba(255,255,255,.24);--gb:rgba(255,255,255,.1);--gbsh:0 0 0 .5px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.35);--gbp:rgba(255,255,255,.22);--glow:rgba(255,255,255,.28);--rd:#ef7b6e;--btn:rgba(118,118,128,.24);--dim:rgba(0,0,0,.38);--red:#ff453a;--grn:#1b8170;--seg:rgba(255,255,255,.08);--segon:rgba(255,255,255,.16);color-scheme:dark}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.29 var(--font);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px calc(130px + env(safe-area-inset-bottom,0px))}
+body.old main{padding-bottom:40px}
+
+/* Kopf */
+.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.wm{font-family:var(--disp);font-size:34px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.wm i{font-style:normal;color:var(--ac)}
+.sub{font-size:15px;color:var(--mu);margin-top:4px}
+.how{background:var(--card);border-radius:22px;padding:16px 18px 14px;margin-bottom:14px;font-size:15px;line-height:1.33;color:var(--mu)}
+.how b{color:var(--tx);font-weight:600;display:block;font-size:17px;margin-bottom:6px}
+.how ol{margin:0;padding-left:20px;display:grid;gap:4px}
+.how li::marker{color:var(--ac);font-weight:600}
+
+/* Umschalter Bisher | Neu */
+.seg2{position:relative;display:flex;padding:4px;margin:0 0 18px;border-radius:999px;background:var(--seg);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi)}
+.seg2 button{position:relative;z-index:1;flex:1;padding:8px 4px;font-size:13px;font-weight:500;border-radius:999px;min-height:36px;transition:color .25s}
+.seg2 button.on{font-weight:600;color:var(--ac)}
+.ind2{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--segon);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 2px 8px rgba(0,0,0,.1);transition:translate .42s cubic-bezier(.3,1.3,.5,1)}
+.seg2.r .ind2{translate:100% 0}
+
+/* Kacheln */
+.list{display:grid;gap:14px}
+.card{background:var(--card);border-radius:22px;overflow:hidden;position:relative}
+.ph{height:118px;position:relative}
+.ph span{position:absolute;left:14px;bottom:10px;font-size:12px;font-weight:600;color:#fff;opacity:.9;text-shadow:0 1px 6px rgba(0,0,0,.3)}
+.g1{background:radial-gradient(120% 90% at 20% 10%,#7fe0d0 0,#1aa3a0 40%,#0d5f7a 100%)}
+.g2{background:radial-gradient(120% 100% at 80% 0,#ffd27a 0,#f08a4b 45%,#b4436c 100%)}
+.g3{background:radial-gradient(120% 100% at 30% 0,#d8e8a8 0,#7fb069 45%,#3b6e4f 100%)}
+.g4{background:radial-gradient(120% 100% at 70% 10%,#c9d8ff 0,#7c8ff0 45%,#4b3d9c 100%)}
+.g5{background:radial-gradient(120% 100% at 30% 20%,#ffe3e0 0,#f39a8f 45%,#c2503f 100%)}
+.g6{background:radial-gradient(120% 100% at 60% 0,#fff2c4 0,#e9c46a 45%,#a5762b 100%)}
+.c{padding:18px 18px 16px}
+.th{display:flex;align-items:flex-start;gap:10px}
+.th h3{margin:0;flex:1;font-size:20px;font-weight:600;line-height:1.25;text-wrap:balance}
+.inf{margin:4px 0 14px;font-size:15px;line-height:1.33;color:var(--mu)}
+.ft{display:flex;align-items:center;gap:10px}
+.av{display:flex}
+.av i{width:26px;height:26px;border-radius:50%;border:2px solid var(--card);margin-left:-7px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:600;color:#fff}
+.av i:first-child{margin-left:0}
+.nm{flex:1;min-width:0;font-size:15px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.go{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;min-height:36px;border-radius:999px;font-size:15px;font-weight:600;background:var(--btn);color:var(--ac);white-space:nowrap;font-variant-numeric:tabular-nums}
+.go::after{content:'';position:absolute;inset:-4px}
+.go svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.go.in{background:var(--acb);color:#fff}
+/* ⋯ im Inhalt: in Ruhe nur die Punkte (wie Musik/Podcasts), beim Berühren hebt es sich als Glas (Apple-Regel für Bedienelemente im Inhalt) */
+.dots{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;transition:transform .5s var(--spr,cubic-bezier(.3,1.4,.5,1)),background .2s,box-shadow .2s}
+.knob,.dots.lq.pr{background:var(--gb);-webkit-backdrop-filter:blur(14px) saturate(200%);backdrop-filter:blur(14px) saturate(200%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),inset 0 -1px 2px rgba(255,255,255,.08),var(--gbsh)}
+.dots{position:relative;flex:none;margin-top:-2px}
+.dots::after{content:'';position:absolute;inset:-6px}
+.dots svg{width:20px;height:20px;fill:var(--tx)}
+.rows{background:var(--card);border-radius:22px;padding:4px 18px;margin-bottom:14px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;font-size:17px;line-height:1.29;border-bottom:.5px solid var(--bd)}
+.row:last-child{border-bottom:0}
+.row small{display:block;color:var(--mu);font-size:15px;margin-top:2px}
+.row b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hint{font-size:13px;color:var(--mu);text-align:center;margin:18px 0 0}
+
+/* Flüssiges Drücken: wölbt sich, Leuchten ab Fingerpunkt */
+.lq{position:relative;transition:transform .5s var(--spr,cubic-bezier(.3,1.4,.5,1))}
+.lq.pr{transform:scale(1.07);transition-duration:.18s;transition-timing-function:cubic-bezier(.3,.7,.4,1)}
+.lq>.gl{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(70px circle at var(--gx,50%) var(--gy,50%),var(--glow),transparent 70%)}
+.lq.pr>.gl{opacity:1;transition-duration:.12s}
+
+/* ===== NEU: schwebende Leiste unten ===== */
+.edge{position:fixed;left:0;right:0;bottom:0;height:calc(110px + env(safe-area-inset-bottom,0px));z-index:9;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--bg) 55%,transparent));
+  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 75%);mask-image:linear-gradient(to bottom,transparent,#000 75%)}
+.tbar{--W:347px;position:fixed;z-index:10;bottom:max(12px,calc(env(safe-area-inset-bottom,0px) - 14px));left:max(max(14px,env(safe-area-inset-left,0px)),calc((100vw - var(--W)) / 2));
+  width:var(--W);height:64px;border-radius:32px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  transition:transform .22s cubic-bezier(.3,.7,.4,1)}
+.tbar.down{transform:none}
+.tbar.held{transform:scale(.99);transition-duration:.24s}   /* Foto der Uhr-App beim Halten: Leiste ca. 1 % kleiner, die Lupe bleibt groß und ragt über die Leiste hinaus */
+.tbar .gb{position:absolute;inset:0;border-radius:inherit;background:var(--tbg);-webkit-backdrop-filter:blur(7px) saturate(170%);backdrop-filter:blur(7px) saturate(170%);
+  box-shadow:inset 0 0 14px var(--shn),var(--tsh);overflow:hidden}
+/* Glasrand: schmaler Ring, in dem der Inhalt dahinter heller und kräftiger durchscheint (deutet die Lichtbrechung an der Kante an) */
+.tbar .bev{position:absolute;inset:0;border-radius:inherit;padding:6px;pointer-events:none;-webkit-backdrop-filter:var(--bev);backdrop-filter:var(--bev);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+/* Lichtkante: oben links heller, unten rechts schwächer (deutet die Linse an) */
+.tbar .gb::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:linear-gradient(180deg,var(--rim),var(--rim2) 26%,var(--rim2) 74%,var(--rim));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.tbar .glow{position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .6s;background:radial-gradient(90px circle at var(--gx,50%) var(--gy,50%),var(--glow),transparent 70%)}
+.tbar.down .glow{opacity:.3;transition-duration:.12s}
+.clip{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
+.rowc{position:absolute;inset:0;border-radius:inherit}
+.trow{position:absolute;left:0;top:0;height:64px;width:var(--W);display:flex;padding:5px}
+.tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;line-height:12px;font-weight:600;color:var(--tx);padding-top:1px}
+.tab svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab svg.f{stroke:none}.tab svg.f2{stroke-width:2.4}
+.tbar.mini .tab:not(.on){opacity:0}
+.pill{position:absolute;left:5px;top:5px;height:54px;border-radius:27px;transform-origin:50% 50%;will-change:transform;pointer-events:none}
+.pill .pf{position:absolute;inset:0;border-radius:inherit;background:var(--pill);opacity:calc(1 - var(--l,0))}
+.pill .pg{position:absolute;inset:0;border-radius:inherit;opacity:var(--l,0);
+  /* Lupe wie im Foto der Uhr-App: außen ein breiter, klarer Glasrand (dunkler), innen eine hellere Fläche; feine helle Außenkante mit Regenbogen-Säumen */
+  background:linear-gradient(165deg,var(--lsh1),var(--lens) 48%,var(--lsh2));   /* Glanz: oben links und unten rechts heller */
+  box-shadow:inset 0 0 7px 1px var(--lring),inset 3px -2px 4px -2px rgba(255,80,40,.5),inset -3px 2px 4px -2px rgba(50,140,255,.5),inset 0 2px 4px -2px rgba(110,255,170,.22),inset 0 -2px 4px -2px rgba(255,215,80,.22),0 4px 12px rgba(0,0,0,.16)}
+/* scharfe, feine Lichtkante: oben und unten hell, an den Seiten fast unsichtbar (wie in der Uhr-App) – kein Rahmen */
+.pill .pg::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(180deg,var(--lhl),var(--lhm) 34%,var(--lhm) 66%,var(--lhl));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.pill .lw{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
+.lens{position:absolute;left:-5px;top:-5px;height:64px;width:var(--W);display:flex;padding:5px;will-change:transform}
+.lens .tab{color:var(--ac)}
+.lm{position:absolute;top:0;bottom:0;overflow:hidden}
+/* Lichtbrechung am linken/rechten Rand der Lupe: Der Inhalt wird dort in die Breite gezogen. Die Mitte (.lm) endet genau an den Streifen, damit nichts doppelt erscheint. */
+.ls{position:absolute;top:0;bottom:0;overflow:hidden}
+.ls.r{right:0}.ls.l{left:0}
+.st{position:absolute;inset:0}
+.ls.l .st{transform:scaleX(2.1);transform-origin:100% 50%}.ls.r .st{transform:scaleX(2.1);transform-origin:0 50%}
+.ls .lens{filter:drop-shadow(1.2px 0 0 rgba(255,80,130,.4)) drop-shadow(-1.2px 0 0 rgba(60,200,255,.4))}
+
+/* ===== BISHER: Leiste oben, wie im Malta-Planner ===== */
+.oldwrap{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;padding:6px 0 10px;margin:0 -4px 4px}
+.seg{position:relative;display:flex;padding:4px;border-radius:999px;background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);
+  box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),var(--lgsh)}
+.ind{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;background:var(--segon);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 2px 8px rgba(0,0,0,.1);transition:translate .42s cubic-bezier(.3,1.3,.5,1)}
+.tb{position:relative;z-index:1;flex:1;min-width:0;padding:6px 2px 5px;font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap;border-radius:999px;display:flex;flex-direction:column;align-items:center;gap:1px;transition:color .25s}
+.tb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.tb:active svg{transform:scale(.88)}
+.tb.on{color:var(--ac);font-weight:600}
+body.old .tbar{display:none}
+.edge{display:none}   /* iOS 27: unten keine sichtbare Scroll-Kante mehr */
+body:not(.old) .oldwrap{display:none}
+/* ===== Versuch: echte Lichtbrechung. Eine Kopie des Inhalts liegt in der Leiste und wird am Rand verzerrt ===== */
+.rfs{display:flex;align-items:center;gap:6px;margin:-6px 0 18px;font-size:13px;color:var(--mu)}
+.rfs span{flex:1;min-width:0}
+.rfs button{padding:7px 12px;min-height:32px;border-radius:999px;background:var(--btn);font-size:13px;font-weight:600;color:var(--tx)}
+.rfs button.on{background:var(--acb);color:#fff}
+body.old .rfs{display:none}
+.refr{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.rb{position:absolute;overflow:hidden}
+.rb::after{content:'';position:absolute;inset:0;background:var(--tbg);-webkit-backdrop-filter:blur(2px) saturate(150%);backdrop-filter:blur(2px) saturate(150%)}
+.rs{position:absolute;inset:0}
+.rb.t .rs{transform:scaleY(.4);transform-origin:50% 100%}.rb.b .rs{transform:scaleY(.4);transform-origin:50% 0}
+.rb.l .rs{transform:scaleX(.4);transform-origin:100% 50%}.rb.r .rs{transform:scaleX(.4);transform-origin:0 50%}
+.rb.f{filter:url(#refrF)}
+/* Streifen laufen nach innen weich aus, damit keine Kante im Glas entsteht */
+.rb.t{-webkit-mask-image:linear-gradient(to bottom,#000 45%,transparent);mask-image:linear-gradient(to bottom,#000 45%,transparent)}
+.rb.b{-webkit-mask-image:linear-gradient(to top,#000 45%,transparent);mask-image:linear-gradient(to top,#000 45%,transparent)}
+.rb.l{-webkit-mask-image:linear-gradient(to right,#000 45%,transparent);mask-image:linear-gradient(to right,#000 45%,transparent)}
+.rb.r{-webkit-mask-image:linear-gradient(to left,#000 45%,transparent);mask-image:linear-gradient(to left,#000 45%,transparent)}
+main.rcl{position:absolute;margin:0;max-width:none;pointer-events:none}
+@keyframes rscroll{from{translate:0 0}to{translate:0 calc(-1 * var(--smax,0px))}}
+@supports (animation-timeline:scroll()){main.rcl{animation:rscroll linear both;animation-timeline:scroll(root)}}
+.tbar.rf .bev{display:none}
+/* dieselbe Lichtbrechung am Rand des ⋯-Menüs (Seite scrollt dabei nicht, Kopie steht still) */
+.mrb.t{left:0;right:0;top:0;height:10px}.mrb.b{left:0;right:0;bottom:0;height:10px}.mrb.l{left:0;top:0;bottom:0;width:12px}.mrb.r{right:0;top:0;bottom:0;width:12px}
+.mrb::after{background:var(--mg)}
+main.rcl.mst{animation:none}
+
+/* Menü (neu): der ⋯-Knopf selbst wächst zum Glas-Menü */
+.catch{position:fixed;inset:0;z-index:30;touch-action:none}
+.mn{position:fixed;z-index:31;overflow:hidden;touch-action:none;-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);will-change:left,top,width,height}
+/* Glaskante des Menüs: eigener Ring, in dem der Hintergrund heller und kräftiger durchscheint */
+.mbv{position:fixed;z-index:31;pointer-events:none;padding:7px;-webkit-backdrop-filter:var(--bev);backdrop-filter:var(--bev);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+/* Lichtkante: oben links hell, unten rechts schwächer */
+.mn::after{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;opacity:.7;background:linear-gradient(140deg,var(--rim),rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,var(--rim));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.mn.old::after{display:none}
+.mn::before{content:'';position:absolute;inset:0;background:var(--mg);opacity:var(--o,1)}
+.mn.old::before{display:none}
+.mn .in{position:absolute;right:0;width:250px;padding:8px 0;transform-origin:100% 0}
+.mn .in.up{transform-origin:100% 100%}
+.mn .grp+.grp{margin-top:8px;padding-top:8px;background:linear-gradient(var(--mdiv),var(--mdiv)) 16px 0/calc(100% - 39px) 1px no-repeat}
+.mn button{display:flex;align-items:center;gap:14px;width:calc(100% - 12px);margin:0 6px;padding:0 14px 0 15px;min-height:48px;border-radius:16px;font-size:17px;line-height:22px;text-align:left;transition:background .15s}
+.mn button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mn button.hl{background:var(--hlc);transition:none}
+.mn .dg{color:var(--mrd)}
+.mn:not(.old) button span{text-shadow:none}
+.mn:not(.old) .dg span{text-shadow:0 0 8px var(--halo),0 0 2px var(--halo)}.mn:not(.old) .dg svg{filter:drop-shadow(0 0 3px var(--halo))}   /* wie Apples „Vibrancy“: Schrift hebt sich vom bunten Hintergrund ab */
+.dots.hid{opacity:0}
+.dots svg{transition:opacity .15s}
+.knob{position:fixed;z-index:32;pointer-events:none;will-change:transform}
+.knob{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.knob svg{width:20px;height:20px;fill:var(--tx)}
+.dots.lq.pr{transform:scale(1.14);transition-duration:.12s}
+/* Menü (bisher): ploppt daneben auf */
+.mn.old{border-radius:20px;background:var(--pop);transform-origin:top right;animation:pop .22s cubic-bezier(.3,1.3,.5,1);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 0 0 .5px var(--bd),0 14px 44px rgba(0,0,0,.24)}
+.mn.old .in{position:static;width:232px}
+.mn.old button{width:100%;margin:0;border-radius:0;padding:0 18px;font-size:16px}
+.mn.old button+button,.mn.old .grp+.grp{box-shadow:inset 0 .5px 0 var(--bd);margin-top:0;padding-top:0}
+@keyframes pop{from{opacity:0;transform:scale(.85)}}
+.sw{position:relative;min-width:0}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);z-index:50;translate:-50% 0;padding:11px 18px;border-radius:999px;font-size:15px;font-weight:500;color:var(--tx);background:var(--mg);
+  -webkit-backdrop-filter:blur(20px) saturate(200%);backdrop-filter:blur(20px) saturate(200%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 8px 24px rgba(0,0,0,.16);width:max-content;max-width:calc(100% - 32px);text-align:center;pointer-events:none;animation:tin .35s cubic-bezier(.3,1.3,.5,1)}
+@keyframes tin{from{opacity:0;transform:translateY(10px) scale(.95)}}
+.fade{animation:fd .28s ease-out}@keyframes fd{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <mask id="mAct"><circle cx="12" cy="12" r="10" fill="#fff"/><path d="M17 7 13.9 13.9 7 17 10.1 10.1z" fill="#000"/></mask>
+  <mask id="mCost"><circle cx="12" cy="12" r="10" fill="#fff"/><path d="M15.4 8.4A4.4 4.4 0 1 0 15.4 15.6M7 10.7h5.8M7 13.3h5.8" stroke="#000" stroke-width="2.3" fill="none" stroke-linecap="round"/></mask>
+  <mask id="mPlan"><rect x="3" y="4.5" width="18" height="16.5" rx="3.5" fill="#fff"/><path d="M3 9.6h18" stroke="#000" stroke-width="1.5"/><path d="M8.7 15.1l2.2 2.2 4.5-4.5" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask>
+<filter id="refrF" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="0" y="0" width="347" height="64" color-interpolation-filters="sRGB"><feImage id="refrImg" x="0" y="0" width="347" height="64" preserveAspectRatio="none" result="m"/><feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="bl"/><feDisplacementMap in="bl" in2="m" scale="44" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs></svg>
+<main>
+  <div class="hd">
+    <div><div class="wm">outbnd<i>.</i></div><div class="sub">Probier-Seite fürs Apple-Design</div></div>
+  </div>
+  <div class="how">
+    <b>So probierst du's</b>
+    <ol>
+      <li>Unten einen Reiter antippen, auch schnell hintereinander</li>
+      <li>Finger auf die Leiste legen, halten und seitlich ziehen</li>
+      <li>Auf ⋯ an einem Vorschlag tippen</li>
+      <li>Oben auf „Bisher“ stellen und vergleichen</li>
+      <li>Scrollen und auf den Rand der Leiste achten: Der Inhalt knickt dort ab (Lichtbrechung, abschaltbar)</li>
+    </ol>
+  </div>
+  <div class="seg2 r" id="mode"><span class="ind2"></span><button data-m="old" type="button">Bisher</button><button data-m="new" class="on" type="button">Neu (iOS-Stil)</button></div>
+  <div class="rfs" id="rfs"><span>Lichtbrechung an Leiste und Menü</span><button type="button" data-rf="off">Aus</button><button type="button" data-rf="band" class="on">An</button></div>
+  <div class="oldwrap"><div class="seg" id="oseg"><span class="ind" id="oind"></span></div></div>
+  <div class="list" id="list"></div>
+  <p class="hint">Alle Inhalte sind Beispiele.</p>
+</main>
+
+<div class="edge" aria-hidden="true"></div>
+<nav class="tbar" id="tbar" aria-label="Reiter">
+  <div class="gb"><div class="glow" id="glow"></div></div><div class="refr" id="refr"></div><div class="bev"></div>
+  <div class="clip"><div class="trow" id="trow"></div></div>
+  <div class="rowc"><div class="trow" id="prow" style="pointer-events:none"><div class="pill" id="pill"><div class="pf"></div><div class="pg"></div><div class="lw"><div class="lm" id="lm"><div class="lens" id="lens"></div></div><div class="ls l" id="lsl"><div class="st"><div class="lens" id="lensL"></div></div></div><div class="ls r" id="lsr"><div class="st"><div class="lens" id="lensR"></div></div></div></div></div></div></div>
+</nav>
+
+<script>
+const $ = id => document.getElementById(id);
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const IC = {
+  act:'<svg viewBox="0 0 24 24"><path d="M2.5 19.5 9 8.5l3.7 6.2 2.6-3.7 6.2 8.5z"/></svg>',
+  food:'<svg viewBox="0 0 24 24"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1-3.5 3.5-3.5 7v3H17"/></svg>',
+  cost:'<svg viewBox="0 0 24 24"><path d="M17.5 6.6A7 7 0 1 0 17.5 17.4M4.5 10h9M4.5 14h9"/></svg>',
+  plan:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>'
+};
+// gefüllte Varianten für den gewählten Reiter (wie SF Symbols „.fill“)
+const ICF = {
+  act:'<svg viewBox="0 0 24 24" class="f"><path d="M2.5 19.5 9 8.5l3.7 6.2 2.6-3.7 6.2 8.5z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  food:IC.food.replace('<svg ', '<svg class="f2" '),
+  cost:IC.cost.replace('<svg ', '<svg class="f2" '),
+  plan:'<svg viewBox="0 0 24 24" class="f"><rect width="24" height="24" fill="currentColor" mask="url(#mPlan)"/></svg>'
+};
+const SY = { join:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.6-3.5 3.1-5.4 6.2-5.4s5.6 1.9 6.2 5.4M18.5 8.5v6M15.5 11.5h6"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg>',
+  thumb:'<svg viewBox="0 0 24 24"><path d="M7.5 10.5V20h-3v-9.5zM7.5 10.5l3.8-6.9c1.4 0 2.4 1.2 2.1 2.6l-.6 3h5.4a2 2 0 0 1 2 2.4l-1.3 6.5a2.2 2.2 0 0 1-2.2 1.9H7.5"/></svg>',
+  trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>' };
+const TABS = [['act','Aktivitäten'],['food','Essen'],['cost','Kosten'],['plan','Mein Plan']];
+const P = [['#e76f51','A'],['#2a9d8f','L'],['#8e6bd8','T'],['#e9a23b','K'],['#3a86ff','M'],['#d6457a','S']];
+const av = n => '<span class="av">' + P.slice(0, n).map(p => `<i style="background:${p[0]}">${p[1]}</i>`).join('') + '</span>';
+const DATA = {
+  act:[['Kajaktour durch die Grotten','Vormittags · ca. 3 Std. · 45 € pro Person','g1',5,'Anna, Lisa, Tim und 2 weitere',1],
+       ['Sonnenuntergang an den Klippen','Abends · 20 Min. mit dem Auto','g2',3,'Lisa, Tim, Kiki',0],
+       ['Wanderung zum Leuchtturm','Flexibel · 2 Std. hin und zurück','g3',2,'Tim, Max',0],
+       ['Bootstour mit Schnorcheln','Ganzer Tag · Treffpunkt Hafen','g4',6,'Du, Anna, Lisa und 3 weitere',1]],
+  food:[['Grillabend auf unserer Terrasse','Kochen · 8 Zutaten auf der Liste','g6',6,'Anna, Lisa, Tim und 3 weitere',1],
+        ['Pizza im Hafen','Restaurant · 10 Min. zu Fuß','g5',4,'Kiki, Max, Tim, Lisa',0],
+        ['Fischmarkt am Sonntagmorgen','Markt · nur bis 11 Uhr','g1',2,'Anna, Max',0]],
+  cost:[['Villa (Anzahlung)','Anna · für alle','1.840,00 €'],['Mietwagen','Tim · für alle außer Kiki','312,50 €'],['Einkauf Grillabend','Du · für alle','86,40 €'],['Bootstour','Lisa · für 6','270,00 €'],['Pizza','Max · für 4','64,00 €'],['Fähre','Kiki · für alle','58,00 €'],['Eis am Hafen','Du · für alle','23,50 €']],
+  plan:[['Samstag · Vormittags','Kajaktour durch die Grotten'],['Samstag · Abends','Grillabend auf unserer Terrasse'],['Montag · Ganzer Tag','Bootstour mit Schnorcheln'],['Flexibel','Wanderung zum Leuchtturm'],['Flexibel','Fischmarkt am Sonntagmorgen']]
+};
+const DOTS = '<svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg>';
+let tab = 'act', mode = 'new';
+
+function goLabel(on, n) { return tab === 'food' ? `${SY.thumb}<span>${n}</span>` : on ? `${SY.check}<span>Du bist dabei</span>` : `${SY.join}<span>Ich bin dabei</span>`; }
+function show(fresh) {
+  const L = $('list'); let h = '';
+  if (tab === 'act' || tab === 'food') {
+    h = DATA[tab].map((d, i) => `<div class="sw">
+      <article class="card"><div class="ph ${d[2]}"><span>Beispielbild</span></div><div class="c">
+      <div class="th"><h3>${d[0]}</h3><button class="dots lq" type="button" aria-label="Mehr">${DOTS}<span class="gl"></span></button></div>
+      <p class="inf">${d[1]}</p>
+      <div class="ft">${av(d[3])}<span class="nm">${d[4]}</span><button class="go lq${d[5] ? ' in' : ''}" type="button" data-go data-n="${d[3]}">${goLabel(d[5], d[3])}<span class="gl"></span></button></div></div></article></div>`).join('');
+  } else if (tab === 'cost') {
+    h = '<div class="rows">' + DATA.cost.map(d => `<div class="row"><span>${d[0]}<small>${d[1]}</small></span><b>${d[2]}</b></div>`).join('') + '</div>'
+      + '<div class="rows">' + DATA.cost.map(d => `<div class="row"><span>${d[0]}<small>${d[1]}</small></span><b>${d[2]}</b></div>`).join('') + '</div>';
+  } else {
+    h = '<div class="rows">' + DATA.plan.map(d => `<div class="row"><span>${d[1]}<small>${d[0]}</small></span></div>`).join('') + '</div>';
+  }
+  L.innerHTML = h; refrSoon();
+  if (fresh && !calm()) { L.classList.remove('fade'); void L.offsetWidth; L.classList.add('fade'); }
+}
+
+/* ---------- Federn (statt fester Animationsdauer: unterbrechbar, behält den Schwung) ---------- */
+class Spring { constructor(x, k, z, eps) { this.x = this.t = x; this.v = 0; this.set(k, z); this.eps = eps; }
+  set(k, z) { this.k = k; this.c = 2 * z * Math.sqrt(k); }
+  step(h) { const a = -this.k * (this.x - this.t) - this.c * this.v; this.v += a * h; this.x += this.v * h; }
+  busy() { return Math.abs(this.v) > this.eps * 3 || Math.abs(this.x - this.t) > this.eps; }
+  snap() { this.x = this.t; this.v = 0; } }
+// gleiche Feder als CSS-Kurve (für Breite der Leiste, Drücken, Menü)
+function springCurve(z = .62, n = 40) { const w = 6.6 / z, wd = w * Math.sqrt(1 - z * z), p = [];
+  for (let i = 0; i <= n; i++) { const t = i / n; p.push((1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + z * w / wd * Math.sin(wd * t))).toFixed(4)); }
+  p[n] = '1'; return 'linear(' + p.join(',') + ')'; }
+if (CSS.supports('transition-timing-function', 'linear(0, 1)')) document.documentElement.style.setProperty('--spr', springCurve(.7));
+
+/* ---------- Neue Leiste ---------- */
+const bar = $('tbar'), trow = $('trow'), prow = $('prow'), lens = $('lens'), pill = $('pill');
+const cells = TABS.map(([k, n]) => `<button class="tab" type="button" data-t="${k}">${ICF[k]}<span>${n}</span></button>`).join('');   // alle Symbole gefüllt, wie in Apples Leisten
+trow.innerHTML = cells; const lensL = $('lensL'), lensR = $('lensR'); lens.innerHTML = lensL.innerHTML = lensR.innerHTML = TABS.map(([k, n]) => `<div class="tab" data-t="${k}">${ICF[k]}<span>${n}</span></div>`).join('');   // unter der Perle: gefüllte Symbole in Akzentfarbe
+let W = 347, tw = 84, mini = false;
+// Werte wie Apples SwiftUI-Federn: .bouncy = Dauer 0,5 s, Bounce 0,3 (Steifheit 158, Dämpfung 0,7); Ziehen = .interactiveSpring (0,15 s)
+// Uhr-App bei 120 Bildern/s nachgemessen: Wechsel dauert nur ca. 60–80 ms, die Lupe fällt danach in ca. 150 ms zusammen
+// Uhr-App nachgemessen: Beim Wechsel springt die vordere Kante der Lupe sofort zum neuen Reiter, die hintere bleibt ca. 50 ms stehen und schnappt dann nach.
+// Die Lupe zieht sich also kurz wie ein Tropfen über beide Reiter. Deshalb zwei Federn: linke und rechte Kante.
+const XL = new Spring(0, 1750, .86, .3), XR = new Spring(0, 1750, .86, .3), Lf = new Spring(0, 600, .72, .004);
+let trailT = 0;
+function aim(l, stretch) { clearTimeout(trailT); const r = l + tw, cur = (XL.x + XR.x) / 2, dir = l + tw / 2 > cur ? 1 : -1;
+  if (stretch && Math.abs(l + tw / 2 - cur) > tw * .5 && !calm()) { const lead = dir > 0 ? XR : XL, trail = dir > 0 ? XL : XR;
+    lead.set(2600, .9); lead.t = dir > 0 ? r : l;
+    trailT = setTimeout(() => { trail.set(700, .74); trail.t = dir > 0 ? l : r; kick(); }, 45);   // hintere Kante schnappt nach und federt leicht → wobbelt
+  } else { XL.set(1750, .86); XR.set(1750, .86); XL.t = l; XR.t = r; }
+  kick(); }
+function geo() { W = Math.min(Math.max(innerWidth - 28, 260), 420); tw = (W - 10) / 4;
+  bar.style.setProperty('--W', W + 'px'); pill.style.width = tw + 'px'; mark(); setMini(mini, true); clearTimeout(trailT); XL.t = idx() * tw; XR.t = XL.t + tw; XL.snap(); XR.snap(); draw(); }
+const idx = () => TABS.findIndex(t => t[0] === tab);
+function mark() { for (const r of [trow, lens, lensL, lensR]) [...r.children].forEach((b, i) => b.classList.toggle('on', i === idx())); }
+let raf = 0, last = 0;
+function kick() { if (calm()) { XL.snap(); XR.snap(); Lf.snap(); draw(); return; } if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } }
+function tick(t) { const dt = Math.min(.034, (t - last) / 1000); last = t;
+  for (let s = 0; s < 4; s++) { XL.step(dt / 4); XR.step(dt / 4); Lf.step(dt / 4); }
+  draw(); if (XL.busy() || XR.busy() || Lf.busy()) raf = requestAnimationFrame(tick); else { raf = 0; XL.snap(); XR.snap(); Lf.snap(); draw(); } }
+function draw() {
+  const l = Lf.x, lc = Math.max(0, Math.min(1, l)), s = 1 + .3 * l, mx = W - 10;   // Foto der Uhr-App: Lupe ca. 72 hoch (Leiste 64) und 119 breit, ragt oben, unten und am Rand über die Leiste
+  let a = XL.x, b = XR.x; if (a < 0) a *= .35; if (b > mx) b = mx + (b - mx) * .35;   // am Rand kaum über die Leiste hinaus
+  const grow = 0, w = Math.max(tw * .72, b - a) + grow, px = a - grow / 2;
+  pill.style.width = w.toFixed(2) + 'px'; pill.style.transform = `translate3d(${px}px,0,0) scale(${s.toFixed(4)})`;
+  const cs = (1 + .12 * lc) / s, e = 14 * lc, org = (px + w / 2 + 5).toFixed(1) + 'px 32px', tr = `translate3d(${-px}px,0,0) scale(${cs.toFixed(4)})`;
+  // Mitte: unverzerrt, endet an den Randstreifen. Randstreifen (Breite e): gleiche Kopie, von der Innenkante aus in die Breite gezogen.
+  const lm = $('lm'), lsl = $('lsl'), lsr = $('lsr'); lm.style.left = lm.style.right = e + 'px'; lsl.style.width = lsr.style.width = e + 'px';
+  lens.style.left = (-5 - e) + 'px'; lensR.style.left = (-(w - e) - 5) + 'px';
+  for (const el of [lens, lensL, lensR]) { el.style.transformOrigin = org; el.style.transform = tr; }
+  pill.style.setProperty('--l', lc.toFixed(3));
+  // Die Lupe ist durchsichtig: was unter ihr liegt, wird ausgeschnitten (sonst sähe man die Symbole doppelt)
+  const c = px + w / 2, A = c - w * s / 2 + 5 + 3, B = c + w * s / 2 + 5 - 3, kids = trow.children;
+  for (let i = 0; i < kids.length; i++) { const t0 = 5 + i * tw, t1 = t0 + tw, k = kids[i];
+    k.style.clipPath = B <= t0 || A >= t1 ? '' : A <= t0 && B >= t1 ? 'inset(0 100% 0 0)' : A > t0 ? `inset(0 ${(t1 - A).toFixed(1)}px 0 0)` : `inset(0 0 0 ${(B - t0).toFixed(1)}px)`; }
+}
+function setMini(on, now) { mini = on; bar.classList.toggle('mini', on);
+  const off = on ? -(idx() * tw) : 0;
+  if (now) { bar.style.transition = trow.style.transition = prow.style.transition = 'none'; }
+  bar.style.width = on ? (tw + 8) + 'px' : ''; trow.style.transform = prow.style.transform = `translateX(${off}px)`;
+  if (now) { void bar.offsetWidth; bar.style.transition = trow.style.transition = prow.style.transition = ''; } }
+function select(k, fromBar) { if (k === tab) { scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
+  tab = k; mark(); show(true); oldMove(true); scrollTo(0, 0); }
+
+let drag = null;
+const glowAt = e => { const r = bar.getBoundingClientRect(); bar.style.setProperty('--gx', (e.clientX - r.left) + 'px'); bar.style.setProperty('--gy', (e.clientY - r.top) + 'px'); };
+bar.addEventListener('pointerdown', e => {
+  if (mini) { setMini(false); return; }
+  bar.setPointerCapture(e.pointerId); glowAt(e); bar.classList.add('down');
+  const r = bar.getBoundingClientRect(); drag = { id: e.pointerId, x0: e.clientX, moved: false, left: r.left };
+  Lf.set(900, .95); Lf.t = .55; drag.l = follow(e.clientX); aim(drag.l, true); holdSoon();   // kurzes Tippen: Lupe hebt sich nur halb
+});
+// Finger liegt still: Die Lupe bleibt als großes Glas stehen, die Leiste dahinter wird minimal kleiner.
+let holdT = 0;
+function holdSoon() { clearTimeout(holdT); bar.classList.remove('held');
+  holdT = setTimeout(() => { if (drag) { bar.classList.add('held'); Lf.set(500, .9); Lf.t = 1; kick(); } }, 140); }   // erst beim Halten/Ziehen wächst die Lupe ganz
+function follow(cx) { return Math.max(0, Math.min(W - 10 - tw, cx - drag.left - 5 - tw / 2)); }
+bar.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; glowAt(e);
+  if (Math.abs(e.clientX - drag.x0) > 6) drag.moved = true; if (drag.moved) { const l = follow(e.clientX); if (Math.abs(l - drag.l) > 1.5) holdSoon(); drag.l = l; if (Lf.t < 1) { Lf.set(500, .9); Lf.t = 1; } aim(drag.l, false); } });
+function up(e) { if (!drag || e.pointerId !== drag.id) return; clearTimeout(holdT); bar.classList.remove('down', 'held');
+  const i = Math.max(0, Math.min(3, Math.round(drag.l / tw))), moved = drag.moved;
+  drag = null; Lf.set(420, .95); if (moved || Math.abs((XL.t + XR.t) / 2 - (i * tw + tw / 2)) > 1) aim(i * tw, !moved); select(TABS[i][0], true);
+  setTimeout(() => { if (!drag) { Lf.t = 0; kick(); } }, 90); }   // auch beim kurzen Tippen hebt sich die Lupe kurz (wie in der Uhr-App)
+bar.addEventListener('pointerup', up); bar.addEventListener('pointercancel', up);
+
+
+/* ---------- Bisherige Leiste oben ---------- */
+const oseg = $('oseg'), oind = $('oind');
+oseg.insertAdjacentHTML('beforeend', TABS.map(([k, n]) => `<button class="tb" type="button" data-t="${k}">${IC[k]}<span>${n}</span></button>`).join(''));
+function oldMove(anim) { const b = oseg.querySelector(`[data-t="${tab}"]`); oseg.querySelectorAll('.tb').forEach(x => x.classList.toggle('on', x === b));
+  const was = oind.style.translate; oind.style.width = b.offsetWidth + 'px'; oind.style.translate = b.offsetLeft + 'px 0';
+  if (anim && mode === 'old' && oind.animate && !calm()) oind.animate([{ scale: '1 1', easing: 'cubic-bezier(.3,1,.5,1)' }, { scale: '1.07 .95', offset: .42, easing: 'ease-in-out' }, { scale: '.99 1.01', offset: .7 }, { scale: '1 1' }], { duration: 420 }); }
+oseg.addEventListener('click', e => { const b = e.target.closest('.tb'); if (!b) return; if (b.dataset.t === tab) { scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  tab = b.dataset.t; mark(); clearTimeout(trailT); XL.t = idx() * tw; XR.t = XL.t + tw; XL.snap(); XR.snap(); draw(); show(true); oldMove(true); });
+
+/* ---------- Bisher | Neu ---------- */
+$('mode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === mode) return;
+  mode = b.dataset.m; $('mode').classList.toggle('r', mode === 'new'); $('mode').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  document.body.classList.toggle('old', mode === 'old'); setMini(false, true); requestAnimationFrame(() => oldMove(false)); });
+
+/* ---------- Drücken: wölben + Leuchten (nur im neuen Stil) ---------- */
+document.addEventListener('pointerdown', e => { const b = e.target.closest('.lq'); if (!b || mode !== 'new') return;
+  const r = b.getBoundingClientRect(); b.style.setProperty('--gx', (e.clientX - r.left) + 'px'); b.style.setProperty('--gy', (e.clientY - r.top) + 'px'); b.classList.add('pr');
+  const off = () => { b.classList.remove('pr'); removeEventListener('pointerup', off); removeEventListener('pointercancel', off); };
+  addEventListener('pointerup', off); addEventListener('pointercancel', off); });
+$('list').addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { const on = g.classList.toggle('in'); const n = +g.dataset.n + (tab === 'food' ? (on ? 1 : -1) : 0); g.dataset.n = n;
+    g.innerHTML = goLabel(on, n) + '<span class="gl"></span>'; return; }
+  const d = e.target.closest('.dots'); if (d && e.detail === 0) openMenu(d); });   // Tastatur; Finger/Maus siehe unten
+
+/* ---------- ⋯-Menü wie iOS: der Glas-Knopf wächst zum Menü und wieder zurück ---------- */
+const SV = d => `<svg viewBox="0 0 24 24">${d}</svg>`;
+const MI = [[['<path d="M4 20h4L19 9l-4-4L4 16z"/>','Bearbeiten'],['<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>','Ort ändern'],['<path d="M4 5h16v11H9l-5 4z"/>','Kommentar']],
+            [['<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>','Löschen','dg']]];
+const menuHTML = () => '<div class="in">' + MI.map(g => '<div class="grp">' + g.map(x => `<button type="button" class="${x[2] || ''}" data-mi>${SV(x[0])}<span>${x[1]}</span></button>`).join('') + '</div>').join('') + '</div>';
+const MW = 250, RIM = 'var(--mrim)';
+let menu = null, hold = null;
+function openMenu(btn) {
+  if (menu) { if (!menu.closing) return; menu.m.remove(); menu.bv && menu.bv.remove(); menu.btn.classList.remove('hid'); menu = null; cancelAnimationFrame(mraf); mraf = 0; }   // Tipp während des Schließens: gleich wieder öffnen
+  if (knobEl) { knobEl.remove(); knobEl = null; }
+  const r = btn.getBoundingClientRect(), c = document.createElement('div'), m = document.createElement('div');
+  c.className = 'catch'; m.className = 'mn'; m.innerHTML = menuHTML(); document.body.append(c, m);
+  const inn = m.querySelector('.in'), h = inn.offsetHeight, right = Math.min(r.right, innerWidth - 12);
+  let top = r.top, up = false; if (top + h > innerHeight - 96) { top = Math.max(12, r.bottom - h); up = true; }
+  inn.classList.toggle('up', up); inn.style[up ? 'bottom' : 'top'] = '0';
+  // solange das Menü offen ist, scrollt die Seite nicht; Tipp daneben schließt nur
+  for (const el of [c, m]) for (const ev of ['wheel', 'touchmove']) el.addEventListener(ev, e => e.preventDefault(), { passive: false });
+  c.addEventListener('pointerdown', e => { e.preventDefault(); closeMenu(); });
+  m.addEventListener('pointerdown', e => { const b = e.target.closest('[data-mi]'); hl(b); m.setPointerCapture?.(e.pointerId); });
+  m.addEventListener('pointermove', e => { if (e.buttons || e.pointerType === 'touch') hlAt(e.clientX, e.clientY); });
+  m.addEventListener('pointerup', e => { const b = menu && menu.hl; if (b) pick(b); });
+  m.addEventListener('click', e => { if (e.detail === 0) { const b = e.target.closest('[data-mi]'); if (b) pick(b); } });
+  if (mode === 'old' || calm()) {   // bisher: ploppt daneben auf
+    m.classList.add('old'); Object.assign(m.style, { left: (right - 232) + 'px', top: top + 'px' });
+    menu = { c, m, btn, old: true, hl: null }; return; }
+  btn.classList.add('hid'); const rfOn = refrMode === 'band'; let bv = null; if (!rfOn) { bv = document.createElement('div'); bv.className = 'mbv'; m.before(bv); }
+  menu = { c, m, btn, inn, A: { x: right - MW * .45, y: up ? top + h * .7 : top, w: MW * .45, h: h * .3, rad: 30 }, B: { x: right - MW, y: top, w: MW, h, rad: 30 },
+           bv, P: new Spring(0, 900, .8, .002), Q: new Spring(0, 420, .92, .002), hl: null };   // Musik-App nachgemessen: Breite ~2 % über, Höhe läuft ruhig aus
+  if (rfOn) menuBands(menu);
+  menu.P.t = 1; menu.Q.t = 1; mframe(menu); mkick(); }
+function mframe(M) { const p = M.P.x, ph = M.Q.x, q = Math.max(0, Math.min(1, p, ph)), A = M.A, B = M.B, L = (a, b, t = p) => a + (b - a) * t;
+  const w = Math.max(A.w, L(A.w, B.w)), h = Math.max(A.h, L(A.h, B.h, ph)), up = M.inn.classList.contains('up');
+  const x = (B.x + B.w) - w, y = up ? (B.y + B.h) - h : B.y;   // am Knopf verankert (rechts, oben bzw. unten)
+  // Form: erst rund, dann abgerundetes Rechteck
+  const e0 = Math.max(0, Math.min(1, (q - .25) / .6)), e = e0 * e0 * (3 - 2 * e0), half = Math.min(w, h) / 2, R = half * (1 - e) + B.rad * e;
+  Object.assign(M.m.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: R.toFixed(1) + 'px',
+    opacity: Math.min(1, .25 + Math.max(0, p) * 2.2).toFixed(3), boxShadow: `inset 0 0 22px var(--msh),${RIM},0 ${(8 + 10 * q).toFixed(1)}px ${(20 + 30 * q).toFixed(1)}px rgba(0,0,0,${(.1 + .12 * q).toFixed(3)})` });
+  if (M.rb) for (const e of M.rb) { e.c.style.left = (M.mr.l - x - (e.k === 'r' ? w - 12 : 0)) + 'px'; e.c.style.top = (M.mr.t - y - (e.k === 'b' ? h - 10 : 0)) + 'px'; }
+  if (M.bv) Object.assign(M.bv.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: R.toFixed(1) + 'px', opacity: Math.min(1, Math.max(0, p) * 1.5).toFixed(3) });
+  // Inhalt ist von Anfang an da: klein und unscharf, wächst mit und wird scharf
+  const k = Math.max(0, Math.min(1, Math.min(p, ph) / .8));
+  M.inn.style.opacity = (.35 + .65 * k).toFixed(3); M.inn.style.filter = k < 1 ? `blur(${((1 - k) * 7).toFixed(2)}px)` : ''; M.inn.style.transform = `scale(${(.55 + .45 * Math.min(1.03, Math.max(0, p))).toFixed(4)})`; }
+let mraf = 0, mlast = 0, knobEl = null;
+// Glas-Knopf, in den das Menü zurückfließt: erscheint aus dem Tropfen, ist kurz zu groß, Punkte erst unscharf, federt dann auf seine Größe
+function spawnKnob(btn) { const r = btn.getBoundingClientRect(), k = document.createElement('div'); k.className = 'knob'; k.innerHTML = DOTS;
+  Object.assign(k.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); document.body.append(k); knobEl = k;
+  k.querySelector('svg').animate([{ filter: 'blur(2.5px)' }, { filter: 'blur(0px)' }], { duration: 280, easing: 'ease-out' });
+  setTimeout(() => { if (knobEl === k && (!menu || menu.btn !== btn)) btn.classList.remove('hid'); }, 150);   // normale Punkte liegen schon darunter
+  k.animate([{ transform: 'scale(.6)', opacity: 1 }, { transform: 'scale(1.14)', opacity: 1, offset: .4 }, { transform: 'scale(.98)', opacity: .5, offset: .72 }, { transform: 'scale(1)', opacity: 0 }],
+    { duration: 330, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'forwards' }).onfinish = () => {
+      // Kopie und echter Knopf sehen gleich aus: im selben Bild tauschen, nicht überblenden (zwei Gläser übereinander flackern)
+      if (knobEl !== k) return; knobEl = null; if (!menu || menu.btn !== btn) btn.classList.remove('hid'); k.remove(); };
+  return k; }
+function mkick() { if (!mraf) { mlast = performance.now(); mraf = requestAnimationFrame(mtick); } }
+function mtick(t) { const M = menu; if (!M || M.old || M.closing) { mraf = 0; return; }
+  const dt = Math.min(.034, (t - mlast) / 1000); mlast = t; for (let i = 0; i < 4; i++) { M.P.step(dt / 4); M.Q.step(dt / 4); } mframe(M);
+  if (M.P.busy() || M.Q.busy()) { mraf = requestAnimationFrame(mtick); return; }
+  mraf = 0; M.P.snap(); M.Q.snap(); mframe(M);
+}
+function menuBands(M) { const src = document.querySelector('main'), r = src.getBoundingClientRect(); M.mr = { l: r.left, t: r.top }; M.rb = [];
+  for (const k of ['t', 'b', 'l', 'r']) { const b = document.createElement('div'), sc = document.createElement('div'), c = src.cloneNode(true);
+    b.className = 'rb mrb ' + k; sc.className = 'rs'; c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); c.classList.add('rcl', 'mst'); c.setAttribute('aria-hidden', 'true'); c.inert = true; c.style.width = src.offsetWidth + 'px';
+    sc.append(c); b.append(sc); M.m.insertBefore(b, M.inn); M.rb.push({ k, c }); } }
+function closeMenu() { const M = menu; if (!M || M.closing) return; M.c.remove();
+  if (M.old) { M.m.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150 }).onfinish = () => M.m.remove(); menu = null; return; }
+  M.m.style.pointerEvents = 'none'; M.closing = true; cancelAnimationFrame(mraf); mraf = 0; M.bv && M.bv.remove();
+  const up = M.inn.classList.contains('up'); M.m.style.transformOrigin = '100% ' + (up ? '100%' : '0%');
+  M.inn.animate([{ filter: 'blur(0px)' }, { filter: 'blur(6px)' }], { duration: 110, fill: 'forwards' });
+  M.m.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(.66)', opacity: 0 }], { duration: 120, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }).onfinish = () => {
+    M.m.remove(); M.btn.classList.remove('hid'); if (menu === M) menu = null; }; }
+function hl(b) { const M = menu || ctx; if (!M) return; if (M.hl && M.hl !== b) M.hl.classList.remove('hl'); M.hl = b || null; if (b) b.classList.add('hl'); }
+function hlAt(x, y) { const el = document.elementFromPoint(x, y), b = el && el.closest && el.closest('.mn [data-mi]'); hl(b); }
+function pick(b) { b.classList.add('hl'); setTimeout(() => ctx ? closeCtx() : closeMenu(), 110); }
+
+// ⋯ antippen öffnet; gedrückt halten öffnet auch, dann Finger auf einen Eintrag ziehen und loslassen = auswählen
+document.addEventListener('pointerdown', e => { const d = e.target.closest('.dots'); if (!d || (menu && !menu.closing)) return;
+  hold = { d, x: e.clientX, y: e.clientY, open: false, t: setTimeout(() => { if (hold) { hold.open = true; openMenu(d); } }, 320) }; });
+document.addEventListener('pointermove', e => { if (!hold) return;
+  if (!hold.open) { if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 10) { clearTimeout(hold.t); hold = null; } return; }
+  hlAt(e.clientX, e.clientY); });
+document.addEventListener('pointerup', e => { if (!hold) return; const h = hold; hold = null; clearTimeout(h.t);
+  if (!h.open) { openMenu(h.d); return; }
+  if (menu && menu.hl) pick(menu.hl); });
+document.addEventListener('pointercancel', () => { if (hold) { clearTimeout(hold.t); hold = null; } });
+
+/* ---------- kleiner Hinweis unten ---------- */
+let toastT = 0;
+function toast(t) { document.querySelector('.toast')?.remove(); const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.append(d);
+  clearTimeout(toastT); toastT = setTimeout(() => d.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).onfinish = () => d.remove(), 1800); }
+
+let ctx = null; function closeCtx() {}   // Halte-Menü und Wischen bewusst nicht in der Web-App (Entscheidung Lars)
+
+/* ---------- Versuch: echte Lichtbrechung am Rand der Leiste ----------
+   Eine Kopie des Seiteninhalts liegt in der Leiste und läuft beim Scrollen mit. Variante A: Randstreifen, in denen die Kopie gestaucht wird
+   (nur Verschieben/Skalieren). Variante B: ein echter Verzerrungs-Filter über die ganze Leiste. */
+let refrMode = 'band', refrEls = [], refrT = 0;
+const SDA = CSS.supports('animation-timeline', 'scroll()');
+function refrSoon() { clearTimeout(refrT); refrT = setTimeout(refrBuild, 40); }
+function refrMap(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), im = g.createImageData(w, h), R = h / 2, bz = 15;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const px = x + .5, py = y + .5, ax = Math.max(R, Math.min(w - R, px)), dx = px - ax, dy = py - R, dist = Math.hypot(dx, dy) || 1e-6, d = R - dist;
+    let vx = 0, vy = 0; if (d < bz) { const t = Math.max(0, Math.min(1, 1 - d / bz)), mag = t * t; vx = dx / dist * mag; vy = dy / dist * mag; }
+    const o = (y * w + x) * 4; im.data[o] = 128 + vx * 127; im.data[o + 1] = 128 + vy * 127; im.data[o + 2] = 128; im.data[o + 3] = 255; }
+  g.putImageData(im, 0, 0); return c.toDataURL(); }
+function refrBuild() { const box = $('refr'); box.innerHTML = ''; refrEls = []; bar.classList.toggle('rf', refrMode !== 'off' && mode === 'new');
+  if (refrMode === 'off' || mode !== 'new') return;
+  const src = document.querySelector('main'), H = 64, Wr = Math.round(W);
+  const defs = refrMode === 'band' ? [['t', 0, 0, W, 9], ['b', 0, H - 9, W, 9], ['l', 0, 0, 14, H], ['r', W - 14, 0, 14, H]] : [['f', 0, 0, W, H]];
+  if (refrMode === 'filter') { const f = $('refrF'), im = $('refrImg'); for (const e of [f, im]) { e.setAttribute('width', Wr); e.setAttribute('height', H); }
+    const u = refrMap(Wr, H); im.setAttribute('href', u); im.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', u); }
+  for (const [k, x, y, w, h] of defs) { const b = document.createElement('div'), sc = document.createElement('div'), c = src.cloneNode(true);
+    b.className = 'rb ' + k; sc.className = 'rs'; Object.assign(b.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+    c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); c.classList.add('rcl'); c.setAttribute('aria-hidden', 'true'); c.inert = true; c.style.width = src.offsetWidth + 'px';
+    sc.append(c); b.append(sc); box.append(b); refrEls.push({ c, x, y }); }
+  refrPos(); }
+function refrPos() { if (!refrEls.length) return; const src = document.querySelector('main'), r = src.getBoundingClientRect(), bl = bar.offsetLeft, bt = bar.offsetTop;
+  document.documentElement.style.setProperty('--smax', Math.max(0, document.documentElement.scrollHeight - innerHeight) + 'px');
+  for (const e of refrEls) { e.c.style.left = (r.left - bl - e.x) + 'px'; e.c.style.top = (r.top + scrollY - bt - e.y) + 'px'; if (!SDA) e.c.style.translate = `0 ${-scrollY}px`; } }
+if (!SDA) addEventListener('scroll', () => { for (const e of refrEls) e.c.style.translate = `0 ${-scrollY}px`; }, { passive: true });
+$('rfs').addEventListener('click', e => { const b = e.target.closest('[data-rf]'); if (!b) return; refrMode = b.dataset.rf;
+  $('rfs').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); refrBuild(); });
+$('list').addEventListener('click', refrSoon); $('mode').addEventListener('click', refrSoon);
+
+show(false); geo(); oldMove(false);
+addEventListener('resize', () => { geo(); refrSoon(); });
+</script>

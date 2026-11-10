@@ -6,6 +6,9 @@ Gemeinsame Reiseplanung für Gruppen, Nachfolger des Malta-Planners (`larsinger2
 
 ## Design: IMMER zuerst `DESIGN.md` lesen
 Grundlage für jedes Aussehen und jede Bewegung ist Apples aktuelles iOS-Design (iOS 27, Liquid Glass). Die Regeln stehen in `DESIGN.md` und gehen allem anderen vor. Bei neuen iOS-Versionen dort nachpflegen.
+- `vorlagen/glas-probe.html`: abgenommene Vorlage für Reiter-Leiste (Pille/Lupe), ⋯-Menü und Lichtbrechung. Code von dort übernehmen statt neu erfinden. (Die Datei hat kein `<html>`-Gerüst, zum lokalen Ansehen eines davor setzen.)
+- `PLAN.md`: Etappen und Grundsätze.
+- Antworten an Lars **kompakt**: Ergebnis zuerst, nur was er wissen oder entscheiden muss.
 
 ## Über Lars
 - Betreut das Projekt (GitHub `larsinger20`), **kein Programmierer**: auf Deutsch, einfach, Schritt für Schritt, ohne Fachjargon.
@@ -27,6 +30,7 @@ Grundlage für jedes Aussehen und jede Bewegung ist Apples aktuelles iOS-Design 
 - **Jeder darf eine Reise anlegen**, wird dort Admin und kann weitere Admins bestimmen.
 - **Setup-Assistent** (eine Frage pro Bildschirm): Name, Zeitraum, Stops, Anreise (Flug/Auto/Zug), Unterkünfte (z. B. Airbnb), welche Bereiche (Essen, Einkauf, Kosten, Karte), am Ende Link zum Teilen.
 - **Ein oder mehrere Stops** (Flug + Airbnb genauso wie Roadtrip).
-- **Reiter-Leiste unten** im iOS-Stil (siehe `DESIGN.md`). Probier-Seite dazu: https://claude.ai/artifact/WYuRH8EcEk9p1NLY51npaB
+- **Reiter-Leiste unten** im iOS-Stil (siehe `DESIGN.md`).
+- **Kein Wischen, kein Halte-Menü**, keine echte App (bleibt Web-App).
 - Funktionen und bewährte Lösungen des Malta-Planners als Vorlage nutzen (dessen `CLAUDE.md` beschreibt sie ausführlich), aber unabhängig weiterentwickeln.
 - Datenbank von Anfang an abgesichert (nicht offen wie beim Malta-Planner).

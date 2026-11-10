@@ -1,108 +1,62 @@
 # outbnd – Design-Grundlage (gilt IMMER)
 
-Wunsch von Lars: Jede Entscheidung zu Aussehen und Bewegung richtet sich nach Apples aktuellem iOS-Design (iOS 27, „Liquid Glass“). Bei Unsicherheit: „Wie macht es eine Apple-App?“ – und das nachbauen, nicht etwas Eigenes erfinden.
-Stand: November 2026. Quellen: Apple Human Interface Guidelines (HIG), WWDC25 „Meet Liquid Glass“, SwiftUI-Doku `Spring`, Berichte zu iOS 27 (WWDC26, Beta-Tests).
+Wunsch von Lars: Aussehen und Bewegung so nah wie möglich an Apples aktuellem iOS-Design (iOS 27, „Liquid Glass“). Hoher Anspruch: nichts ungeprüft übernehmen, alles hinterfragen.
+Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-probe.html`** (Probier-Seite, von Lars auf dem iPhone abgenommen; online: https://claude.ai/artifact/WYuRH8EcEk9p1NLY51npaB).
 
-## 0. Apple-Check (vor JEDER Änderung, nichts ungeprüft übernehmen)
-Alles hinterfragen, auch eigene frühere Entscheidungen und Wünsche, die nach „Apple“ klingen. Vor jeder Änderung beantworten:
-1. **Gibt es das so in einer Apple-App?** Welche App, welcher Bereich (Bedienleiste oder Inhalt)? Wenn nein: nicht erfinden, sondern Apples Muster suchen.
-2. **Schrift:** nur Apple-Größen (Tabelle in Abschnitt 8), keine eigenen Buchstabenabstände.
-3. **Ebene:** Inhalt ohne Glas, Bedienung mit Glas (Abschnitt 1). Vergleiche nur mit Gleichem (ein ⋯ in Safaris Leiste ist nicht dasselbe wie ein ⋯ in einer Kachel).
-4. **Bewegung:** Apple-Feder (Abschnitt 4), unterbrechbar, „Bewegung reduzieren“ beachten.
-5. **Lesbarkeit:** Kontrast messen (mind. 4,5, auch über bunten Bildern), hell und dunkel.
-6. **Gesten:** Was man bei Apple antippen, halten oder wischen kann, muss bei uns genauso gehen (Abschnitt 10).
-7. **Bei Abweichung:** bewusst entscheiden, Lars sagen und in Abschnitt 11 eintragen.
-Vorbilder für Abläufe am besten per Bildschirmaufnahme vom iPhone Bild für Bild nachmessen (Aufnahmen haben 60 Bilder/s).
+## 0. Apple-Check (vor JEDER Änderung)
+1. **Gibt es das so in einer Apple-App?** Welche App, welcher Bereich? Nur Gleiches vergleichen: Ein ⋯ in Safaris Bedienleiste verhält sich anders als ein ⋯ in einem Eintrag (Musik-App). Falsches Vorbild = lange falsche Richtung (ist passiert).
+2. **Messen statt schätzen:** Lars um eine Bildschirmaufnahme oder ein Foto der Apple-App bitten und Bild für Bild ausmessen (Maße, Farben, Zeiten). Aufnahmen haben 60 oder 120 Bilder/s. Standfotos zeigen Details, die im Video verwischen (z. B. Aufbau der Lupe).
+3. **Auf dem iPhone abnehmen lassen:** Das Testprogramm ist kein Safari. Erst Lars' Aufnahme vom eigenen iPhone zeigt, wie es wirklich aussieht und ob es flüssig läuft.
+4. Schrift nur in Apple-Größen (Abschnitt 6), Inhalt ohne Glas, Bedienung mit Glas (Abschnitt 1).
+5. Kontrast messen (Ziel 4,5), hell und dunkel. Helle Werte sind bisher abgeleitet, nicht gemessen (alle Aufnahmen waren dunkel).
+6. Abweichungen bewusst entscheiden, Lars sagen, in Abschnitt 9 eintragen.
 
 ## 1. Zwei Ebenen
-- **Inhalt** (Kacheln, Listen, Texte): kein Glas. Feste Flächen, Farbe gehört in den Inhalt.
-- **Bedienung** (Reiter-Leiste, schwebende Knöpfe, Umschalter, Menüs, Dialoge, Hinweise): Liquid Glass, schwebt über dem Inhalt.
-- Glas sparsam einsetzen. Kein Glas auf Glas stapeln.
-- Ausnahme: Ein Bedienelement im Inhalt (z. B. ⋯, Schieberegler) wird **beim Berühren** kurz zu Glas („hebt sich in Glas“) und ist in Ruhe unauffällig.
+- **Inhalt** (Kacheln, Listen, Texte): kein Glas, feste Flächen.
+- **Bedienung** (Reiter-Leiste, Menüs, Dialoge, Hinweise): Glas, schwebt über dem Inhalt. Sparsam, kein Glas auf Glas.
+- Bedienelemente im Inhalt (⋯) sind in Ruhe schlicht und werden erst beim Berühren zu Glas.
 
-## 2. Das Glas
-- **Normales Glas** (Standard): macht den Hintergrund unscharf und passt die Helligkeit an, damit Text lesbar bleibt. Für Leisten, Menüs, Dialoge.
-- **Klares Glas**: sehr durchsichtig, nur über Fotos/Bildern, dann mit Abdunkelung dahinter (ca. 35 % bei hellem Hintergrund).
-- **Linse statt Milchglas**: Apples Glas bricht das Licht am Rand. Auf Webseiten in Safari nicht echt möglich → mit Lichtkante andeuten (oben links heller Rand, unten rechts schwächer), nicht nur weichzeichnen.
-- **iOS 27**: Glas mit **klareren Rändern statt starker Schatten**, insgesamt etwas weniger durchsichtig, im Dunkelmodus heller. Gewählter Reiter im Dunkelmodus: Hintergrund **dunkler** statt heller.
-- **Größe ändert das Material**: Je größer ein Glas-Element (z. B. Menü), desto „dicker“: tieferer, weicherer Schatten, mehr Lesbarkeit. Große Flächen wechseln nicht zwischen hell und dunkel, kleine (Leisten) dürfen.
-- **Farbe/Tönung** nur für die wichtigste Aktion, nie alles einfärben.
-- Ecken **konzentrisch**: Innere Rundungen passen in äußere (innerer Radius = äußerer Radius − Abstand). iOS 27 rundet etwas weniger übertrieben.
+## 2. Glas im Browser: was geht und was nicht
+- Apples fertiges Glas gibt es nur in echten Apps. **Echte App ist ausgeschlossen** (kein Entwicklerkonto; „Link öffnen und los“ soll bleiben). SwiftUI-Anleitungen und WebGL-Tricks (brauchen Inhalt im 3D-Bild) helfen nicht.
+- Safari kann den Hintergrund nur weichzeichnen/einfärben, nicht verbiegen.
+- **Lichtbrechung („Variante A“, von Lars gewählt):** Eine Kopie des Seiteninhalts (`main.cloneNode`) liegt in schmalen Randstreifen des Glas-Elements und wird dort auf 40 % gestaucht (nur `transform`). Die Streifen laufen per Maske weich nach innen aus, darüber liegt eine leichte Weichzeichnung (`backdrop-filter: blur(2px)`), damit kein doppelt lesbarer Text entsteht. Mitlaufen beim Scrollen über `animation-timeline: scroll()` (ohne Verzögerung), sonst per Scroll-Ereignis. Kopie nach Inhaltsänderungen neu aufbauen. Ein echter Verzerrungs-Filter über die ganze Fläche (Variante B) war Lars zu durchsichtig.
+- Neutrales Glas: keine Farbverstärkung, die die Leiste bunt macht. Dunkel etwa `rgba(38,38,40,.4)` + `blur(7px) saturate(170%)`, feine helle Kante nur oben und unten, kein Ring rundherum, unter der Leiste keine sichtbare Scroll-Kante.
 
-## 3. Reaktion auf Berührung
-- Glas reagiert **sofort** beim Aufsetzen des Fingers (nicht erst beim Loslassen): wölbt sich leicht auf, „wie Gel“.
-- **Leuchten von innen**, beginnend unter dem Finger, breitet sich über das Element aus (und dezent auf Glas daneben).
-- Reiter-Leiste: Finger halten und ziehen → die Auswahl hebt sich als Lupe und folgt dem Finger, beim Loslassen schnappt sie ein.
-- Bewegung immer **unterbrechbar**: Neue Berührung mitten in einer Animation → weich umlenken, Schwung behalten. Nie warten lassen.
+## 3. Reiter-Leiste (gemessen an der Uhr-App, iPhone 420 pt breit)
+- Unten, schwebend. Höhe 64, seitlich 14, 20 vom unteren Bildschirmrand (im Sicherheitsbereich), volle Kapselform. Immer sichtbar, schrumpft nicht beim Scrollen.
+- **Alle Symbole gefüllt**; gewählt ändert nur die Farbe (Akzent). Namen 10 pt halbfett. Symbol ca. 23–25.
+- Gewählter Reiter in Ruhe: flache, **fast schwarze Pille** (dunkel) bzw. leicht graue (hell), Abstand 5 zum Leistenrand, ohne Rand.
+- **Lupe** (beim Berühren): klares Glas, ca. 1,3-fach so groß wie die Pille (ca. 72 hoch, 120 breit), ragt oben, unten und am Leistenende **über die Leiste hinaus**. Feine helle Kante oben/unten, Glanz in der Fläche, Regenbogen-Säume dezent. **Kein Rahmen:** keine harte Innenkante, kein dunkler Ring; aber auch nicht so weich, dass nur ein Schleier bleibt. Inhalt darin in Akzentfarbe, nur ca. 1,12-fach vergrößert (lange Namen stoßen sonst an). Am linken/rechten Rand wird der Inhalt in die Breite gezogen; die unverzerrte Mitte endet genau an den Randstreifen (sonst doppelte „Fetzen“). Was unter der Lupe liegt, wird ausgeschnitten.
+- **Bewegung:** Wechsel sehr schnell (60–80 ms). Die Pille hat zwei Kanten: die vordere springt sofort zum Ziel, die hintere folgt ca. 45 ms später und federt leicht nach; die Lupe zieht sich kurz über beide Reiter. Kurzes Tippen: Lupe hebt sich nur halb. Halten/Ziehen: Lupe ganz groß, folgt dem Finger direkt, Leiste ca. 1 % kleiner. Loslassen: Lupe fällt in ca. 150 ms zur Pille zusammen. Nichts darf zucken oder nachwackeln („hektisch“ war ein Kritikpunkt).
 
-## 4. Bewegung (Federn statt fester Zeiten)
-Apples Feder-Voreinstellungen (SwiftUI) als feste Werte:
-| Name | Wofür | Werte |
-|---|---|---|
-| smooth | Ein-/Ausblenden, Seitenwechsel | 0,5 s, Bounce 0 |
-| snappy | häufige kleine Dinge, Standard | 0,5 s, Bounce ca. 0,15 |
-| bouncy | Glas-Perle, Aufploppen von Menüs | 0,5 s, Bounce 0,3 (Steifheit 158, Dämpfung 17,6) |
-| interactive | folgt dem Finger | ca. 0,15 s, Dämpfung 0,86 |
-- Umrechnung: Steifheit = (2π / Dauer)², Dämpfungsverhältnis = 1 − Bounce.
-- iOS 27: „snappier“, also eher knackig als lang. Bounce über 0,3 wirkt verspielt → vermeiden.
-- Häufige Aktionen: wenig Bewegung. „Bewegung reduzieren“ in den Einstellungen immer beachten (dann nur Überblenden).
+## 4. ⋯-Menü (gemessen an der Musik-App: ⋯ in einem Eintrag)
+- ⋯ in Ruhe: nur drei Punkte. Beim Berühren kurz Glas. Antippen oder Halten öffnet; beim Halten Finger auf Eintrag ziehen und loslassen = wählen.
+- **Öffnen:** startet als runder, schon ca. 45 % großer Fleck am Knopf, nach ca. 0,1 s fast volle Größe, Breite ca. 2 % über, Höhe läuft ruhig aus. Einträge von Anfang an da (klein, unscharf), werden scharf. Kein starkes Wabbeln.
+- **Schließen:** ca. 0,1 s: schrumpft etwas zum Knopf, verschwimmt, weg. Danach erscheinen die Punkte wieder.
+- Breite 250, Ecken 30, Zeilen 48 hoch, Schrift 17, Symbole links in einer Spalte, Trennlinie zwischen Gruppen links/rechts eingerückt, Löschen in Apple-Rot unten in eigener Gruppe.
+- Glas wie die Leiste, mit Lichtbrechung am Rand (Abschnitt 2). Lars will es eher gläsern; dafür ist Rot über orangem Hintergrund schwächer lesbar (roter Text hat deshalb einen Schein).
+- Offen: Seite scrollt nicht, Tipp daneben schließt nur.
 
-## 5. Menüs (⋯)
-- **Das Menü wächst aus dem Knopf** („die Blase ploppt auf und zeigt ihren Inhalt“): gleiche Stelle, gleiche Glasfläche, kein separates Fenster daneben. Schließen: zurück in den Knopf.
-- Hintergrund wird **nicht abgedunkelt** und bleibt sichtbar.
-- Antippen daneben schließt nur (die Berührung löst sonst nichts aus, Seite scrollt nicht).
-- Finger auf ⋯ halten → Menü öffnet, Finger auf einen Eintrag ziehen und loslassen = auswählen (Markierung folgt dem Finger).
-- Einträge: Verb, kurz, wichtigste oben, verwandte gruppiert (Trennlinie/Abstand), Löschen rot und unten. Symbole **für alle Einträge einer Gruppe oder für keinen**, als Linien-Symbole in einer Spalte.
-- Nicht verfügbare Einträge blass zeigen statt verstecken. „…“ am Ende, wenn danach noch Eingaben kommen.
-- **Ablauf wie Safari (nachgemessen):** Knopf hellt beim Antippen auf → wird zum runden, klaren Glas-Tropfen → wächst schräg zum Menü (nach ca. 0,25 s fast fertig), Breite und Höhe federn getrennt (wobbelt wie Gel), Einträge erst vergrößert und unscharf wie durch eine Lupe, dann scharf. Schließen: Einträge verschwimmen, Menü wird rund, schrumpft zum Tropfen mit Spitze zum Knopf, der Knopf taucht schon auf, während der Rest in ihn hineinfließt, ist kurz etwas zu groß und federt zurück.
-- Menü-Glas recht durchsichtig (Farben dahinter leuchten durch), mit Lichtkante; Schrift mit leichtem Schein (Vibrancy), Löschen in kräftigem Apple-Rot. Kontrast über bunten Bildern messen.
+## 5. Bewegung allgemein
+- Federn statt fester Zeiten, unterbrechbar (neuer Tipp lenkt weich um). „Bewegung reduzieren“ beachten.
+- Apple ist schneller und ruhiger als gedacht: erst messen. Apples SwiftUI-Voreinstellungen als Anhalt: smooth (0,5 s, kein Nachfedern), snappy (leicht), bouncy (Bounce 0,3). Umrechnung: Steifheit = (2π/Dauer)², Dämpfungsverhältnis = 1 − Bounce.
+- Nur `transform`/`opacity` animieren; Weichzeichnen während großer Bewegungen ruckelt auf dem iPhone.
 
-## 6. Reiter-Leiste
-- **Unten**, schwebend, Glas, Inhalt scrollt darunter durch. Immer sichtbar (nicht beim Scrollen verkleinern, das ist nur für Apps mit Mini-Player gedacht).
-- Symbol + kurzer Name (ein Wort, wenn möglich), gefüllte Symbole bevorzugt für den gewählten Reiter.
-- Nur Navigation, keine Aktionen in der Leiste. Wenige Reiter (bei uns 4).
-- Hinweis-Punkt/Zahl nur für wirklich Neues.
-- Am oberen/unteren Rand: **Scroll-Kante** (Inhalt wird unter der Leiste unscharf/blass, damit die Leiste lesbar bleibt). Nicht als Deko.
+## 6. Schrift
+- `-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif`. Keine eigenen Buchstabenabstände, keine gesperrten Großbuchstaben.
+- Nur Apples Größen: 34 fett (Seitentitel) · 28/22/20 (Titel, Kachel-Titel 20 halbfett) · 17 (Text, Listen, Menüs) · 16 · 15 (Infozeile, Namen, Knöpfe halbfett) · 13 (Hinweise) · 12/11 · 10 halbfett (Reiter).
 
-## 7. Sonstiges
-- Tippflächen mind. 44 px.
-- Hell und dunkel immer beide gestalten, ebenso „Transparenz reduzieren“ (Glas wird dann fest).
-- Dialoge/Nachfragen wachsen ebenfalls aus dem Knopf, der sie auslöst.
-- Alles auf dem echten iPhone prüfen (Safari und Home-Bildschirm-App).
+## 7. Inhalte
+- Kacheln ohne Rahmen, Radius 22, heben sich durch die Fläche ab.
+- Knöpfe: Kapseln, normal grau getönt mit Akzentschrift, gewählt gefüllt. **Keine Emojis in Knöpfen**, nur Linien-Symbole. Emojis nur in Inhalten, die Leute schreiben.
+- Farben wie beim Malta-Planner (Sand + Meerestürkis), hell und dunkel.
 
-## 8. Schrift
-- Systemschrift: `-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif`. Auf Apple-Geräten SF Pro (wechselt selbst zwischen Text- und Display-Schnitt), auf Windows Segoe UI (SF Pro darf dort nicht eingebunden werden).
-- **Keine eigenen Buchstabenabstände** (`letter-spacing`): SF Pro bringt sie je nach Größe selbst mit.
-- **Keine Großbuchstaben-Überschriften mit Sperrung** (seit iOS 26 normal geschrieben, fett).
-- Nur Apples Größen (Dynamic Type, Standardgröße):
-| Stil | Größe | Gewicht | Wofür bei uns |
-|---|---|---|---|
-| Large Title | 34 | fett | Seitentitel |
-| Title 1 / 2 / 3 | 28 / 22 / 20 | normal bzw. halbfett | Abschnitte, Kachel-Titel (20 halbfett) |
-| Headline | 17 | halbfett | Hervorhebung |
-| Body | 17 | normal | Listen, Menüs, Fließtext |
-| Callout | 16 | normal | selten |
-| Subheadline | 15 | normal | Infozeile, Namen, Untertitel, Knöpfe (halbfett) |
-| Footnote | 13 | normal | Hinweise, Umschalter |
-| Caption 1 / 2 | 12 / 11 | normal | Bildbeschriftung, Avatare |
-| Reiter-Namen | 10 | mittel | Reiter-Leiste |
+## 8. Bedienung
+- **Kein Wischen, kein Halte-Menü auf Kacheln** (Entscheidung Lars: in einer Web-App schwer zu bedienen und nicht intuitiv). Alles läuft sichtbar über ⋯.
+- Tippflächen mind. 44.
 
-## 9. Inhalte
-- **Kacheln:** ohne Rahmen, heben sich durch die Fläche ab (weiß auf Sand bzw. dunkelgrau), Radius 22, kein Schatten.
-- **Knöpfe:** Kapseln. Normal = grau getönt mit Akzentschrift, gewählt/wichtig = gefüllt in Akzentfarbe. **Keine Emojis in Knöpfen**, nur Symbole (Linien-Symbole wie SF Symbols). Emojis nur in Inhalten, die Leute selbst schreiben.
-- **⋯ in einer Kachel:** in Ruhe nur die drei Punkte (wie Musik/Podcasts), beim Berühren hebt es sich als Glas-Knopf, daraus wächst das Menü.
-- Reiter-Leiste: gewählter Reiter mit **gefülltem** Symbol.
-
-## 10. Gesten (was Apple-Nutzer erwarten)
-- **Gedrückt halten auf einem Eintrag** → Kontextmenü: Eintrag schrumpft beim Halten leicht, hebt sich dann an, alles andere wird unscharf und leicht abgedunkelt, Menü erscheint darunter (auf der Seite, wo der Finger ist). Passt es nicht, wird der Eintrag verkleinert/verschoben. Finger halten und auf einen Eintrag ziehen = auswählen. Am PC: Rechtsklick.
-- **Nach links wischen** (iOS 27: bei allen Einträgen in Listen) → Aktionen dahinter (z. B. Erledigt, Löschen). Wischen nach oben/unten scrollt weiter normal; Scrollen schließt offene Aktionen. Löschen fragt trotzdem nach.
-- Tippflächen und Gesten nie nur per Wischen erreichbar machen: alles auch über ⋯ erreichbar.
-
-## 11. Bewusste Abweichungen (mit Grund)
-- Schriftzug „outbnd“: eigener enger Buchstabenabstand (Logo, kein Text).
-- Windows: Segoe UI statt SF Pro (Lizenz).
-- Wisch-Aktionen als runde Farbknöpfe mit Namen darunter: Apples genaue iOS-27-Form noch auf dem iPhone vergleichen.
-- Echte Lichtbrechung am Glasrand ist im Browser nicht möglich, nur angedeutet.
-
-## Referenz
-Probier-Seite mit allen Mustern (Reiter-Leiste, ⋯-Menü, Halten, Wischen): https://claude.ai/artifact/WYuRH8EcEk9p1NLY51npaB
+## 9. Bewusste Abweichungen
+- Web-App statt echter App; Lichtbrechung nur über die Inhalts-Kopie am Rand.
+- Schriftzug „outbnd“ mit eigenem engen Buchstabenabstand (Logo).
+- Windows: Segoe UI statt SF Pro.
+- Menü etwas durchsichtiger als in der Musik-App (Wunsch Lars).
