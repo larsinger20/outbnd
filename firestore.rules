@@ -35,7 +35,7 @@ service cloud.firestore {
           && d.col is string && d.col.size() <= 9;
       }
       function tripOk(d) {
-        return d.keys().hasOnly(['name', 'from', 'to', 'cby', 'ts']) && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+        return d.keys().hasOnly(['name', 'from', 'to', 'mood', 'cby', 'ts']) && d.get('mood', '') is string && d.get('mood', '').size() <= 12 && d.name is string && d.name.size() > 0 && d.name.size() <= 80
           && d.from is string && d.from.size() <= 10 && d.to is string && d.to.size() <= 10;
       }
       function actOk(d) {

@@ -16,7 +16,7 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 
 ## Etappen (jede für sich nutzbar, getestet, erst nach OK online)
 **1. Grundgerüst** (gebaut und getestet 10.11.2026, wartet auf Abnahme)
-- Seite im neuen Design: Reiter-Leiste unten, Kacheln, ⋯-Menü, hell/dunkel
+- Seite im neuen Design: Reiter-Leiste unten, Kacheln, ⋯-Menü, hell/dunkel; Apple-Neutral, Stimmung je Reise (Verlauf + Akzentfarbe), Countdown im Kopf
 - Startseite „Unsere Reisen“ (Reisen dieses Geräts), „+ Reise planen“
 - Reise anlegen (erst nur Name + Zeitraum), Einladungs-Link, Beitritt mit Name + PIN
 - Aktivitäten und Essen: vorschlagen, „Ich bin dabei“ / Daumen, Kommentare, live für alle
