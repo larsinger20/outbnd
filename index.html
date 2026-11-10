@@ -297,7 +297,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, deleteField, onSnapshot, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 // Zugangsdaten des Firebase-Projekts „outbnd“ (kommen von Lars; sind nicht geheim, der Schutz liegt in den Regeln firestore.rules)
-const CFG = null;
+const CFG = { apiKey: 'AIzaSyD6E_6_SMSh2xBx29cTYMHO4k-Pqr9EVKQ', authDomain: 'outbnd-947bc.firebaseapp.com', projectId: 'outbnd-947bc', storageBucket: 'outbnd-947bc.firebasestorage.app', messagingSenderId: '457847861075', appId: '1:457847861075:web:7183aeb8ffbee9a248bba6' };
 /*FIREBASE-ENDE*/
 
 const $ = id => document.getElementById(id);

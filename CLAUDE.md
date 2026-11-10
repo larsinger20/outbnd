@@ -2,7 +2,7 @@
 
 Gemeinsame Reiseplanung für Gruppen, Nachfolger des Malta-Planners (`larsinger20/malta-planner`, bleibt unverändert als Erinnerung). Komplett eigenständig: eigenes Repository, eigener Link, eigene Datenbank, nichts geteilt mit dem Malta-Planner. Malta kommt hier nicht vor.
 
-**Gerade im Aufbau.** Die Seite ist noch nicht online. Etappe 1 (siehe `PLAN.md`) ist gebaut und getestet, wartet auf Lars' Abnahme und auf die Zugangsdaten des Firebase-Projekts (`const CFG` in `index.html`, solange `null` zeigt die Startseite „Noch nicht eingerichtet“).
+**Gerade im Aufbau.** Die Seite ist noch nicht online. Etappe 1 (siehe `PLAN.md`) ist gebaut und getestet, von Lars abgenommen und mit dem Firebase-Projekt `outbnd-947bc` verbunden (`const CFG` in `index.html`). Es fehlt noch: GitHub Pages einschalten.
 
 ## Aufbau (Etappe 1)
 - **Eine Datei `index.html`** (HTML + CSS + ein JS-Modul), kein Framework/Build. Firebase per CDN (`firebasejs/10.12.2`): Firestore + anonyme Anmeldung. `firestore.rules` = die Regeln, die Lars in der Firebase-Konsole einträgt (bei Änderungen dort neu einfügen lassen).
