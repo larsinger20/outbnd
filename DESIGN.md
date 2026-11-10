@@ -1,4 +1,4 @@
-# outbnd – Design-Grundlage (gilt IMMER)
+# outbndr. – Design-Grundlage (gilt IMMER)
 
 Wunsch von Lars: Aussehen und Bewegung so nah wie möglich an Apples aktuellem iOS-Design (iOS 27, „Liquid Glass“). Hoher Anspruch: nichts ungeprüft übernehmen, alles hinterfragen.
 Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-probe.html`** (Probier-Seite, von Lars auf dem iPhone abgenommen; online: https://claude.ai/artifact/WYuRH8EcEk9p1NLY51npaB).
@@ -52,7 +52,7 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 - Knöpfe: Kapseln, normal grau getönt mit Akzentschrift, gewählt gefüllt. **Keine Emojis in Knöpfen**, nur Linien-Symbole. Emojis nur in Inhalten, die Leute schreiben.
 - **Grund: Apple-Neutral** (Entscheidung Lars 10.11.2026, löst Sand + Meerestürkis ab). Apples Systemgrau: Grund `#f2f2f7` / dunkel `#000`, Kacheln `#fff` / `#1c1c1e`, Text Schwarz/Weiß, Trennlinien `#e0e0e5` / `#38383a`, Füllung `rgba(118,118,128,.12/.24)`. Nebentext `#636366` / `#98989f` (bewusst dunkler als Apples Nebentext, der auf Weiß nur ca. 3,5 erreicht).
 - **Stimmung je Reise** (feste Auswahl, `MOODS` in `index.html`: Meer, Insel, Sonne, Wüste, Natur, Berge, Winter, Stadt, Frühling, Nacht; beim Anlegen gewählt, Admin ändert über ⋯). Sie bestimmt zwei Dinge:
-  - **Kopf mit Verlauf über die Seite:** Der Verlauf blendet unter Safaris Balken weich ein (oben 62 px Übergang aus dem Grund, keine Kante; der Balken selbst bleibt neutral, Safari färbt ihn nach dem Seitengrund und verändert dabei den Ton), füllt den oberen Bildschirm und läuft unten weich in den Grund aus. Darauf weiß: Countdown-Kapsel (dunkles Glas), Titel, Zeitraum, Kreise der Mitreisenden. Hinter dem Text liegt eine leichte Abdunklung (`--sc`, 30 %, Winter 36 %), damit weiße Schrift an der hellsten Stelle mind. 3 (Titel) bzw. 4,5 (Kapsel) erreicht. Der Knopf direkt darunter liegt auf Kachel-Fläche.
+  - **Kopf mit Verlauf über die Seite:** Der Verlauf blendet unter Safaris Balken weich ein (oben 62 px Übergang aus dem Grund, keine Kante; der Balken selbst bleibt neutral, Safari färbt ihn nach dem Seitengrund und verändert dabei den Ton), füllt den oberen Bildschirm und läuft unten weich in den Grund aus. Darauf weiß: Countdown-Kapsel (dunkles Glas), Titel, Zeitraum, Kreise der Mitreisenden. Die Verläufe sind bewusst kräftig statt pastellig: Ihr hellster Punkt ist so gewählt, dass weiße Schrift dort mind. 3,9 (Titel) erreicht. Eine Abdunklung über dem Verlauf wurde probiert und verworfen (zu trüb, Lars). Der Knopf direkt darunter liegt auf Kachel-Fläche.
   - **Akzentfarbe** für gefüllte Knöpfe, Knopfschrift, Links und den gewählten Reiter: Apples Systemfarbe in der **kontraststarken Fassung** (Tabelle „Increased contrast“ der Richtlinie, Stand 9.6.2025), weil Weiß auf Apples Standardfarben nur 2,2–2,3 erreicht (Türkis, Orange, Grün). Gemessen: Weiß auf Knopf 4,5–6,1; Akzent auf dunkler Kachel 7,8–10,5. Startseite: Meer.
 - Neue Stimmung = Verlauf + Apple-Farbe (hell und dunkel) + Kontrast messen. Keine frei mischbaren Farben (Lesbarkeit nicht garantierbar).
 - Apples Leitlinie dazu (Richtlinie „Color“ und WWDC 2025/2026): Farbe gehört in den Inhalt, nicht in die Leisten; Glas bleibt neutral und nimmt die Farbe darunter auf; Akzent sparsam und mit Bedeutung.
@@ -63,7 +63,7 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 
 ## 9. Bewusste Abweichungen
 - Web-App statt echter App; Lichtbrechung nur über die Inhalts-Kopie am Rand.
-- Schriftzug „outbnd“ mit eigenem engen Buchstabenabstand (Logo).
+- Schriftzug „outbndr.“ mit eigenem engen Buchstabenabstand (Logo).
 - Windows: Segoe UI statt SF Pro.
 - Menü etwas durchsichtiger als in der Musik-App (Wunsch Lars).
 - Nebentext dunkler als bei Apple; Akzentfarben in Apples kontraststarker Fassung statt Standard (Lesbarkeit, Abschnitt 7).

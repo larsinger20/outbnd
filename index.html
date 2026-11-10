@@ -2,17 +2,17 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>outbnd</title>
+<title>outbndr.</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="outbnd">
+<meta name="apple-mobile-web-app-title" content="outbndr.">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme:dark)">
 <meta name="robots" content="noindex">
 <style>
 /* Design nach DESIGN.md (iOS 27, Liquid Glass). Reiter-Leiste, ⋯-Menü und Lichtbrechung stammen aus vorlagen/glas-probe.html. */
 :root{
-  --bg:#f2f2f7;--card:#fff;--tx:#000;--mu:#636366;--ac:#008198;--acb:#008198;--bd:#e0e0e5;--fill:rgba(118,118,128,.12);--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);
+  --bg:#f2f2f7;--card:#fff;--tx:#000;--mu:#636366;--ac:#008198;--acb:#008198;--bd:#e0e0e5;--fill:rgba(118,118,128,.12);--g:radial-gradient(120% 100% at 15% 0,#12a086 0,#0c807d 42%,#0d5f7a 100%);
   --lgbd:rgba(255,255,255,.8);--lghi:rgba(255,255,255,.95);
   --pill:rgba(0,0,0,.07);--lens:rgba(255,255,255,.4);--lring:rgba(0,0,0,.03);--lsh1:rgba(255,255,255,.8);--lsh2:rgba(255,255,255,.55);--lhl:rgba(255,255,255,1);--lhm:rgba(0,0,0,.06);--tbg:rgba(252,252,252,.38);--shn:rgba(255,255,255,.5);--rim:rgba(255,255,255,.95);--rim2:rgba(0,0,0,.05);--tsh:0 6px 20px rgba(0,0,0,.1);
   --mg:rgba(252,252,252,.5);--msh:rgba(255,255,255,.55);--mrd:#e30000;--mdiv:rgba(0,0,0,.1);--mrim:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);--halo:rgba(255,255,255,.75);--hlc:rgba(60,50,30,.09);--gb:rgba(255,255,255,.55);--gbsh:0 0 0 .5px rgba(60,50,30,.12),0 2px 6px rgba(60,50,30,.12);--glow:rgba(255,255,255,.75);--rd:#c0392b;--btn:rgba(118,118,128,.12);--dim:rgba(40,30,10,.22);--dlg:rgba(250,250,252,.78);
@@ -25,15 +25,15 @@
   --mg:rgba(34,34,36,.44);--msh:rgba(255,255,255,.09);--mrd:#ff453a;--mdiv:rgba(255,255,255,.1);--mrim:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 .5px 0 rgba(255,255,255,.12);--halo:rgba(0,0,0,.55);--hlc:rgba(255,255,255,.1);--gb:rgba(255,255,255,.1);--gbsh:0 0 0 .5px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.35);--glow:rgba(255,255,255,.28);--rd:#ef7b6e;--btn:rgba(118,118,128,.24);--dim:rgba(0,0,0,.45);--dlg:rgba(40,40,42,.72);color-scheme:dark}}
 
 /* Stimmung der Reise: Verlauf im Kopf + Akzentfarbe (Apples Systemfarben, kontraststarke Fassung) */
-:root[data-m="meer"]{--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);--ac:#008198;--acb:#008198}
-:root[data-m="insel"]{--g:radial-gradient(120% 110% at 80% 0,#d9f7c4 0,#3ecfae 42%,#0b8a80 100%);--ac:#008575;--acb:#008575}
-:root[data-m="sonne"]{--g:radial-gradient(120% 110% at 85% 0,#ffd98a 0,#f08a4b 45%,#b4436c 100%);--ac:#c55300;--acb:#c55300}
-:root[data-m="wueste"]{--g:radial-gradient(120% 110% at 20% 0,#ffe7b3 0,#e0a458 45%,#9a5b34 100%);--ac:#956d51;--acb:#956d51}
-:root[data-m="natur"]{--g:radial-gradient(120% 110% at 25% 0,#dcecae 0,#74ad62 45%,#2f6648 100%);--ac:#008932;--acb:#008932}
-:root[data-m="berge"]{--g:radial-gradient(120% 110% at 70% 0,#dfe8ff 0,#7c93ee 45%,#3f3a94 100%);--ac:#564ade;--acb:#564ade}
-:root[data-m="winter"]{--sc:.36;--g:radial-gradient(120% 110% at 30% 0,#e8f6ff 0,#8cc8ea 45%,#2f6f9f 100%);--ac:#007eae;--acb:#007eae}
-:root[data-m="stadt"]{--g:radial-gradient(120% 110% at 80% 0,#ffc9a8 0,#b06ab3 42%,#3a2f6b 100%);--ac:#b02fc2;--acb:#b02fc2}
-:root[data-m="fruehling"]{--g:radial-gradient(120% 110% at 20% 0,#ffe0ec 0,#f58fb0 45%,#b83b74 100%);--ac:#e7124d;--acb:#e7124d}
+:root[data-m="meer"]{--g:radial-gradient(120% 100% at 15% 0,#12a086 0,#0c807d 42%,#0d5f7a 100%);--ac:#008198;--acb:#008198}
+:root[data-m="insel"]{--g:radial-gradient(120% 110% at 80% 0,#45a204 0,#188169 42%,#0b8a80 100%);--ac:#008575;--acb:#008575}
+:root[data-m="sonne"]{--g:radial-gradient(120% 110% at 85% 0,#c08100 0,#c44d03 45%,#b4436c 100%);--ac:#c55300;--acb:#c55300}
+:root[data-m="wueste"]{--g:radial-gradient(120% 110% at 20% 0,#be8200 0,#a46413 45%,#9a5b34 100%);--ac:#956d51;--acb:#956d51}
+:root[data-m="natur"]{--g:radial-gradient(120% 110% at 25% 0,#779a13 0,#4c7f3c 45%,#2f6648 100%);--ac:#008932;--acb:#008932}
+:root[data-m="berge"]{--g:radial-gradient(120% 110% at 70% 0,#5a88ff 0,#4165f4 45%,#3f3a94 100%);--ac:#564ade;--acb:#564ade}
+:root[data-m="winter"]{--g:radial-gradient(120% 110% at 30% 0,#0092f1 0,#1479b2 45%,#2f6f9f 100%);--ac:#007eae;--acb:#007eae}
+:root[data-m="stadt"]{--g:radial-gradient(120% 110% at 80% 0,#f45d00 0,#a94fad 42%,#3a2f6b 100%);--ac:#b02fc2;--acb:#b02fc2}
+:root[data-m="fruehling"]{--g:radial-gradient(120% 110% at 20% 0,#ff428b 0,#e3044d 45%,#b83b74 100%);--ac:#e7124d;--acb:#e7124d}
 :root[data-m="nacht"]{--g:radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%);--ac:#1e6ef4;--acb:#1e6ef4}
 @media (prefers-color-scheme:dark){:root[data-m="meer"]{--ac:#3bddec}:root[data-m="insel"]{--ac:#54dfcb}:root[data-m="sonne"]{--ac:#ffa056}:root[data-m="wueste"]{--ac:#dba679}:root[data-m="natur"]{--ac:#4ad968}:root[data-m="berge"]{--ac:#a7aaff}:root[data-m="winter"]{--ac:#6dd9ff}:root[data-m="stadt"]{--ac:#ea8dff}:root[data-m="fruehling"]{--ac:#ff8ac4}:root[data-m="nacht"]{--ac:#5cb8ff}}
 
@@ -57,7 +57,7 @@ h1,h3,.go,.btn,.add,.cd{font-family:var(--rnd)}
 /* Kopf der Reise: Der Verlauf der Stimmung füllt den oberen Bildschirm und läuft weich in den Grund aus (Farbe gehört in den Inhalt; die Glas-Leisten nehmen sie auf) */
 main{position:relative}
 /* Der Bereich um Uhr und Akku bleibt neutral (Safari färbt ihn nach dem Seitengrund, Ton nicht steuerbar); der Verlauf blendet darunter weich ein, damit keine Kante entsteht (Lars: Variante A der Kopf-Probe) */
-main.wash::before{content:'';position:absolute;inset:0 0 auto;height:470px;background:linear-gradient(rgba(0,0,0,var(--sc,.3)),rgba(0,0,0,var(--sc,.3)) 250px,rgba(0,0,0,0) 400px),var(--g);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 62px,#000 38%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 62px,#000 38%,transparent);pointer-events:none}
+main.wash::before{content:'';position:absolute;inset:0 0 auto;height:470px;background:var(--g);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 62px,#000 38%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 62px,#000 38%,transparent);pointer-events:none}
 main.wash>*{position:relative}
 .hd.w{color:#fff;margin-bottom:20px}
 .hd.w h1{text-shadow:0 1px 12px rgba(0,0,0,.28)}
@@ -299,7 +299,7 @@ main.rcl.mst{animation:none}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, deleteField, onSnapshot, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-// Zugangsdaten des Firebase-Projekts „outbnd“ (kommen von Lars; sind nicht geheim, der Schutz liegt in den Regeln firestore.rules)
+// Zugangsdaten des Firebase-Projekts (ID outbnd-947bc aus der Zeit vor dem neuen Namen, lässt sich nicht ändern) (kommen von Lars; sind nicht geheim, der Schutz liegt in den Regeln firestore.rules)
 const CFG = { apiKey: 'AIzaSyD6E_6_SMSh2xBx29cTYMHO4k-Pqr9EVKQ', authDomain: 'outbnd-947bc.firebaseapp.com', projectId: 'outbnd-947bc', storageBucket: 'outbnd-947bc.firebasestorage.app', messagingSenderId: '457847861075', appId: '1:457847861075:web:7183aeb8ffbee9a248bba6' };
 /*FIREBASE-ENDE*/
 
@@ -332,7 +332,7 @@ const MP = {
   mood: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
   me: '<circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c.7-3.8 3.5-5.9 7-5.9s6.3 2.1 7 5.9"/>', star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/>'
 };
-const MOODS = [['meer', 'Meer', 'radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%)'], ['insel', 'Insel', 'radial-gradient(120% 110% at 80% 0,#d9f7c4 0,#3ecfae 42%,#0b8a80 100%)'], ['sonne', 'Sonne', 'radial-gradient(120% 110% at 85% 0,#ffd98a 0,#f08a4b 45%,#b4436c 100%)'], ['wueste', 'Wüste', 'radial-gradient(120% 110% at 20% 0,#ffe7b3 0,#e0a458 45%,#9a5b34 100%)'], ['natur', 'Natur', 'radial-gradient(120% 110% at 25% 0,#dcecae 0,#74ad62 45%,#2f6648 100%)'], ['berge', 'Berge', 'radial-gradient(120% 110% at 70% 0,#dfe8ff 0,#7c93ee 45%,#3f3a94 100%)'], ['winter', 'Winter', 'radial-gradient(120% 110% at 30% 0,#e8f6ff 0,#8cc8ea 45%,#2f6f9f 100%)'], ['stadt', 'Stadt', 'radial-gradient(120% 110% at 80% 0,#ffc9a8 0,#b06ab3 42%,#3a2f6b 100%)'], ['fruehling', 'Frühling', 'radial-gradient(120% 110% at 20% 0,#ffe0ec 0,#f58fb0 45%,#b83b74 100%)'], ['nacht', 'Nacht', 'radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%)']];
+const MOODS = [['meer', 'Meer', 'radial-gradient(120% 100% at 15% 0,#12a086 0,#0c807d 42%,#0d5f7a 100%)'], ['insel', 'Insel', 'radial-gradient(120% 110% at 80% 0,#45a204 0,#188169 42%,#0b8a80 100%)'], ['sonne', 'Sonne', 'radial-gradient(120% 110% at 85% 0,#c08100 0,#c44d03 45%,#b4436c 100%)'], ['wueste', 'Wüste', 'radial-gradient(120% 110% at 20% 0,#be8200 0,#a46413 45%,#9a5b34 100%)'], ['natur', 'Natur', 'radial-gradient(120% 110% at 25% 0,#779a13 0,#4c7f3c 45%,#2f6648 100%)'], ['berge', 'Berge', 'radial-gradient(120% 110% at 70% 0,#5a88ff 0,#4165f4 45%,#3f3a94 100%)'], ['winter', 'Winter', 'radial-gradient(120% 110% at 30% 0,#0092f1 0,#1479b2 45%,#2f6f9f 100%)'], ['stadt', 'Stadt', 'radial-gradient(120% 110% at 80% 0,#f45d00 0,#a94fad 42%,#3a2f6b 100%)'], ['fruehling', 'Frühling', 'radial-gradient(120% 110% at 20% 0,#ff428b 0,#e3044d 45%,#b83b74 100%)'], ['nacht', 'Nacht', 'radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%)']];
 const moodOf = m => MOODS.some(x => x[0] === m) ? m : 'meer';   // alte Reisen ohne Stimmung: Meer
 const moodG = m => MOODS.find(x => x[0] === moodOf(m))[2];
 const TABS = [['act', 'Aktivitäten'], ['food', 'Essen']];
@@ -468,7 +468,7 @@ function jerr(m) { J.err = m; draw(true); }
 /* ---------- Reise anlegen (alles in einem Schreibvorgang, Anlegender wird Admin) ---------- */
 async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.trim();
   if (!me) { w.err = 'Bitte gib deinen Namen ein.'; return draw(true); } if (!PIN_OK(w.pin)) { w.err = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); }
-  if (!db) { w.err = 'outbnd ist noch nicht eingerichtet.'; return draw(true); }
+  if (!db) { w.err = 'outbndr ist noch nicht eingerichtet.'; return draw(true); }
   w.busy = true; w.err = ''; draw(true);
   try { await ready; const t = rid(20), tok = rid(24), pid = rid(12), ph = await hash(t, pid, w.pin), b = writeBatch(db), now = Date.now();
     b.set(tdoc(t), { name: w.name.trim(), from: w.from, to: w.from ? (w.to || w.from) : '', mood: w.mood, cby: uid, ts: now });
@@ -482,7 +482,7 @@ async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.
   } catch (e) { console.error(e); w.busy = false; w.err = FAIL; draw(true); }
 }
 async function share(t, tok, name) { const url = inviteUrl(t, tok);
-  if (navigator.share) { try { await navigator.share({ title: 'outbnd', text: `Komm mit: ${name}`, url }); } catch (e) {} return; }
+  if (navigator.share) { try { await navigator.share({ title: 'outbndr.', text: `Komm mit: ${name}`, url }); } catch (e) {} return; }
   try { await navigator.clipboard.writeText(url); toast('Link kopiert'); } catch (e) { toast('Bitte den Link von Hand kopieren'); } }
 
 /* ---------- Zeichnen ---------- */
@@ -522,8 +522,8 @@ function draw(force) {
 document.addEventListener('focusout', () => setTimeout(() => { if (pending && !inField()) draw(); }, 60));
 
 function homeHTML() { const l = LS.get();
-  let h = `<div class="hd"><div class="wm">outbnd<i>.</i></div><p class="sub">Unsere Reisen</p></div>`;
-  if (!CFG) h += `<div class="card"><div class="empty"><b>Noch nicht eingerichtet</b>Die Datenbank von outbnd fehlt noch. Sobald sie verbunden ist, können wir hier Reisen planen.</div></div>`;
+  let h = `<div class="hd"><div class="wm">outbndr<i>.</i></div><p class="sub">Unsere Reisen</p></div>`;
+  if (!CFG) h += `<div class="card"><div class="empty"><b>Noch nicht eingerichtet</b>Die Datenbank von outbndr fehlt noch. Sobald sie verbunden ist, können wir hier Reisen planen.</div></div>`;
   else {
     h += l.length ? '<div class="rows">' + l.map(t => `<button class="row" type="button" data-a="open" data-id="${esc(t.id)}"><span class="mchip" style="background:${moodG(t.mood)}"></span><span class="gr">${esc(t.name || 'Reise')}<small>${esc(range(t.from, t.to))}</small></span>${CHR}</button>`).join('') + '</div>'
       : `<div class="card"><div class="empty"><b>Noch keine Reise</b>Planen wir eine neue Reise, oder öffne den Einladungs-Link, den du bekommen hast.</div></div>`;
@@ -549,7 +549,7 @@ function wizHTML() { const w = Wz, s = w.step;
   return `<div class="q">${stepsHTML(4)}<h1>Lade die anderen ein</h1><p class="sub">Wer diesen Link öffnet, kann bei „${esc(w.name.trim())}“ mitplanen. Schick ihn nur an Leute, die mitkommen.</p><div class="linkbox">${esc(inviteUrl(w.t, w.tok))}</div><div class="btns"><button class="btn lq" type="button" data-a="wshare">${SY.share}<span>Link teilen</span><span class="gl"></span></button><button class="btn g lq" type="button" data-a="wdone">Zur Reise<span class="gl"></span></button></div></div>`; }
 
 function joinHTML() { const j = J;
-  if (!CFG) return `<div class="q"><h1>Noch nicht eingerichtet</h1><p class="sub">Die Datenbank von outbnd fehlt noch.</p></div>`;
+  if (!CFG) return `<div class="q"><h1>Noch nicht eingerichtet</h1><p class="sub">Die Datenbank von outbndr fehlt noch.</p></div>`;
   if (!j || j.st === 'load') return '<div class="sk h"></div><div class="sk"></div>';
   if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`;
   const n = Object.keys(j.people).length;
@@ -614,7 +614,7 @@ function wizNext() { const w = Wz; w.err = '';
   if (w.step === 0) { if (!w.name.trim()) { w.err = 'Bitte gib der Reise einen Namen.'; return draw(true); } }
   if (w.step === 1) { if (!w.from) { w.err = 'Bitte wähle den ersten Tag, oder tippe auf „Steht noch nicht fest“.'; return draw(true); } if (w.to && w.to < w.from) w.to = w.from; }
   w.step++; draw(true); scrollTo(0, 0); }
-function pasteGo() { const p = parseInvite(pasteVal); if (!p) return toast('Das ist kein Einladungs-Link von outbnd'); pasteOpen = false; pasteVal = ''; go('#/e/' + p.t + '/' + p.tok); }
+function pasteGo() { const p = parseInvite(pasteVal); if (!p) return toast('Das ist kein Einladungs-Link von outbndr'); pasteOpen = false; pasteVal = ''; go('#/e/' + p.t + '/' + p.tok); }
 
 /* ---------- Tippen: ein Verteiler, jeder Knopf hat seinen eigenen Fall ---------- */
 $('app').addEventListener('click', async e => {

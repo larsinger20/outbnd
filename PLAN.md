@@ -1,4 +1,4 @@
-# outbnd – Plan
+# outbndr. – Plan
 
 Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation. Nachfolger des Malta-Planners, komplett getrennt von ihm.
 
@@ -10,8 +10,8 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 - Datenbank von Anfang an abgesichert (nicht offen wie beim Malta-Planner).
 
 ## Was Lars einmalig einrichtet (Anleitung kommt Schritt für Schritt)
-1. Neues Firebase-Projekt für outbnd (kostenlos) + Einstellungen für Anmeldung und Regeln
-2. Google-Maps-Schlüssel für die outbnd-Adresse
+1. Neues Firebase-Projekt für outbndr (kostenlos) + Einstellungen für Anmeldung und Regeln
+2. Google-Maps-Schlüssel für die outbndr-Adresse
 3. GitHub Pages für das Repository einschalten (Adresse: `larsinger20.github.io/outbnd`)
 
 ## Etappen (jede für sich nutzbar, getestet, erst nach OK online)

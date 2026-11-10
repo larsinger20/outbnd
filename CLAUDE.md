@@ -1,4 +1,4 @@
-# outbnd
+# outbndr.
 
 Gemeinsame Reiseplanung für Gruppen, Nachfolger des Malta-Planners (`larsinger20/malta-planner`, bleibt unverändert als Erinnerung). Komplett eigenständig: eigenes Repository, eigener Link, eigene Datenbank, nichts geteilt mit dem Malta-Planner. Malta kommt hier nicht vor.
 
@@ -43,7 +43,7 @@ Grundlage für jedes Aussehen und jede Bewegung ist Apples aktuelles iOS-Design 
 6. Bei nennenswerten Änderungen diese Datei mitpflegen.
 
 ## Was entstehen soll (Stand der Planung)
-- **Name „outbnd“**, kleingeschrieben. Aussehen: Apple-Neutral als Grund, jede Reise mit eigener Stimmung (Verlauf im Kopf + Akzentfarbe), siehe `DESIGN.md` Abschnitt 7. Neues Icon.
+- **Name „outbndr.“** (seit 10.11.2026, vorher „outbnd“, den Namen gab es schon): Kunstname nach englisch „outbound“ (out = hinaus, bound = unterwegs nach, -er = jemand, der das tut): jemand, der rausgeht, unterwegs ist und Neues entdeckt. Kleingeschrieben, der Punkt gehört zum Namen (im Logo in Akzentfarbe). In Fließtexten „outbndr“ ohne Punkt, damit kein doppelter Satzpunkt entsteht. Technische Namen bleiben alt: Repository `outbnd` (solange Lars es nicht umbenennt), Firebase-Projekt `outbnd-947bc` (unveränderbar), Speicherschlüssel `outbnd.trips` (sonst verlieren Geräte ihre Reiseliste). Aussehen: Apple-Neutral als Grund, jede Reise mit eigener Stimmung (Verlauf im Kopf + Akzentfarbe), siehe `DESIGN.md` Abschnitt 7. Neues Icon.
 - **Mehrere Reisen, streng getrennt**: Jede Reise hat eigene Mitreisende (Beitritt per Einladungs-Link, Name + PIN pro Reise), eigene Namen/Farben, eigene Vorschläge, Kosten usw. Startseite „Unsere Reisen“ zeigt die Reisen, denen man auf diesem Gerät beigetreten ist.
 - **Jeder darf eine Reise anlegen**, wird dort Admin und kann weitere Admins bestimmen.
 - **Setup-Assistent** (eine Frage pro Bildschirm): Name, Zeitraum, Stops, Anreise (Flug/Auto/Zug), Unterkünfte (z. B. Airbnb), welche Bereiche (Essen, Einkauf, Kosten, Karte), am Ende Link zum Teilen.

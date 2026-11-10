@@ -1,5 +1,5 @@
 rules_version = '2';
-// outbnd: Jede Reise ist abgeschlossen. Lesen und schreiben darf nur, wer über den Einladungs-Link beigetreten ist.
+// outbndr: Jede Reise ist abgeschlossen. Lesen und schreiben darf nur, wer über den Einladungs-Link beigetreten ist.
 // Aufbau:
 //   trips/{t}                    Reise (Name, Zeitraum)
 //   trips/{t}/invites/{token}    gültige Einladungs-Links (der geheime Teil des Links ist die Dokument-ID)
