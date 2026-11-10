@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>outbnd Kopf-Probe</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>
+/* Probier-Seite: Wie färbt Safari (iOS 26/27) den Bereich um Uhr und Akku und die Leiste unten? Drei Wege zum Vergleichen, nur im echten Safari aussagekräftig. */
+:root{--bg:#f2f2f7;--card:#fff;--tx:#000;--mu:#636366;--btn:rgba(118,118,128,.12);--font:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;--rnd:ui-rounded,"SF Pro Rounded",var(--font);
+  --c:#1aa3a0;--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);--ac:#008198}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--tx:#fff;--mu:#98989f;--btn:rgba(118,118,128,.24);--ac:#3bddec;color-scheme:dark}}
+/* Stimmungen: --c = Farbe ganz oben (dort wird der Verlauf flach, damit er nahtlos an Safaris Balken anschließt) */
+:root[data-m="insel"]{--c:#3ecfae;--g:radial-gradient(120% 110% at 80% 0,#d9f7c4 0,#3ecfae 42%,#0b8a80 100%)}
+:root[data-m="sonne"]{--c:#f08a4b;--g:radial-gradient(120% 110% at 85% 0,#ffd98a 0,#f08a4b 45%,#b4436c 100%)}
+:root[data-m="winter"]{--c:#8cc8ea;--g:radial-gradient(120% 110% at 30% 0,#e8f6ff 0,#8cc8ea 45%,#2f6f9f 100%)}
+:root[data-m="nacht"]{--c:#27307a;--g:radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--tx);font:17px/1.29 var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+main{position:relative;background:var(--bg);padding:20px max(16px,env(safe-area-inset-right,0px)) 140px max(16px,env(safe-area-inset-left,0px));min-height:140vh}
+main::before{content:'';position:absolute;inset:0 0 auto;height:470px;pointer-events:none;background:var(--g);-webkit-mask-image:linear-gradient(to bottom,#000 38%,transparent);mask-image:linear-gradient(to bottom,#000 38%,transparent)}
+main>*{position:relative}
+/* A: Balken bleibt neutral, der Verlauf blendet darunter weich ein (keine Kante, egal was Safari macht) */
+html[data-v="a"] main::before{-webkit-mask-image:linear-gradient(to bottom,transparent,#000 120px,#000 38%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 120px,#000 38%,transparent)}
+/* B: unsichtbarer Streifen oben gibt Safari die Farbe; der Verlauf ist ganz oben flach in genau dieser Farbe. Unten bleibt neutral. */
+#strip{position:fixed;top:0;left:0;right:0;height:6px;background:var(--c);visibility:hidden;pointer-events:none;z-index:50;display:none}
+html[data-v="b"].top #strip{display:block}
+html[data-v="b"] main::before{background:linear-gradient(var(--c),var(--c) 24px,transparent 170px),var(--g)}
+/* C: bisher online – ganze Seite in der Farbe (oben und unten gefärbt) */
+html[data-v="c"].top,html[data-v="c"].top body{background:var(--c)}
+.hd{color:#fff;margin:44px 0 20px}
+.cd{display:inline-block;margin-bottom:12px;padding:6px 12px;border-radius:999px;font:600 13px var(--rnd);background:rgba(255,255,255,.24);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.5)}
+h1{margin:0;font:700 34px/1.15 var(--rnd);text-shadow:0 1px 12px rgba(0,0,0,.28)}
+.sub{margin:4px 0 0;font-size:15px;text-shadow:0 1px 8px rgba(0,0,0,.32)}
+.add{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border-radius:999px;background:var(--card);color:var(--ac);font:600 17px var(--rnd);margin-bottom:14px}
+.card{background:var(--card);border-radius:22px;padding:18px;margin-bottom:14px}
+.card b{display:block;font-size:13px;font-weight:400;color:var(--mu);margin:0 2px 8px}
+.ch{display:flex;flex-wrap:wrap;gap:8px}
+.ch+b{margin-top:16px}
+.ch button{padding:8px 14px;min-height:44px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600}
+.ch button.on{background:var(--ac);color:#fff}
+@media (prefers-color-scheme:dark){.ch button.on{color:#000}}
+.note{font-size:15px;line-height:1.35;color:var(--mu);margin:14px 2px 0}
+.fake{height:120px;border-radius:22px;background:var(--card);margin-bottom:14px;opacity:.7}
+</style>
+</head>
+<body>
+<div id="strip" aria-hidden="true"></div>
+<main>
+  <div class="hd"><span class="cd">Noch 4 Tage</span><h1>Test-Reise</h1><p class="sub">14.–27. November 2026 · Probier-Seite</p></div>
+  <div class="add">+ Aktivität vorschlagen</div>
+  <div class="card">
+    <b>Weg</b>
+    <div class="ch" id="vs"><button type="button" data-v="a">A · Oben neutral, weich</button><button type="button" data-v="b">B · Oben in Farbe</button><button type="button" data-v="c">C · Bisher</button></div>
+    <b>Stimmung</b>
+    <div class="ch" id="ms"><button type="button" data-m="meer">Meer</button><button type="button" data-m="insel">Insel</button><button type="button" data-m="sonne">Sonne</button><button type="button" data-m="winter">Winter</button><button type="button" data-m="nacht">Nacht</button></div>
+    <p class="note" id="note"></p>
+  </div>
+  <div class="fake"></div><div class="fake"></div><div class="fake"></div><div class="fake"></div>
+</main>
+<script>
+const R = document.documentElement, NOTE = {
+  a: 'A: Der Bereich um Uhr und Akku bleibt neutral (wie in Apples eigenen Apps), der Verlauf blendet darunter weich ein. Unten neutral. Ganz sicher ohne Kante.',
+  b: 'B: Oben in der Farbe der Stimmung, der Verlauf schließt daran an. Unten neutral. Ob es ganz nahtlos ist, hängt davon ab, wie stark Safari die Farbe verändert.',
+  c: 'C: So ist es gerade online – oben mit Kante, unten auch gefärbt.' };
+let v = 'b', m = 'insel';
+function show() { R.dataset.v = v; R.dataset.m = m; for (const b of document.querySelectorAll('[data-v]')) b.classList.toggle('on', b.dataset.v === v);
+  for (const b of document.querySelectorAll('[data-m]')) b.classList.toggle('on', b.dataset.m === m); document.getElementById('note').textContent = NOTE[v]; atTop(); }
+// Farbe oben nur, solange der Verlauf im Bild ist (wie in der echten Seite)
+function atTop() { R.classList.toggle('top', scrollY < 230); }
+addEventListener("scroll", atTop, { passive: true });
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.v) v = b.dataset.v; if (b.dataset.m) m = b.dataset.m; show(); });
+show();
+</script>
+</body>
+</html>
