@@ -13,6 +13,8 @@ Gemeinsame Reiseplanung für Gruppen, Nachfolger des Malta-Planners (`larsinger2
 - **Stimmung**: `draw()` setzt `data-m` am `<html>`; daran hängen Verlauf (`--g`) und Akzent (`--ac`/`--acb`). `main.wash` zeichnet den Verlauf im Kopf der Reise.
 - Reiter-Leiste, ⋯-Menü (`menuFor` liefert die Einträge je Knopf), Lichtbrechung: Code aus der Vorlage, Leiste passt ihre Breite an die Zahl der Reiter an (`TABS`).
 - `draw()` baut die Ansicht neu; wartet, solange ein Feld Fokus hat (`pending`), eigene Aktionen rufen `draw(true)`. Eingaben stehen im Zustand (`Wz`, `J`, `F`, `Pf`, `cmDraft`) und überleben Neuaufbauten.
+- **Leiste oben (Uhr/Akku) in Safari**: Safari färbt sie nach dem Grund von `html`/`body` (ab iOS 26 nicht mehr nach `theme-color`). `tint()` setzt in der Reise `html.tint` (Farbe `--top` der Stimmung), solange der Verlauf im Bild ist; der neutrale Grund liegt auf `main`.
+- `.lq` setzt `position:relative`: fest stehende Elemente mit `.lq` brauchen eine eigene Regel danach (`.nb.lq{position:fixed}`; die Knöpfe oben lagen sonst am Seitenende).
 - **Fallstricke**: CSS-Klassennamen vor dem Anlegen suchen (`.in` = „dabei“-Knopf gefüllt, Eingabefelder heißen `.fi`). Die Leiste enthält Kopien des Inhalts (Lichtbrechung): in Tests immer unter `#app` suchen.
 
 ## Testen
