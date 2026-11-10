@@ -12,7 +12,7 @@
 <style>
 /* Design nach DESIGN.md (iOS 27, Liquid Glass). Reiter-Leiste, ⋯-Menü und Lichtbrechung stammen aus vorlagen/glas-probe.html. */
 :root{
-  --bg:#f2f2f7;--card:#fff;--tx:#000;--mu:#636366;--ac:#008198;--acb:#008198;--bd:#e0e0e5;--fill:rgba(118,118,128,.12);--top:#1aa3a0;--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);
+  --bg:#f2f2f7;--card:#fff;--tx:#000;--mu:#636366;--ac:#008198;--acb:#008198;--bd:#e0e0e5;--fill:rgba(118,118,128,.12);--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);
   --lgbd:rgba(255,255,255,.8);--lghi:rgba(255,255,255,.95);
   --pill:rgba(0,0,0,.07);--lens:rgba(255,255,255,.4);--lring:rgba(0,0,0,.03);--lsh1:rgba(255,255,255,.8);--lsh2:rgba(255,255,255,.55);--lhl:rgba(255,255,255,1);--lhm:rgba(0,0,0,.06);--tbg:rgba(252,252,252,.38);--shn:rgba(255,255,255,.5);--rim:rgba(255,255,255,.95);--rim2:rgba(0,0,0,.05);--tsh:0 6px 20px rgba(0,0,0,.1);
   --mg:rgba(252,252,252,.5);--msh:rgba(255,255,255,.55);--mrd:#e30000;--mdiv:rgba(0,0,0,.1);--mrim:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);--halo:rgba(255,255,255,.75);--hlc:rgba(60,50,30,.09);--gb:rgba(255,255,255,.55);--gbsh:0 0 0 .5px rgba(60,50,30,.12),0 2px 6px rgba(60,50,30,.12);--glow:rgba(255,255,255,.75);--rd:#c0392b;--btn:rgba(118,118,128,.12);--dim:rgba(40,30,10,.22);--dlg:rgba(250,250,252,.78);
@@ -25,23 +25,21 @@
   --mg:rgba(34,34,36,.44);--msh:rgba(255,255,255,.09);--mrd:#ff453a;--mdiv:rgba(255,255,255,.1);--mrim:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 .5px 0 rgba(255,255,255,.12);--halo:rgba(0,0,0,.55);--hlc:rgba(255,255,255,.1);--gb:rgba(255,255,255,.1);--gbsh:0 0 0 .5px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.35);--glow:rgba(255,255,255,.28);--rd:#ef7b6e;--btn:rgba(118,118,128,.24);--dim:rgba(0,0,0,.45);--dlg:rgba(40,40,42,.72);color-scheme:dark}}
 
 /* Stimmung der Reise: Verlauf im Kopf + Akzentfarbe (Apples Systemfarben, kontraststarke Fassung) */
-:root[data-m="meer"]{--top:#1aa3a0;--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);--ac:#008198;--acb:#008198}
-:root[data-m="insel"]{--top:#3ecfae;--g:radial-gradient(120% 110% at 80% 0,#d9f7c4 0,#3ecfae 42%,#0b8a80 100%);--ac:#008575;--acb:#008575}
-:root[data-m="sonne"]{--top:#f08a4b;--g:radial-gradient(120% 110% at 85% 0,#ffd98a 0,#f08a4b 45%,#b4436c 100%);--ac:#c55300;--acb:#c55300}
-:root[data-m="wueste"]{--top:#e0a458;--g:radial-gradient(120% 110% at 20% 0,#ffe7b3 0,#e0a458 45%,#9a5b34 100%);--ac:#956d51;--acb:#956d51}
-:root[data-m="natur"]{--top:#74ad62;--g:radial-gradient(120% 110% at 25% 0,#dcecae 0,#74ad62 45%,#2f6648 100%);--ac:#008932;--acb:#008932}
-:root[data-m="berge"]{--top:#7c93ee;--g:radial-gradient(120% 110% at 70% 0,#dfe8ff 0,#7c93ee 45%,#3f3a94 100%);--ac:#564ade;--acb:#564ade}
-:root[data-m="winter"]{--top:#8cc8ea;--g:radial-gradient(120% 110% at 30% 0,#e8f6ff 0,#8cc8ea 45%,#2f6f9f 100%);--ac:#007eae;--acb:#007eae}
-:root[data-m="stadt"]{--top:#b06ab3;--g:radial-gradient(120% 110% at 80% 0,#ffc9a8 0,#b06ab3 42%,#3a2f6b 100%);--ac:#b02fc2;--acb:#b02fc2}
-:root[data-m="fruehling"]{--top:#f58fb0;--g:radial-gradient(120% 110% at 20% 0,#ffe0ec 0,#f58fb0 45%,#b83b74 100%);--ac:#e7124d;--acb:#e7124d}
-:root[data-m="nacht"]{--top:#27307a;--g:radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%);--ac:#1e6ef4;--acb:#1e6ef4}
+:root[data-m="meer"]{--g:radial-gradient(120% 100% at 15% 0,#8fe6d6 0,#1aa3a0 42%,#0d5f7a 100%);--ac:#008198;--acb:#008198}
+:root[data-m="insel"]{--g:radial-gradient(120% 110% at 80% 0,#d9f7c4 0,#3ecfae 42%,#0b8a80 100%);--ac:#008575;--acb:#008575}
+:root[data-m="sonne"]{--g:radial-gradient(120% 110% at 85% 0,#ffd98a 0,#f08a4b 45%,#b4436c 100%);--ac:#c55300;--acb:#c55300}
+:root[data-m="wueste"]{--g:radial-gradient(120% 110% at 20% 0,#ffe7b3 0,#e0a458 45%,#9a5b34 100%);--ac:#956d51;--acb:#956d51}
+:root[data-m="natur"]{--g:radial-gradient(120% 110% at 25% 0,#dcecae 0,#74ad62 45%,#2f6648 100%);--ac:#008932;--acb:#008932}
+:root[data-m="berge"]{--g:radial-gradient(120% 110% at 70% 0,#dfe8ff 0,#7c93ee 45%,#3f3a94 100%);--ac:#564ade;--acb:#564ade}
+:root[data-m="winter"]{--sc:.36;--g:radial-gradient(120% 110% at 30% 0,#e8f6ff 0,#8cc8ea 45%,#2f6f9f 100%);--ac:#007eae;--acb:#007eae}
+:root[data-m="stadt"]{--g:radial-gradient(120% 110% at 80% 0,#ffc9a8 0,#b06ab3 42%,#3a2f6b 100%);--ac:#b02fc2;--acb:#b02fc2}
+:root[data-m="fruehling"]{--g:radial-gradient(120% 110% at 20% 0,#ffe0ec 0,#f58fb0 45%,#b83b74 100%);--ac:#e7124d;--acb:#e7124d}
+:root[data-m="nacht"]{--g:radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%);--ac:#1e6ef4;--acb:#1e6ef4}
 @media (prefers-color-scheme:dark){:root[data-m="meer"]{--ac:#3bddec}:root[data-m="insel"]{--ac:#54dfcb}:root[data-m="sonne"]{--ac:#ffa056}:root[data-m="wueste"]{--ac:#dba679}:root[data-m="natur"]{--ac:#4ad968}:root[data-m="berge"]{--ac:#a7aaff}:root[data-m="winter"]{--ac:#6dd9ff}:root[data-m="stadt"]{--ac:#ea8dff}:root[data-m="fruehling"]{--ac:#ff8ac4}:root[data-m="nacht"]{--ac:#5cb8ff}}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 html{background:var(--bg)}
-/* Safari färbt die Leiste oben (Uhr, Akku) und den Bereich beim Überziehen nach dem Seitengrund: in der Reise, solange der Verlauf zu sehen ist, die Farbe der Stimmung. Der neutrale Grund liegt deshalb auf main. */
-html.tint,html.tint body{background:var(--top)}
 body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.29 var(--font);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overflow-wrap:break-word}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
 button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
@@ -58,12 +56,13 @@ h1,h3,.go,.btn,.add,.cd{font-family:var(--rnd)}
 .hd{margin-bottom:18px}
 /* Kopf der Reise: Der Verlauf der Stimmung füllt den oberen Bildschirm und läuft weich in den Grund aus (Farbe gehört in den Inhalt; die Glas-Leisten nehmen sie auf) */
 main{position:relative}
-main.wash::before{content:'';position:absolute;inset:0 0 auto;height:470px;background:var(--g);-webkit-mask-image:linear-gradient(to bottom,#000 38%,transparent);mask-image:linear-gradient(to bottom,#000 38%,transparent);pointer-events:none}
+/* Der Bereich um Uhr und Akku bleibt neutral (Safari färbt ihn nach dem Seitengrund, Ton nicht steuerbar); der Verlauf blendet darunter weich ein, damit keine Kante entsteht (Lars: Variante A der Kopf-Probe) */
+main.wash::before{content:'';position:absolute;inset:0 0 auto;height:470px;background:linear-gradient(rgba(0,0,0,var(--sc,.3)),rgba(0,0,0,var(--sc,.3)) 250px,rgba(0,0,0,0) 400px),var(--g);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 62px,#000 38%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 62px,#000 38%,transparent);pointer-events:none}
 main.wash>*{position:relative}
 .hd.w{color:#fff;margin-bottom:20px}
 .hd.w h1{text-shadow:0 1px 12px rgba(0,0,0,.28)}
 .hd.w .sub{color:#fff;opacity:.96;text-shadow:0 1px 8px rgba(0,0,0,.32)}
-.cd{display:inline-block;margin-bottom:12px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,.24);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.5)}
+.cd{display:inline-block;margin-bottom:12px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#fff;background:rgba(0,0,0,.26);-webkit-backdrop-filter:blur(10px) saturate(160%);backdrop-filter:blur(10px) saturate(160%);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35)}
 .hd.w .av{margin-top:12px}.hd.w .av i{border-color:rgba(255,255,255,.85)}
 main.wash .add{background:var(--card)}
 .moods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -519,12 +518,7 @@ function draw(force) {
   if (fk) { const el = A.querySelector(`[data-k="${fk}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.3,.7,.4,1)' }); }
   if (inTrip) { mark(); refrSoon(); }
-  tint();
 }
-// Leiste oben in der Farbe der Stimmung, solange der Verlauf im Bild ist
-function tint() { const on = view.n === 'trip' && !!T && T.st === 'ok' && scrollY < 230, R = document.documentElement; if (R.classList.contains('tint') !== on) R.classList.toggle('tint', on);
-  const c = getComputedStyle(R).getPropertyValue(on ? '--top' : '--bg').trim(); for (const m of document.querySelectorAll('meta[name="theme-color"]')) if (m.content !== c) m.content = c; }
-addEventListener('scroll', tint, { passive: true });
 document.addEventListener('focusout', () => setTimeout(() => { if (pending && !inField()) draw(); }, 60));
 
 function homeHTML() { const l = LS.get();

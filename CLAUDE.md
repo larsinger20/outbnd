@@ -2,7 +2,7 @@
 
 Gemeinsame Reiseplanung für Gruppen, Nachfolger des Malta-Planners (`larsinger20/malta-planner`, bleibt unverändert als Erinnerung). Komplett eigenständig: eigenes Repository, eigener Link, eigene Datenbank, nichts geteilt mit dem Malta-Planner. Malta kommt hier nicht vor.
 
-**Gerade im Aufbau.** Die Seite ist noch nicht online. Etappe 1 (siehe `PLAN.md`) ist gebaut und getestet, von Lars abgenommen und mit dem Firebase-Projekt `outbnd-947bc` verbunden (`const CFG` in `index.html`). Es fehlt noch: GitHub Pages einschalten.
+**Gerade im Aufbau.** Die Seite ist online, aber noch nicht in Gebrauch. Etappe 1 (siehe `PLAN.md`) ist gebaut und getestet, von Lars abgenommen und mit dem Firebase-Projekt `outbnd-947bc` verbunden (`const CFG` in `index.html`). Läuft unter `larsinger20.github.io/outbnd`.
 
 ## Aufbau (Etappe 1)
 - **Eine Datei `index.html`** (HTML + CSS + ein JS-Modul), kein Framework/Build. Firebase per CDN (`firebasejs/10.12.2`): Firestore + anonyme Anmeldung. `firestore.rules` = die Regeln, die Lars in der Firebase-Konsole einträgt (bei Änderungen dort neu einfügen lassen).
@@ -13,7 +13,7 @@ Gemeinsame Reiseplanung für Gruppen, Nachfolger des Malta-Planners (`larsinger2
 - **Stimmung**: `draw()` setzt `data-m` am `<html>`; daran hängen Verlauf (`--g`) und Akzent (`--ac`/`--acb`). `main.wash` zeichnet den Verlauf im Kopf der Reise.
 - Reiter-Leiste, ⋯-Menü (`menuFor` liefert die Einträge je Knopf), Lichtbrechung: Code aus der Vorlage, Leiste passt ihre Breite an die Zahl der Reiter an (`TABS`).
 - `draw()` baut die Ansicht neu; wartet, solange ein Feld Fokus hat (`pending`), eigene Aktionen rufen `draw(true)`. Eingaben stehen im Zustand (`Wz`, `J`, `F`, `Pf`, `cmDraft`) und überleben Neuaufbauten.
-- **Leiste oben (Uhr/Akku) in Safari**: Safari färbt sie nach dem Grund von `html`/`body` (ab iOS 26 nicht mehr nach `theme-color`). `tint()` setzt in der Reise `html.tint` (Farbe `--top` der Stimmung), solange der Verlauf im Bild ist; der neutrale Grund liegt auf `main`.
+- **Leiste oben (Uhr/Akku) in Safari**: Safari färbt sie und die Leiste unten nach dem Grund von `html`/`body` (ab iOS 26 nicht mehr nach `theme-color`) und verändert den Ton dabei selbst. Deshalb bleibt der Grund immer neutral, und der Verlauf blendet oben weich ein (`main.wash::before`, Maske ab 0 durchsichtig). Färben des Balkens wurde probiert und verworfen (harte Kante, unten mitgefärbt); Vergleich in `vorlagen/kopf-probe.html`, Lars wählte A.
 - `.lq` setzt `position:relative`: fest stehende Elemente mit `.lq` brauchen eine eigene Regel danach (`.nb.lq{position:fixed}`; die Knöpfe oben lagen sonst am Seitenende).
 - **Fallstricke**: CSS-Klassennamen vor dem Anlegen suchen (`.in` = „dabei“-Knopf gefüllt, Eingabefelder heißen `.fi`). Die Leiste enthält Kopien des Inhalts (Lichtbrechung): in Tests immer unter `#app` suchen.
 
