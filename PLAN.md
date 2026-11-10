@@ -15,7 +15,7 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 3. GitHub Pages für das Repository einschalten (Adresse: `larsinger20.github.io/outbnd`)
 
 ## Etappen (jede für sich nutzbar, getestet, erst nach OK online)
-**1. Grundgerüst**
+**1. Grundgerüst** (gebaut und getestet 10.11.2026, wartet auf Abnahme)
 - Seite im neuen Design: Reiter-Leiste unten, Kacheln, ⋯-Menü, hell/dunkel
 - Startseite „Unsere Reisen“ (Reisen dieses Geräts), „+ Reise planen“
 - Reise anlegen (erst nur Name + Zeitraum), Einladungs-Link, Beitritt mit Name + PIN
@@ -36,5 +36,5 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 - Icon und Name auf dem Home-Bildschirm, Rückblick nach der Reise, Reise auf „Nur lesen“ stellen
 
 ## Offene Fragen
-- Wie genau wird „nur Eingeladene dürfen lesen/schreiben“ mit Name + PIN abgesichert? (klärt sich beim Einrichten von Firebase, vor Etappe 1)
+- Noch nicht in Etappe 1: PIN ändern, Reise umbenennen/Zeitraum ändern, Einladungs-Link erneuern, Mitreisende entfernen, Reise von der Startseite nehmen (Regeln erlauben es schon)
 - Icon-Entwürfe (3–4 Varianten) für Lars zur Auswahl

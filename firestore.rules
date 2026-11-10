@@ -1,0 +1,109 @@
+rules_version = '2';
+// outbnd: Jede Reise ist abgeschlossen. Lesen und schreiben darf nur, wer über den Einladungs-Link beigetreten ist.
+// Aufbau:
+//   trips/{t}                    Reise (Name, Zeitraum)
+//   trips/{t}/invites/{token}    gültige Einladungs-Links (der geheime Teil des Links ist die Dokument-ID)
+//   trips/{t}/members/{geraet}   ein Gerät, das beigetreten ist: { inv, pid, ph } – nur für das Gerät selbst lesbar
+//   trips/{t}/people/{pid}       eine Person der Reise (Name, Farbe, Admin)
+//   trips/{t}/people/{pid}/priv/pin   PIN-Prüfwert der Person – für niemanden lesbar, nur die Regeln vergleichen
+//   trips/{t}/acts, signups      Vorschläge und „dabei“/Daumen
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+
+    match /trips/{t} {
+      function tpath() { return /databases/$(db)/documents/trips/$(t); }
+      function mpath() { return /databases/$(db)/documents/trips/$(t)/members/$(me()); }
+      function ppath(pid) { return /databases/$(db)/documents/trips/$(t)/people/$(pid); }
+      // Gerät ist über einen Einladungs-Link beigetreten
+      function isDevice() { return signedIn() && exists(mpath()); }
+      function myPid() { return get(mpath()).data.pid; }
+      // Gerät gehört zu einer Person der Reise (Name + PIN bestätigt), und die Person gibt es noch
+      function isIn() { return isDevice() && get(mpath()).data.get('pid', null) != null && exists(ppath(myPid())); }
+      function isAdmin() { return isIn() && get(ppath(myPid())).data.get('admin', false) == true; }
+      // Reise wird gerade von mir angelegt (alles in einem Schreibvorgang)
+      function founding() { return !exists(tpath()) && getAfter(tpath()).data.cby == me(); }
+      // Gerät darf sich nur mit der richtigen PIN an eine Person hängen
+      function pinOk(d) {
+        return d.pid is string && d.ph is string && existsAfter(ppath(d.pid))
+          && getAfter(/databases/$(db)/documents/trips/$(t)/people/$(d.pid)/priv/pin).data.ph == d.ph;
+      }
+      function memberOk(d) { return d.keys().hasOnly(['inv', 'pid', 'ph']) && d.inv is string && (!('pid' in d) || pinOk(d)); }
+      function personOk(d) {
+        return d.keys().hasOnly(['name', 'col', 'admin', 'ts']) && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+          && d.col is string && d.col.size() <= 9;
+      }
+      function tripOk(d) {
+        return d.keys().hasOnly(['name', 'from', 'to', 'cby', 'ts']) && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+          && d.from is string && d.from.size() <= 10 && d.to is string && d.to.size() <= 10;
+      }
+      function actOk(d) {
+        return d.title is string && d.title.size() > 0 && d.title.size() <= 200 && d.cat in ['act', 'food']
+          && d.get('desc', '') is string && d.get('desc', '').size() <= 4000;
+      }
+
+      // Den Namen der Reise sieht, wer die (nicht erratbare) Adresse kennt; auflisten kann niemand
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.cby == me() && tripOk(request.resource.data);
+      allow update: if isAdmin() && request.resource.data.cby == resource.data.cby && tripOk(request.resource.data);
+      allow delete: if false;
+
+      match /invites/{tok} {
+        allow read: if isIn();
+        allow create: if (founding() || isAdmin()) && tok.size() >= 16;
+        allow delete: if isAdmin();
+      }
+
+      match /members/{u} {
+        allow get: if signedIn() && u == me();
+        allow list: if false;
+        allow create: if signedIn() && u == me() && memberOk(request.resource.data)
+          && existsAfter(/databases/$(db)/documents/trips/$(t)/invites/$(request.resource.data.inv));
+        allow update: if signedIn() && u == me() && memberOk(request.resource.data) && request.resource.data.inv == resource.data.inv;
+        allow delete: if signedIn() && u == me();
+      }
+
+      match /people/{pid} {
+        allow read: if isDevice();
+        // neue Person: nur zusammen mit dem eigenen Gerät; Admin wird man nur beim Anlegen der Reise
+        allow create: if signedIn() && getAfter(mpath()).data.pid == pid && personOk(request.resource.data)
+          && (request.resource.data.get('admin', false) == false || founding());
+        // eigenes Profil ändern (nicht das Admin-Recht); Admins dürfen bei anderen nur das Admin-Recht ändern
+        allow update: if isIn() && personOk(request.resource.data) && (
+          (myPid() == pid && request.resource.data.get('admin', false) == resource.data.get('admin', false))
+          || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['admin'])));
+        allow delete: if isAdmin() && myPid() != pid;
+
+        match /priv/pin {
+          allow read: if false;
+          // PIN festlegen nur für eine Person, die im selben Schreibvorgang neu entsteht
+          allow create: if signedIn() && !exists(ppath(pid)) && existsAfter(ppath(pid)) && getAfter(mpath()).data.pid == pid
+            && request.resource.data.keys().hasOnly(['ph']) && request.resource.data.ph is string && request.resource.data.ph.size() == 64;
+          allow update: if isIn() && myPid() == pid
+            && request.resource.data.keys().hasOnly(['ph']) && request.resource.data.ph is string && request.resource.data.ph.size() == 64;
+          allow delete: if isAdmin();
+        }
+      }
+
+      match /acts/{id} {
+        allow read: if isIn();
+        allow create: if isIn() && request.resource.data.by == myPid() && actOk(request.resource.data);
+        // Inhalt ändern: wer es vorgeschlagen hat oder Admin; Kommentare (cm) alle Mitreisenden
+        allow update: if isIn() && actOk(request.resource.data) && request.resource.data.by == resource.data.by && (
+          resource.data.by == myPid() || isAdmin() || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cm']));
+        allow delete: if isIn() && (resource.data.by == myPid() || isAdmin());
+      }
+
+      match /signups/{id} {
+        allow read: if isIn();
+        allow create: if isIn() && request.resource.data.keys().hasOnly(['act', 'pid']) && request.resource.data.pid == myPid()
+          && id == request.resource.data.act + '_' + myPid();
+        // eigene Stimme zurücknehmen; Admin; oder aufräumen, wenn es den Vorschlag nicht mehr gibt
+        allow delete: if isIn() && (resource.data.pid == myPid() || isAdmin()
+          || !exists(/databases/$(db)/documents/trips/$(t)/acts/$(resource.data.act)));
+      }
+    }
+  }
+}
