@@ -504,7 +504,7 @@ main.wash .btn.g{background:var(--card)}
 :root{--sat:env(safe-area-inset-top,0px);--ios:cubic-bezier(.32,.72,0,1);--rain:#0a84ff;--glass-edge:color-mix(in srgb,var(--bg) 88%,transparent)}
 @media (prefers-color-scheme:dark){:root{--rain:#64d2ff}}
 /* Neue Seite schiebt sich von rechts herein, Zurück schiebt sie hinaus; Reiterwechsel blendet kurz über (View Transitions, nur Bildschirmfotos werden bewegt) */
-#tbar{view-transition-name:tbar}#back{view-transition-name:nback}#more{view-transition-name:nmore}#ntitle{view-transition-name:ntitle}#sedge{view-transition-name:sedge}
+html[data-nav=tab] #tbar{view-transition-name:tbar}
 ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation-duration:.42s;animation-timing-function:var(--ios)}
 ::view-transition-old(root),::view-transition-new(root){mix-blend-mode:normal}
 html[data-nav=push]::view-transition-old(root){animation-name:navOutL}
@@ -522,7 +522,7 @@ html[data-nav=tab]::view-transition-old(tbar){display:none}html[data-nav=tab]::v
 @keyframes vtIn{from{opacity:0}}@keyframes vtOut{to{opacity:0}}
 /* Oberer Rand beim Scrollen (iOS 26): Inhalt unter Uhr und Akku wird weich unscharf, der Titel erscheint klein in der Mitte */
 .sedge{position:fixed;z-index:11;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 66px);pointer-events:none;opacity:0;transition:opacity .25s var(--ios);
-  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);background-image:linear-gradient(var(--glass-edge) 45%,transparent);-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+  background:linear-gradient(var(--bg) 0,var(--bg) env(safe-area-inset-top,0px),color-mix(in srgb,var(--bg) 82%,transparent) calc(env(safe-area-inset-top,0px) + 22px),color-mix(in srgb,var(--bg) 45%,transparent) calc(env(safe-area-inset-top,0px) + 46px),transparent)}
 html.scrolled .sedge{opacity:1}
 .ntitle{position:fixed;z-index:13;top:calc(10px + env(safe-area-inset-top,0px));left:72px;right:72px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .2s var(--ios),transform .32s var(--ios)}
 .ntitle span{overflow:hidden;text-overflow:ellipsis}
@@ -542,12 +542,12 @@ html.ttl .ntitle{opacity:1;transform:none}
 .wxn b{font-size:44px;font-weight:300;line-height:1;font-family:var(--rnd);font-variant-numeric:tabular-nums}
 .wxn .gr{flex:1;min-width:0;font-size:15px;color:var(--mu);line-height:1.35}
 .wxn .gr span{display:block;color:var(--tx);font-size:17px}
-.wxr{display:grid;grid-template-columns:minmax(58px,auto) 34px 38px 1fr 38px;align-items:center;column-gap:10px;min-height:50px;border-bottom:.5px solid var(--bd);font-size:17px;font-variant-numeric:tabular-nums}
+.wxr{display:grid;grid-template-columns:minmax(58px,auto) 36px 36px 1fr 36px;align-items:center;column-gap:10px;min-height:50px;border-bottom:.5px solid var(--bd);font-size:17px;font-variant-numeric:tabular-nums}
 .wxr:last-child{border-bottom:0}
 .wxr .wd{font-weight:500;white-space:nowrap}
 .wxr .wic{display:flex;flex-direction:column;align-items:center;line-height:1}
 .wxr .wic .wxi{width:24px;height:24px}
-.wxr .wic small{font-size:11px;font-weight:600;color:var(--rain);margin-top:2px}
+.wxr .wic small{font-size:11px;font-weight:600;color:var(--rain);margin-top:2px;white-space:nowrap}
 .wxr .wlo{color:var(--mu);text-align:right}.wxr .whi{text-align:right}
 .wbar{position:relative;height:5px;border-radius:3px;background:var(--fill)}
 .wbar i{position:absolute;top:0;bottom:0;border-radius:3px}
@@ -728,28 +728,40 @@ let pending = false, flash = null, shownNew = new Set();
 const PS = {};         // Ortssuche je Feld: { res, q }
 
 /* ---------- Adressen: #/ Start · #/neu · #/e/{reise}/{schlüssel} Einladung · #/r/{reise}[/leute|/profil|/stimmung|/reise] ---------- */
-const go = h => { if (location.hash === h) route(); else location.hash = h; };
+// Verlauf wie die Seiten: Zurück geht wirklich einen Schritt zurück (auch Safaris Wisch-Geste landet dann richtig),
+// flachere Ziele ersetzen den Eintrag statt neue anzuhängen.
+let ownBack = false;
+const go = h => { if (location.hash === h) return route();
+  if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
+  if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) location.replace(h); else location.hash = h; };
 const inviteUrl = (t, tok) => location.origin + location.pathname + '#/e/' + t + '/' + tok;
 function parseInvite(s) { const m = /#\/e\/([A-Za-z0-9]{8,40})\/([A-Za-z0-9]{8,40})/.exec(s || ''); return m ? { t: m[1], tok: m[2] } : null; }
 const SUB = { leute: 'people', profil: 'profile', stimmung: 'mood', reise: 'edit', info: 'info' };
 // Tiefe einer Adresse: Start 0, Reise/Assistent/Beitritt 1, Unterseite einer Reise 2. Tiefer = hinein schieben, flacher = hinaus.
 const depth = h => { const p = (h || '').replace(/^#\/?/, '').split('/').filter(Boolean); return !p.length ? 0 : p[0] === 'r' && p[2] ? 2 : 1; };
-let lastHash = null, navBusy = false;
+let lastHash = null, navBusy = false, stack = [], keepY = null; const scrollMem = {};   // stack: besuchte Seiten, Zurück führt zur vorigen
 function navTo(dir, fn) { const R = document.documentElement;
-  if (!dir || calm() || !document.startViewTransition || document.hidden) { fn(); return; }
+  if (!dir || dir === 'tab' || calm() || !document.startViewTransition || document.hidden) { fn(); return; }   // Reiter wechseln in iOS ohne Bewegung
   R.dataset.nav = dir; navBusy = true; const vt = document.startViewTransition(() => { fn(); });
   vt.finished.catch(() => {}).finally(() => { if (R.dataset.nav === dir) delete R.dataset.nav; navBusy = false; refrSoon(); }); }
-function route() { const h = location.hash, d0 = lastHash == null ? null : depth(lastHash), d1 = depth(h); lastHash = h;
-  navTo(d0 == null ? '' : d1 > d0 ? 'push' : d1 < d0 ? 'pop' : 'tab', routeNow); }
+function route() { const h = location.hash, d0 = lastHash == null ? null : depth(lastHash), d1 = depth(h); let dir;
+  if (d0 == null) { dir = ''; stack = [h]; }
+  else if (h === lastHash) dir = '';
+  else if (stack.length > 1 && h === stack[stack.length - 2]) { dir = ownBack ? 'pop' : ''; stack.pop(); keepY = scrollMem[h] || 0; }
+  else if (d1 > d0 || d1 === 2 && d0 === 2) { dir = 'push'; stack.push(h); }
+  else if (d1 < d0) { dir = 'pop'; stack = stack.filter(x => depth(x) < d1).concat(h); }
+  else { dir = 'tab'; stack[stack.length - 1] = h; }
+  if (lastHash != null) scrollMem[lastHash] = scrollY;
+  ownBack = false; lastHash = h; navTo(dir, routeNow); }
 function routeNow() {
   const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   closeMenu(); closeMap(true); F = null; Pf = null; Cf = null; Rv = null;
   if (p[0] === 'neu') { if (!Wz) Wz = newWizard(); view = { n: 'new' }; }
   else if (p[0] === 'e' && p[1] && p[2]) { view = { n: 'join' }; startJoin(p[1], p[2]); }
-  else if (p[0] === 'r' && p[1]) { view = { n: SUB[p[2]] || 'trip' }; if (view.n !== 'edit') Ed = null; openTrip(p[1]); }
+  else if (p[0] === 'r' && p[1]) { view = { n: SUB[p[2]] || 'trip' }; if (view.n !== 'edit' && view.n !== 'mood') Ed = null; openTrip(p[1]); }
   else { view = { n: 'home' }; }
   if (!['trip', 'people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) closeTrip();
-  draw(true); scrollTo(0, 0);
+  draw(true); scrollTo(0, keepY || 0); keepY = null; topTitle();
 }
 addEventListener('hashchange', route);
 
@@ -1028,7 +1040,7 @@ function wxHTML(s, multi) { const w = wxFor(s), a = s.from || T.info.from || '',
   if (w.cur) h += `<div class="wxn">${wxIcon(w.cur.c)}<b>${w.cur.t}°</b><div class="gr"><span>${esc(WCODE(w.cur.c)[0])}</span>${td ? `H: ${td.hi}° · T: ${td.lo}°` : 'jetzt'}</div></div>`;
   if (show.length) { const mn = Math.min(...show.map(d => d.lo)), mx = Math.max(...show.map(d => d.hi)), sp = Math.max(1, mx - mn);
     h += show.map(d => { const l = (d.lo - mn) / sp * 100, r = (d.hi - mn) / sp * 100, now = d.d === today() && w.cur ? Math.min(100, Math.max(0, (w.cur.t - mn) / sp * 100)) : null;
-      return `<div class="wxr"><span class="wd">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}</span><span class="wic">${wxIcon(d.c)}${d.p != null && d.p >= 30 ? `<small>${d.p} %</small>` : ''}</span><span class="wlo">${d.lo}°</span><span class="wbar"><i style="left:${l.toFixed(1)}%;width:${Math.max(4, r - l).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(d.lo)},${tempCol(d.hi)})"></i>${now != null ? `<b style="left:${now.toFixed(1)}%"></b>` : ''}</span><span class="whi">${d.hi}°</span></div>`; }).join('');
+      return `<div class="wxr"><span class="wd">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}</span><span class="wic">${wxIcon(d.c)}${d.p != null && d.p >= 30 ? `<small>${d.p}%</small>` : ''}</span><span class="wlo">${d.lo}°</span><span class="wbar"><i style="left:${l.toFixed(1)}%;width:${Math.max(4, r - l).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(d.lo)},${tempCol(d.hi)})"></i>${now != null ? `<b style="left:${now.toFixed(1)}%"></b>` : ''}</span><span class="whi">${d.hi}°</span></div>`; }).join('');
     h += `<p class="wxh">${ours.length ? (today() >= a && today() <= b ? 'Unsere restlichen Tage dort' : 'Unsere Tage dort') : 'Die nächsten Tage'}${a && !ours.length && !over && last && a > last ? ` · für unsere Tage ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}` : ''}</p>`; }
   return h + '</div></div>'; }
 
@@ -1433,7 +1445,8 @@ $('app').addEventListener('click', async e => {
   if (a === 'tdel') return deleteTrip();
 });
 $('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) { navTo('pop', () => { Wz.step--; if (WSTEPS[Wz.step] === 'stay' && !Wz.stops.length) Wz.step--; Wz.err = ''; draw(true); scrollTo(0, 0); }); return; }
-  if (['people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) return go('#/r/' + T.id + (view.n === 'mood' && Ed ? '/reise' : '')); Wz = null; go('#/'); });
+  if (stack.length > 1) return go(stack[stack.length - 2]);
+  if (['people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) return go('#/r/' + T.id); Wz = null; go('#/'); });
 /* ---------- Bewegung: Gleichartiges bewegt sich gleich (DESIGN.md Abschnitt 5) ----------
    Aufklappen: Höhe + Deckkraft, Dauer wächst mit der Höhe (0,32–0,56 s), Kurve (.45,0,.15,1); Zuklappen ¾ der Zeit, Kurve (.4,0,.2,1).
    Pfeil dreht sich im selben Takt. Umschalter: Perle gleitet 0,42 s (Feder), neuer Inhalt blendet ein. Während einer Bewegung warten Live-Daten (slides). */
