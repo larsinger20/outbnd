@@ -191,6 +191,7 @@ select.fi{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xml
 .lq.pr{transform:scale(1.07);transition-duration:.18s;transition-timing-function:cubic-bezier(.3,.7,.4,1)}
 .lq>.gl{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(70px circle at var(--gx,50%) var(--gy,50%),var(--glow),transparent 70%)}
 .lq.pr>.gl{opacity:1;transition-duration:.12s}
+html.noglow .lq>.gl{transition:none!important;opacity:0!important}html.noglow .lq{transition:none!important;transform:none!important}
 .dots.lq.pr{transform:scale(1.14);transition-duration:.12s}
 .btn.lq.pr,.add.lq.pr,.row.lq.pr{transform:scale(.98)}
 .nb.dots{width:44px;height:44px;margin:0;background:var(--gb)}
@@ -758,7 +759,9 @@ const PS = {};         // Ortssuche je Feld: { res, q }
 // Verlauf wie die Seiten: Zurück geht wirklich einen Schritt zurück (auch Safaris Wisch-Geste landet dann richtig),
 // flachere Ziele ersetzen den Eintrag statt neue anzuhängen.
 let ownBack = false, ownRep = false;
-const go = h => { if (location.hash === h) return route();
+// Lichtschein vom Antippen sofort löschen, bevor die Seite wechselt: Safari fotografiert die Seite für die Zurück-Geste, sonst ist der Schein dort noch zu sehen
+function noGlow() { const R = document.documentElement; document.querySelectorAll('.lq.pr').forEach(e => e.classList.remove('pr')); R.classList.add('noglow'); void R.offsetWidth; setTimeout(() => R.classList.remove('noglow'), 600); }
+const go = h => { noGlow(); if (location.hash === h) return route();
   if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
   if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) { ownRep = true; location.replace(h); } else location.hash = h; };
 // Zurück-Knopf: eine Ebene höher (wie iOS); nur Stimmung aus „Reise bearbeiten“ führt dorthin zurück
@@ -820,7 +823,7 @@ function navTo(dir, fn) { const R = document.documentElement;
   if (!dir || dir === 'tab' || calm() || !document.startViewTransition || document.hidden) { fn(); return; }   // Reiter wechseln in iOS ohne Bewegung
   R.dataset.nav = dir; navBusy = true; const vt = document.startViewTransition(() => { fn(); });
   vt.finished.catch(() => {}).finally(() => { if (R.dataset.nav === dir) delete R.dataset.nav; navBusy = false; refrSoon(); }); }
-function route() { const h = location.hash, d0 = lastHash == null ? null : depth(lastHash), d1 = depth(h); let dir;
+function route() { noGlow(); const h = location.hash, d0 = lastHash == null ? null : depth(lastHash), d1 = depth(h); let dir;
   if (d0 == null) { dir = ''; stack = [h]; }
   else if (h === lastHash) dir = '';
   else if (stack.length > 1 && h === stack[stack.length - 2]) { dir = ownBack ? 'pop' : ''; stack.pop(); keepY = scrollMem[h] || 0; }
