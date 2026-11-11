@@ -12,7 +12,7 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 ## Was Lars einmalig einrichtet (Anleitung kommt Schritt für Schritt)
 1. Neues Firebase-Projekt für outbndr (kostenlos) + Einstellungen für Anmeldung und Regeln
 2. ~~Google-Maps-Schlüssel~~ nicht mehr nötig (Karte und Ortssuche über OpenStreetMap)
-3. GitHub Pages für das Repository einschalten (Adresse: `larsinger20.github.io/outbnd`)
+3. GitHub Pages für das Repository einschalten (erledigt; Adresse seit der Umbenennung: `larsinger20.github.io/outbndr./`)
 
 ## Etappen (jede für sich nutzbar, getestet, erst nach OK online)
 **1. Grundgerüst** (fertig 10.11.2026)
