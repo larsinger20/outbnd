@@ -9,6 +9,9 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme:dark)">
 <meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="32x32" href="outbndr-32.png">
+<link rel="apple-touch-icon" href="outbndr-180.png">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
 /* Design nach DESIGN.md (iOS 27, Liquid Glass). Reiter-Leiste, ⋯-Menü und Lichtbrechung stammen aus vorlagen/glas-probe.html. */
 :root{
@@ -958,9 +961,14 @@ function headHTML() { const n = Object.keys(T.people).length, cd = countdown(T.i
   return `<div class="hd w">${cd ? `<span class="cd">${esc(cd)}</span>` : ''}<h1>${esc(T.info.name)}</h1><p class="sub">${esc(range(T.info.from, T.info.to))} · ${n === 1 ? 'bisher nur du' : n + ' Mitreisende'}</p>${avs(pp.map(x => x[0]), 7)}</div>`; }
 function tipHTML() { if (store.get('outbndr.tip1', false)) return '';
   return `<div class="tip"><b>So planen wir zusammen</b>Schlag vor, was du machen möchtest. Mit „Ich bin dabei“ oder dem Daumen zeigst du, was dir gefällt. Über ⋯ an jedem Vorschlag kannst du kommentieren, einen Ort oder eine Reservierung eintragen und Erledigtes abhaken.<button class="tx" type="button" data-a="tipx" aria-label="Tipp ausblenden">${XS}</button></div>`; }
+function recapHTML() { const i = T.info; if (!i.to || today() <= i.to) return '';
+  const acts = T.acts.filter(a => a.title), act = acts.filter(a => a.cat !== 'food'), food = acts.filter(a => a.cat === 'food'), total = T.costs.filter(c => c.kind !== 'pay').reduce((n, c) => n + (c.amt || 0), 0);
+  const nums = [[act.filter(a => a.done).length || act.length, act.filter(a => a.done).length ? 'erlebt' : 'Aktivitäten'], areas().food && [food.filter(a => a.done).length || food.length, 'mal Essen'], areas().cost && total && [Math.round(total / 100).toLocaleString('de-DE') + ' €', 'gemeinsam bezahlt'], [Object.keys(T.people).length, 'Mitreisende']].filter(Boolean);
+  return `<div class="card c2" style="margin-bottom:14px"><div class="shh"><h3>Rückblick</h3></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">${nums.map(([v, t]) => `<div style="text-align:center;padding:12px 6px;border-radius:16px;background:var(--fill)"><b style="display:block;font-size:22px;font-family:var(--rnd);font-variant-numeric:tabular-nums">${esc(v)}</b><small style="font-size:13px;color:var(--mu)">${esc(t)}</small></div>`).join('')}</div></div>`; }
 function tripHTML() {
   let h = headHTML();
-  if (tab === 'act' || tab === 'food') { h += infoHTML(); if (tab === 'act') h += tipHTML(); }
+  if (tab === 'act') h += recapHTML();
+  if (tab === 'act' || tab === 'food') { h += infoHTML(); if (tab === 'act' && !(T.info.to && today() > T.info.to)) h += tipHTML(); }
   if (tab === 'act') h += listHTML(false);
   else if (tab === 'food') h += `<div class="seg2" data-seg="food"><span class="ind2"></span><button type="button" data-fseg="sug" class="${foodView === 'sug' ? 'on' : ''}">Vorschläge</button><button type="button" data-fseg="shop" class="${foodView === 'shop' ? 'on' : ''}">Einkaufsliste</button></div>` + (foodView === 'shop' ? shopHTML() : listHTML(true));
   else if (tab === 'cost') h += costHTML();
