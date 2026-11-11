@@ -344,7 +344,6 @@ main.rcl.mst{animation:none}
 .wxd{display:flex;gap:8px;overflow-x:auto;margin:0 -18px;padding:0 18px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .wxd::-webkit-scrollbar{display:none}
 .wxt{flex:none;width:62px;padding:10px 4px;border-radius:16px;background:var(--fill);text-align:center;font-size:13px;color:var(--mu)}
-.wxt.trip{box-shadow:inset 0 0 0 1.5px var(--ac)}
 .wxt .wxi{width:24px;height:24px;display:block;margin:6px auto}
 .wxt b{display:block;color:var(--tx);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
 .wxs+.wxs{margin-top:18px;padding-top:14px;border-top:.5px solid var(--bd)}
@@ -786,7 +785,7 @@ function placeSearch(key, q) { clearTimeout(psT); const r = PS[key] = PS[key] ||
   psT = setTimeout(async () => { psCtl && psCtl.abort(); psCtl = new AbortController();
     try { const f = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(r.q)}&limit=6&lang=de${near()}`, { signal: psCtl.signal }); const j = await f.json();
       r.res = (j.features || []).map(x => { const p = x.properties || {}, c = (x.geometry || {}).coordinates || [];
-        const sub = [p.street && (p.street + (p.housenumber ? ' ' + p.housenumber : '')), p.city || p.town || p.village, p.state, p.country].filter((v, i, a) => v && a.indexOf(v) === i && v !== p.name).join(', ');
+        const sub = [p.street && (p.street + (p.housenumber ? ' ' + p.housenumber : '')), p.city || p.town || p.village, p.state].filter((v, i, a) => v && a.indexOf(v) === i && v !== p.name).concat(p.country && p.country !== p.name ? [p.country] : []).join(', ');
         return { name: p.name || p.street || p.city || r.q, sub, lat: c[1], lng: c[0], addr: [p.street && (p.street + (p.housenumber ? ' ' + p.housenumber : '')), p.postcode, p.city || p.town || p.village].filter(Boolean).join(', ') }; }).filter(x => typeof x.lat === 'number');
       r.busy = false; paintPs(key); }
     catch (e) { if (e.name === 'AbortError') return; r.busy = false; r.err = true; r.res = []; paintPs(key); } }, 320); }
@@ -936,12 +935,16 @@ function infoHTML() { const st = stops(), geo = st.filter(s => typeof s.lat === 
     if (isAdmin()) h += `<button class="txb" type="button" data-a="edit" style="margin-top:8px">Reise-Info bearbeiten</button>`;
     h += '</div>'; }
   return h + '</div>'; }
-function wxHTML(s) { const w = wxFor(s), multi = stops().filter(x => typeof x.lat === 'number').length > 1, days = tripDays(T.info);
+// Wetter je Ziel: Liegen unsere Tage dort in der Vorhersage, zeigen wir genau diese Tage (alle Kacheln gleich); sonst die nächsten Tage mit Hinweis
+function wxHTML(s) { const w = wxFor(s), multi = stops().filter(x => typeof x.lat === 'number').length > 1;
+  const a = s.from || T.info.from || '', b = s.to || (s.from ? s.from : T.info.to) || a;
   let h = `<div class="wxs">${multi ? `<h4>${esc(s.name)}${s.from ? ` <small style="font-weight:400;color:var(--mu)">${esc(shortRange(s.from, s.to))}</small>` : ''}</h4>` : ''}`;
   if (w.st !== 'ok') return h + (w.st === 'err' ? '<p class="muted">Wetter gerade nicht erreichbar. Wir versuchen es gleich nochmal.</p>' : '<div class="wxsk shim" aria-label="Wetter lädt">' + '<i></i>'.repeat(5) + '</div>') + '</div>';
+  const last = w.days.length ? w.days[w.days.length - 1].d : '', ours = a ? w.days.filter(d => d.d >= a && d.d <= b && d.d >= today()) : [], over = a && b < today();
+  const show = ours.length ? ours : over ? [] : w.days.slice(0, 7);
   if (w.cur) h += `<div class="wxnow">${wxIcon(w.cur.c)}<div><b>${w.cur.t}°</b><small>${esc(WCODE(w.cur.c)[0])} · jetzt${multi ? '' : ' in ' + esc(s.name)}</small></div></div>`;
-  h += `<div class="wxd">${w.days.map(d => `<div class="wxt${days.includes(d.d) ? ' trip' : ''}">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}${wxIcon(d.c)}<b>${d.hi}°</b>${d.lo}°${d.p != null && d.p >= 30 ? `<br>${d.p} %` : ''}</div>`).join('')}</div>`;
-  if (days.length && w.days.length && days[0] > w.days[w.days.length - 1].d) h += `<p class="muted" style="margin-top:8px">Die Vorhersage reicht 16 Tage. Für unsere Reisetage kommt sie ab ${esc(dayLong(iso(new Date(D(days[0]).getTime() - 15 * 864e5))))}.</p>`;
+  if (show.length) h += `${a && ours.length && !(today() >= a && today() <= b) ? '<p class="muted" style="margin:0 0 8px">Unsere Tage dort</p>' : !ours.length && a ? '<p class="muted" style="margin:0 0 8px">Die nächsten Tage</p>' : ''}<div class="wxd">${show.map(d => `<div class="wxt">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}${wxIcon(d.c)}<b>${d.hi}°</b>${d.lo}°${d.p != null && d.p >= 30 ? `<br>${d.p} %` : ''}</div>`).join('')}</div>`;
+  if (a && !ours.length && !over && last && a > last) h += `<p class="muted" style="margin-top:8px">Die Vorhersage reicht 16 Tage. Für unsere Tage dort kommt sie ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}.</p>`;
   return h + '</div>'; }
 
 /* ---------- Vorschläge ---------- */
