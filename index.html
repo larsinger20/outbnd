@@ -740,10 +740,14 @@ const PS = {};         // Ortssuche je Feld: { res, q }
 /* ---------- Adressen: #/ Start · #/neu · #/e/{reise}/{schlüssel} Einladung · #/r/{reise}[/leute|/profil|/stimmung|/reise] ---------- */
 // Verlauf wie die Seiten: Zurück geht wirklich einen Schritt zurück (auch Safaris Wisch-Geste landet dann richtig),
 // flachere Ziele ersetzen den Eintrag statt neue anzuhängen.
-let ownBack = false;
+let ownBack = false, ownRep = false;
 const go = h => { if (location.hash === h) return route();
   if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
-  if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) location.replace(h); else location.hash = h; };
+  if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) { ownRep = true; location.replace(h); } else location.hash = h; };
+// Zurück-Knopf: eine Ebene höher (wie iOS); nur Stimmung aus „Reise bearbeiten“ führt dorthin zurück
+function backTarget() { const h = location.hash, d = depth(h), prev = stack[stack.length - 2];
+  if (prev != null && (depth(prev) < d || d === 2 && depth(prev) === 2)) return prev;
+  if (d === 2) return h.split('/').slice(0, 3).join('/'); return '#/'; }
 const inviteUrl = (t, tok) => location.origin + location.pathname + '#/e/' + t + '/' + tok;
 /* ---------- Als App vom Home-Bildschirm: dort hat das iPhone einen eigenen Speicher (getrennt von Safari) ----------
    Darum: in Safari auf dem iPhone von Anfang an zur App raten; wer schon Reisen in Safari hat, nimmt sie per Link mit (#/mit/…). */
@@ -752,11 +756,32 @@ const APP = navigator.standalone === true || matchMedia('(display-mode: standalo
 const IOSWEB = IOS && !APP;
 const b64u = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
-const carryUrl = () => location.origin + location.pathname + '#/mit/' + b64u(JSON.stringify(LS.get().filter(t => t.id && t.tok).map(t => [t.id, t.tok, t.name || '', t.from || '', t.to || '', t.mood || ''])));
+// Der Link nimmt je Reise auch die Anmeldung dieses Geräts mit (Person + PIN-Prüfwert aus members/{gerät}); die App meldet sich damit selbst an.
+// Er ist damit so viel wert wie das Gerät selbst: nur für die eigene App.
+let carryC = null;   // vorbereiteter Link, damit das Kopieren direkt beim Tippen geschieht (Safari erlaubt Kopieren nur sofort)
+async function carryUrl() { const l = LS.get().filter(t => t.id && t.tok), out = [];
+  if (db) { try { await ready; } catch (e) {} }
+  for (const t of l) { let pid = '', ph = ''; if (db && uid) { try { const m = await getDoc(tdoc(t.id, 'members', uid)); if (m.exists() && m.data().pid && m.data().ph) { pid = m.data().pid; ph = m.data().ph; } } catch (e) {} }
+    out.push([t.id, t.tok, t.name || '', t.from || '', t.to || '', t.mood || '', pid, ph]); }
+  return location.origin + location.pathname + '#/mit/' + b64u(JSON.stringify(out)); }
+function prepCarry() { const k = JSON.stringify(LS.get().map(t => t.id + t.tok)); if (carryC && carryC.k === k) return carryC.p; const p = carryUrl(); carryC = { k, p, v: null }; p.then(v => { if (carryC && carryC.p === p) carryC.v = v; }); return p; }
+async function copyCarry() { const c = carryC, msg = 'Kopiert. Jetzt outbndr. vom Home-Bildschirm öffnen.';
+  if (c && c.v) return copy(c.v, msg);
+  const p = prepCarry();
+  try { if (window.ClipboardItem && navigator.clipboard.write) { await navigator.clipboard.write([new ClipboardItem({ 'text/plain': p.then(v => new Blob([v], { type: 'text/plain' })) })]); return toast(msg); } } catch (e) {}
+  copy(await p, msg); }
 function parseCarry(s) { const m = /#\/mit\/([A-Za-z0-9_-]{4,})/.exec(s || ''); if (!m) return null;
   try { const l = JSON.parse(unb64u(m[1])); return Array.isArray(l) ? l.filter(x => Array.isArray(x) && /^[A-Za-z0-9]{8,40}$/.test(x[0]) && /^[A-Za-z0-9]{8,40}$/.test(x[1])) : null; } catch (e) { return null; } }
-function takeCarry(l) { l.slice().reverse().forEach(x => { const o = LS.one(x[0]); LS.add({ id: x[0], tok: x[1], name: String(x[2]).slice(0, 80), from: String(x[3]).slice(0, 10), to: String(x[4]).slice(0, 10), mood: String(x[5]).slice(0, 12), ...(o || {}) }); });
-  toast(l.length === 1 ? '1 Reise übernommen' : l.length + ' Reisen übernommen'); }
+async function takeCarry(l) { l.slice().reverse().forEach(x => { const o = LS.one(x[0]); LS.add({ id: x[0], tok: x[1], name: String(x[2]).slice(0, 80), from: String(x[3]).slice(0, 10), to: String(x[4]).slice(0, 10), mood: String(x[5]).slice(0, 12), ...(o || {}) }); });
+  draw(true); let ok = 0, miss = 0;
+  if (db) { try { await ready; } catch (e) {} }
+  for (const x of l) { const pid = x[6], ph = x[7];
+    if (!db || !uid || typeof pid !== 'string' || !/^[A-Za-z0-9]{6,40}$/.test(pid) || !/^[0-9a-f]{64}$/.test(ph || '')) { miss++; continue; }
+    try { const ref = tdoc(x[0], 'members', uid), m = await getDoc(ref);
+      if (m.exists() && m.data().pid) { ok++; continue; }
+      if (m.exists()) await updateDoc(ref, { pid, ph }); else await setDoc(ref, { inv: (LS.one(x[0]) || {}).tok || x[1], pid, ph });
+      ok++; } catch (e) { if (!denied(e)) console.error(e); miss++; } }
+  const n = l.length; toast((n === 1 ? '1 Reise übernommen' : n + ' Reisen übernommen') + (miss ? (ok ? ` · bei ${miss} bitte Name und PIN eingeben` : ' · bitte jeweils Name und PIN eingeben') : ' · du bist angemeldet')); }
 async function copy(txt, msg) { try { await navigator.clipboard.writeText(txt); toast(msg); } catch (e) { toast('Kopieren ging nicht, bitte nochmal versuchen'); } }
 const SHAREIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M6 12H5v8.5h14V12h-1"/></svg>', ADDIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>';
 // Hinweis-Kachel in Safari: „Am besten als App“
@@ -768,7 +793,7 @@ function appCardHTML(kind) { const n = LS.get().filter(t => t.tok).length;
     <p>Auf dem iPhone läuft outbndr vom Home-Bildschirm wie eine App. Die App hat einen eigenen Speicher, darum am besten gleich dort starten.</p>
     <ol>${first}<li><span class="n">${k + 1}</span><span>Unten auf ${SHAREIC} tippen, dann ${ADDIC} „Zum Home-Bildschirm“</span></li><li><span class="n">${k + 2}</span><span>${step3}</span></li></ol>
     ${kind === 'join' ? `<button class="btn lq" type="button" data-a="copyinv">${SY.link}<span>Einladung kopieren</span><span class="gl"></span></button><p class="hint c" style="margin-top:10px">Oder einfach hier im Browser weitermachen.</p>`
-      : n ? `<button class="btn lq" type="button" data-a="carry">${SY.share}<span>${n === 1 ? 'Reise' : 'Reisen'} kopieren</span><span class="gl"></span></button><p class="hint c" style="margin-top:10px">Der Link enthält unsere Einladungen, also nur für dich. In der App meldest du dich dann mit deinem Namen und deiner PIN an.</p>` : ''}</div></div>`; }
+      : n ? `<button class="btn lq" type="button" data-a="carry">${SY.share}<span>${n === 1 ? 'Reise' : 'Reisen'} kopieren</span><span class="gl"></span></button><p class="hint c" style="margin-top:10px">Der Link enthält auch deine Anmeldung, also nur für dich und nicht weitergeben. In der App bist du damit gleich wieder angemeldet.</p>` : ''}</div></div>`; }
 function parseInvite(s) { const m = /#\/e\/([A-Za-z0-9]{8,40})\/([A-Za-z0-9]{8,40})/.exec(s || ''); return m ? { t: m[1], tok: m[2] } : null; }
 const SUB = { leute: 'people', profil: 'profile', stimmung: 'mood', reise: 'edit', info: 'info' };
 // Tiefe einer Adresse: Start 0, Reise/Assistent/Beitritt 1, Unterseite einer Reise 2. Tiefer = hinein schieben, flacher = hinaus.
@@ -784,9 +809,10 @@ function route() { const h = location.hash, d0 = lastHash == null ? null : depth
   else if (stack.length > 1 && h === stack[stack.length - 2]) { dir = ownBack ? 'pop' : ''; stack.pop(); keepY = scrollMem[h] || 0; }
   else if (d1 > d0 || d1 === 2 && d0 === 2) { dir = 'push'; stack.push(h); }
   else if (d1 < d0) { dir = 'pop'; stack = stack.filter(x => depth(x) < d1).concat(h); }
-  else { dir = 'tab'; stack[stack.length - 1] = h; }
+  else if (ownRep) { dir = 'tab'; stack[stack.length - 1] = h; }
+  else { dir = 'push'; stack.push(h); }   // neuer Eintrag im Verlauf (z. B. Link geöffnet): Verlauf und stack bleiben gleich
   if (lastHash != null) scrollMem[lastHash] = scrollY;
-  ownBack = false; lastHash = h; navTo(dir, routeNow); }
+  ownBack = false; ownRep = false; lastHash = h; navTo(dir, routeNow); }
 function routeNow() {
   const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   closeMenu(); closeMap(true); F = null; Pf = null; Cf = null; Rv = null;
@@ -1001,7 +1027,7 @@ function homeHTML() { const l = LS.get();
   else {
     h += l.length ? '<div class="rows">' + l.map(t => `<div class="row" data-id="${esc(t.id)}"><button class="rowb lq" type="button" data-a="open"><span class="mchip" style="background:${moodG(t.mood)}"></span><span class="gr">${esc(t.name || 'Reise')}<small>${esc(range(t.from, t.to))}</small></span><span class="gl"></span></button><button class="dots lq" type="button" aria-label="Mehr zu ${esc(t.name || 'Reise')}" data-menu="home">${DOTS}<span class="gl"></span></button></div>`).join('') + '</div>'
       : `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Planen wir eine neue Reise, oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Planen wir eine neue Reise, oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
-    if (IOSWEB && !store.get('outbndr.apphide', false)) h = h.replace('</p></div>', '</p></div>' + appCardHTML('home'));
+    if (IOSWEB && !store.get('outbndr.apphide', false)) { h = h.replace('</p></div>', '</p></div>' + appCardHTML('home')); if (l.length) setTimeout(prepCarry, 0); }
     h += `<div class="btns"><button class="btn lq" type="button" data-a="new">${SY.plus}<span>Reise planen</span><span class="gl"></span></button>`;
     h += pasteOpen ? `</div><div class="form" style="margin-top:14px"><label class="fl" for="pl">Einladungs-Link</label><input class="fi" id="pl" data-k="paste" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="Link hier einfügen" value="${esc(pasteVal)}"><div class="btns two"><button class="btn g s" type="button" data-a="pasteX">Abbrechen</button><button class="btn s" type="button" data-a="pasteGo">Öffnen</button></div></div>`
       : `<button class="btn g lq" type="button" data-a="paste">${SY.link}<span>${APP ? 'Link einfügen' : 'Einladungs-Link einfügen'}</span><span class="gl"></span></button></div>`;
@@ -1035,7 +1061,8 @@ function joinHTML() { const j = J;
   if (!j || j.st === 'load') return `<div class="q">${slowHTML(j)}<div class="shim" style="border-radius:12px"><span class="skl" style="width:40%"></span><span class="skl t" style="margin-top:14px;height:34px;width:80%"></span><span class="skl" style="width:55%;margin-top:12px"></span></div><div class="skc shim" style="margin-top:22px"><span class="skl" style="width:30%"></span><span class="skl" style="height:46px;border-radius:14px"></span><span class="skl" style="width:30%;margin-top:16px"></span><span class="skl" style="height:46px;border-radius:14px"></span></div></div>`;
   if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`;
   const n = Object.keys(j.people).length;
-  return `<div class="q"><p class="sub" style="margin:0 0 4px">Einladung zur Reise</p><h1>${esc(j.info.name)}</h1><p class="sub">${esc(range(j.info.from, j.info.to))} · ${n === 1 ? '1 Person ist' : n + ' Leute sind'} schon dabei</p>
+  const known = !!LS.one(j.t);
+  return `<div class="q"><p class="sub" style="margin:0 0 4px">${known ? 'Auf diesem Gerät anmelden' : 'Einladung zur Reise'}</p><h1>${esc(j.info.name)}</h1><p class="sub">${esc(range(j.info.from, j.info.to))} · ${n === 1 ? '1 Person ist' : n + ' Leute sind'} schon dabei</p>
     ${IOSWEB ? appCardHTML('join') : ''}${whoHTML(j, j.people, 'j')}${j.err ? `<p class="err">${esc(j.err)}</p>` : ''}
     <div class="btns"><button class="btn lq" type="button" data-a="jgo"${j.busy ? ' disabled' : ''}>${j.busy ? 'Einen Moment …' : 'Mitplanen'}<span class="gl"></span></button></div>
     <p class="hint c">Schon dabei? Mit gleichem Namen und gleicher PIN kommt dein Profil auf dieses Gerät.</p></div>`; }
@@ -1412,7 +1439,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'paste') { if (APP && navigator.clipboard && navigator.clipboard.readText) { try { const t = await navigator.clipboard.readText(); if (parseInvite(t) || parseCarry(t)) { pasteVal = t; return pasteGo(); } } catch (e) {} }
     pasteOpen = true; draw(true); $('pl')?.focus(); return; }
   if (a === 'apphide') { store.set('outbndr.apphide', true); return draw(true); }
-  if (a === 'carry') return copy(carryUrl(), 'Kopiert. Jetzt outbndr. vom Home-Bildschirm öffnen.');
+  if (a === 'carry') return copyCarry();
   if (a === 'copyinv') return copy(location.href, 'Kopiert. Jetzt outbndr. zum Home-Bildschirm hinzufügen.');
   if (a === 'pasteX') { pasteOpen = false; pasteVal = ''; return draw(true); }
   if (a === 'pasteGo') return pasteGo();
@@ -1486,8 +1513,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'tdel') return deleteTrip();
 });
 $('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) { navTo('pop', () => { Wz.step--; if (WSTEPS[Wz.step] === 'stay' && !Wz.stops.length) Wz.step--; Wz.err = ''; draw(true); scrollTo(0, 0); }); return; }
-  if (stack.length > 1) return go(stack[stack.length - 2]);
-  if (['people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) return go('#/r/' + T.id); Wz = null; go('#/'); });
+  if (view.n === 'new' || view.n === 'home') Wz = null; return go(backTarget()); });
 /* ---------- Bewegung: Gleichartiges bewegt sich gleich (DESIGN.md Abschnitt 5) ----------
    Aufklappen: Höhe + Deckkraft, Dauer wächst mit der Höhe (0,32–0,56 s), Kurve (.45,0,.15,1); Zuklappen ¾ der Zeit, Kurve (.4,0,.2,1).
    Pfeil dreht sich im selben Takt. Umschalter: Perle gleitet 0,42 s (Feder), neuer Inhalt blendet ein. Während einer Bewegung warten Live-Daten (slides). */
