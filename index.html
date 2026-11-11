@@ -542,9 +542,9 @@ html.ttl .ntitle{opacity:1;transform:none}
 .wxn b{font-size:44px;font-weight:300;line-height:1;font-family:var(--rnd);font-variant-numeric:tabular-nums}
 .wxn .gr{flex:1;min-width:0;font-size:15px;color:var(--mu);line-height:1.35}
 .wxn .gr span{display:block;color:var(--tx);font-size:17px}
-.wxr{display:grid;grid-template-columns:minmax(58px,auto) 36px 36px 1fr 36px;align-items:center;column-gap:10px;min-height:50px;border-bottom:.5px solid var(--bd);font-size:17px;font-variant-numeric:tabular-nums}
+.wxr{display:grid;grid-template-columns:minmax(58px,auto) 36px 36px 1fr 36px;align-items:center;column-gap:10px;min-height:54px;border-bottom:.5px solid var(--bd);font-size:17px;font-variant-numeric:tabular-nums}
 .wxr:last-child{border-bottom:0}
-.wxr .wd{font-weight:500;white-space:nowrap}
+.wxr .wd{display:flex;flex-direction:column;justify-content:center;white-space:nowrap;line-height:1.15}.wxr .wd b{font-weight:500}.wxr .wd small{font-size:13px;color:var(--mu);font-variant-numeric:tabular-nums}
 .wxr .wic{display:flex;flex-direction:column;align-items:center;line-height:1}
 .wxr .wic .wxi{width:24px;height:24px}
 .wxr .wic small{font-size:11px;font-weight:600;color:var(--rain);margin-top:2px;white-space:nowrap}
@@ -1125,7 +1125,7 @@ function wxHTML(s, multi) { const w = wxFor(s), a = s.from || T.info.from || '',
   if (w.cur) h += `<div class="wxn">${wxIcon(w.cur.c)}<b>${w.cur.t}°</b><div class="gr"><span>${esc(WCODE(w.cur.c)[0])}</span>${td ? `H: ${td.hi}° · T: ${td.lo}°` : 'jetzt'}</div></div>`;
   if (show.length) { const mn = Math.min(...show.map(d => d.lo)), mx = Math.max(...show.map(d => d.hi)), sp = Math.max(1, mx - mn);
     h += show.map(d => { const l = (d.lo - mn) / sp * 100, r = (d.hi - mn) / sp * 100, now = d.d === today() && w.cur ? Math.min(100, Math.max(0, (w.cur.t - mn) / sp * 100)) : null;
-      return `<div class="wxr"><span class="wd">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}</span><span class="wic">${wxIcon(d.c)}${d.p != null && d.p >= 30 ? `<small>${d.p}%</small>` : ''}</span><span class="wlo">${d.lo}°</span><span class="wbar"><i style="left:${l.toFixed(1)}%;width:${Math.max(4, r - l).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(d.lo)},${tempCol(d.hi)})"></i>${now != null ? `<b style="left:${now.toFixed(1)}%"></b>` : ''}</span><span class="whi">${d.hi}°</span></div>`; }).join('');
+      return `<div class="wxr"><span class="wd"><b>${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', ''))}</b><small>${D(d.d).getDate()}.${D(d.d).getMonth() + 1}.</small></span><span class="wic">${wxIcon(d.c)}${d.p != null && d.p >= 30 ? `<small>${d.p}%</small>` : ''}</span><span class="wlo">${d.lo}°</span><span class="wbar"><i style="left:${l.toFixed(1)}%;width:${Math.max(4, r - l).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(d.lo)},${tempCol(d.hi)})"></i>${now != null ? `<b style="left:${now.toFixed(1)}%"></b>` : ''}</span><span class="whi">${d.hi}°</span></div>`; }).join('');
     h += `<p class="wxh">${ours.length ? (today() >= a && today() <= b ? 'Unsere restlichen Tage dort' : 'Unsere Tage dort') : 'Die nächsten Tage'}${a && !ours.length && !over && last && a > last ? ` · für unsere Tage ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}` : ''}</p>`; }
   return h + '</div></div>'; }
 
