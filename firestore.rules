@@ -1,12 +1,15 @@
 rules_version = '2';
 // outbndr: Jede Reise ist abgeschlossen. Lesen und schreiben darf nur, wer über den Einladungs-Link beigetreten ist.
 // Aufbau:
-//   trips/{t}                    Reise (Name, Zeitraum)
+//   trips/{t}                    Reise (Name, Zeitraum, Stimmung, Ziele/Unterkunft, Anreise, Bereiche)
 //   trips/{t}/invites/{token}    gültige Einladungs-Links (der geheime Teil des Links ist die Dokument-ID)
 //   trips/{t}/members/{geraet}   ein Gerät, das beigetreten ist: { inv, pid, ph } – nur für das Gerät selbst lesbar
-//   trips/{t}/people/{pid}       eine Person der Reise (Name, Farbe, Admin)
+//   trips/{t}/people/{pid}       eine Person der Reise (Name, Farbe, Admin, Gesehen-Merker)
 //   trips/{t}/people/{pid}/priv/pin   PIN-Prüfwert der Person – für niemanden lesbar, nur die Regeln vergleichen
 //   trips/{t}/acts, signups      Vorschläge und „dabei“/Daumen
+//   trips/{t}/costs              Ausgaben und Ausgleichszahlungen
+//   trips/{t}/lists/gen          allgemeine Einkaufsliste
+// Wird die Reise gelöscht, verlieren alle sofort den Zugriff (isDevice prüft, ob es sie noch gibt).
 service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn() { return request.auth != null; }
@@ -16,8 +19,8 @@ service cloud.firestore {
       function tpath() { return /databases/$(db)/documents/trips/$(t); }
       function mpath() { return /databases/$(db)/documents/trips/$(t)/members/$(me()); }
       function ppath(pid) { return /databases/$(db)/documents/trips/$(t)/people/$(pid); }
-      // Gerät ist über einen Einladungs-Link beigetreten
-      function isDevice() { return signedIn() && exists(mpath()); }
+      // Gerät ist über einen Einladungs-Link beigetreten, und die Reise gibt es noch
+      function isDevice() { return signedIn() && exists(mpath()) && exists(tpath()); }
       function myPid() { return get(mpath()).data.pid; }
       // Gerät gehört zu einer Person der Reise (Name + PIN bestätigt), und die Person gibt es noch
       function isIn() { return isDevice() && get(mpath()).data.get('pid', null) != null && exists(ppath(myPid())); }
@@ -31,16 +34,24 @@ service cloud.firestore {
       }
       function memberOk(d) { return d.keys().hasOnly(['inv', 'pid', 'ph']) && d.inv is string && (!('pid' in d) || pinOk(d)); }
       function personOk(d) {
-        return d.keys().hasOnly(['name', 'col', 'admin', 'ts']) && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+        return d.keys().hasOnly(['name', 'col', 'admin', 'ts', 'sn', 'cmr', 'nbase']) && d.name is string && d.name.size() > 0 && d.name.size() <= 40
           && d.col is string && d.col.size() <= 9;
       }
       function tripOk(d) {
-        return d.keys().hasOnly(['name', 'from', 'to', 'mood', 'cby', 'ts']) && d.get('mood', '') is string && d.get('mood', '').size() <= 12 && d.name is string && d.name.size() > 0 && d.name.size() <= 80
-          && d.from is string && d.from.size() <= 10 && d.to is string && d.to.size() <= 10;
+        return d.keys().hasOnly(['name', 'from', 'to', 'mood', 'cby', 'ts', 'areas', 'stops', 'travel', 'del'])
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+          && d.from is string && d.from.size() <= 10 && d.to is string && d.to.size() <= 10
+          && d.get('mood', '') is string && d.get('mood', '').size() <= 12
+          && d.get('areas', {}) is map && d.get('stops', []) is list && d.get('stops', []).size() <= 8
+          && d.get('travel', []) is list && d.get('travel', []).size() <= 16;
       }
       function actOk(d) {
         return d.title is string && d.title.size() > 0 && d.title.size() <= 200 && d.cat in ['act', 'food']
           && d.get('desc', '') is string && d.get('desc', '').size() <= 4000;
+      }
+      function costOk(d) {
+        return d.title is string && d.title.size() > 0 && d.title.size() <= 120 && d.amt is int && d.amt > 0 && d.amt < 10000000
+          && d.by is string && d.get('for', []) is list && d.get('for', []).size() > 0 && d.get('for', []).size() <= 60;
       }
 
       // Den Namen der Reise sieht, wer die (nicht erratbare) Adresse kennt; auflisten kann niemand
@@ -48,7 +59,7 @@ service cloud.firestore {
       allow list: if false;
       allow create: if signedIn() && request.resource.data.cby == me() && tripOk(request.resource.data);
       allow update: if isAdmin() && request.resource.data.cby == resource.data.cby && tripOk(request.resource.data);
-      allow delete: if false;
+      allow delete: if isAdmin();
 
       match /invites/{tok} {
         allow read: if isIn();
@@ -61,7 +72,10 @@ service cloud.firestore {
         allow list: if false;
         allow create: if signedIn() && u == me() && memberOk(request.resource.data)
           && existsAfter(/databases/$(db)/documents/trips/$(t)/invites/$(request.resource.data.inv));
-        allow update: if signedIn() && u == me() && memberOk(request.resource.data) && request.resource.data.inv == resource.data.inv;
+        // Profil wechseln/übernehmen nur, solange der Einladungs-Link dieses Geräts noch gilt (entfernte Personen kommen nach einem neuen Link nicht zurück)
+        allow update: if signedIn() && u == me() && memberOk(request.resource.data) && request.resource.data.inv == resource.data.inv
+          && (request.resource.data.get('pid', null) == resource.data.get('pid', null) && request.resource.data.get('ph', null) != resource.data.get('ph', null) && isIn()
+              || existsAfter(/databases/$(db)/documents/trips/$(t)/invites/$(resource.data.inv)));
         allow delete: if signedIn() && u == me();
       }
 
@@ -78,7 +92,7 @@ service cloud.firestore {
 
         match /priv/pin {
           allow read: if false;
-          // PIN festlegen nur für eine Person, die im selben Schreibvorgang neu entsteht
+          // PIN festlegen nur für eine Person, die im selben Schreibvorgang neu entsteht; ändern nur die Person selbst
           allow create: if signedIn() && !exists(ppath(pid)) && existsAfter(ppath(pid)) && getAfter(mpath()).data.pid == pid
             && request.resource.data.keys().hasOnly(['ph']) && request.resource.data.ph is string && request.resource.data.ph.size() == 64;
           allow update: if isIn() && myPid() == pid
@@ -90,9 +104,10 @@ service cloud.firestore {
       match /acts/{id} {
         allow read: if isIn();
         allow create: if isIn() && request.resource.data.by == myPid() && actOk(request.resource.data);
-        // Inhalt ändern: wer es vorgeschlagen hat oder Admin; Kommentare (cm) alle Mitreisenden
+        // Inhalt ändern: wer es vorgeschlagen hat oder Admin; Kommentare, Zutaten und „erledigt“ alle Mitreisenden
         allow update: if isIn() && actOk(request.resource.data) && request.resource.data.by == resource.data.by && (
-          resource.data.by == myPid() || isAdmin() || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cm']));
+          resource.data.by == myPid() || isAdmin()
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cm', 'shop', 'noshop', 'done', 'dby']));
         allow delete: if isIn() && (resource.data.by == myPid() || isAdmin());
       }
 
@@ -103,6 +118,22 @@ service cloud.firestore {
         // eigene Stimme zurücknehmen; Admin; oder aufräumen, wenn es den Vorschlag nicht mehr gibt
         allow delete: if isIn() && (resource.data.pid == myPid() || isAdmin()
           || !exists(/databases/$(db)/documents/trips/$(t)/acts/$(resource.data.act)));
+      }
+
+      match /costs/{id} {
+        allow read: if isIn();
+        allow create: if isIn() && request.resource.data.cby == myPid() && costOk(request.resource.data);
+        // ändern: wer eingetragen oder bezahlt hat, Admin; Eintragender bleibt gleich
+        allow update: if isIn() && costOk(request.resource.data) && request.resource.data.cby == resource.data.cby
+          && (resource.data.cby == myPid() || resource.data.by == myPid() || isAdmin());
+        allow delete: if isIn() && (resource.data.cby == myPid() || resource.data.by == myPid() || isAdmin()
+          || (resource.data.get('kind', '') == 'pay' && myPid() in resource.data.get('for', [])));
+      }
+
+      match /lists/{id} {
+        allow read: if isIn();
+        allow create, update: if isIn() && id == 'gen' && request.resource.data.keys().hasOnly(['shop', 'noshop']);
+        allow delete: if isAdmin();
       }
     }
   }

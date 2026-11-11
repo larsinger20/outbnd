@@ -11,24 +11,24 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 
 ## Was Lars einmalig einrichtet (Anleitung kommt Schritt für Schritt)
 1. Neues Firebase-Projekt für outbndr (kostenlos) + Einstellungen für Anmeldung und Regeln
-2. Google-Maps-Schlüssel für die outbndr-Adresse
+2. ~~Google-Maps-Schlüssel~~ nicht mehr nötig (Karte und Ortssuche über OpenStreetMap)
 3. GitHub Pages für das Repository einschalten (Adresse: `larsinger20.github.io/outbnd`)
 
 ## Etappen (jede für sich nutzbar, getestet, erst nach OK online)
-**1. Grundgerüst** (gebaut und getestet 10.11.2026, wartet auf Abnahme)
+**1. Grundgerüst** (fertig 10.11.2026)
 - Seite im neuen Design: Reiter-Leiste unten, Kacheln, ⋯-Menü, hell/dunkel; Apple-Neutral, Stimmung je Reise (Verlauf + Akzentfarbe), Countdown im Kopf
 - Startseite „Unsere Reisen“ (Reisen dieses Geräts), „+ Reise planen“
 - Reise anlegen (erst nur Name + Zeitraum), Einladungs-Link, Beitritt mit Name + PIN
 - Aktivitäten und Essen: vorschlagen, „Ich bin dabei“ / Daumen, Kommentare, live für alle
 
-**2. Setup-Assistent**
+**2. Setup-Assistent** (fertig 11.11.2026)
 - Eine Frage pro Bildschirm: Name, Zeitraum, Ziel/Stops, Anreise (Flug/Auto/Zug), Unterkunft, gewünschte Bereiche, Link teilen
 - Reise-Info mit Countdown, Wetter, Unterkunft, Anreise (später alles änderbar)
 
-**3. Alles Weitere vom Malta-Planner**
+**3. Alles Weitere vom Malta-Planner** (fertig 11.11.2026; Karte mit OpenStreetMap statt Google, kein Schlüssel nötig)
 - Kosten teilen, Einkaufsliste, Mein Plan, Karte, „Neu“-Hinweise, Erledigt
 
-**4. Mehrere Stops / Roadtrip**
+**4. Mehrere Stops / Roadtrip** (fertig 11.11.2026)
 - Stops mit Ort, Zeitraum, Unterkunft; Vorschläge optional einem Stop zuordnen
 - Etappen auf der Karte, Wetter je Stop, „Heute: A → B“
 
@@ -36,5 +36,4 @@ Reiseplanung für Gruppen als Web-App: Link öffnen und los, keine Installation.
 - Icon und Name auf dem Home-Bildschirm, Rückblick nach der Reise, Reise auf „Nur lesen“ stellen
 
 ## Offene Fragen
-- Noch nicht in Etappe 1: PIN ändern, Reise umbenennen/Zeitraum ändern, Einladungs-Link erneuern, Mitreisende entfernen, Reise von der Startseite nehmen (Regeln erlauben es schon)
 - Icon-Entwürfe (3–4 Varianten) für Lars zur Auswahl

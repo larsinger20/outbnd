@@ -57,6 +57,11 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 - Neue Stimmung = Verlauf + Apple-Farbe (hell und dunkel) + Kontrast messen. Keine frei mischbaren Farben (Lesbarkeit nicht garantierbar).
 - Apples Leitlinie dazu (Richtlinie „Color“ und WWDC 2025/2026): Farbe gehört in den Inhalt, nicht in die Leisten; Glas bleibt neutral und nimmt die Farbe darunter auf; Akzent sparsam und mit Bedeutung.
 
+- **Umschalter** (Reise-Info, Essen): Kapsel mit gleitender Perle (`.seg2`/`.ind2`, Position per `translate`, Feder-Kurve), wie der abgenommene Umschalter der Vorlage. Auf der Karte als Glas (`.mseg`), weil sie über dem Inhalt schwebt.
+- **Schalter** (Bereiche): iOS-Schalter 51×31, an = Systemgrün.
+- **Karte**: Vollbild, wächst per `transform: scale` aus dem Karte-Knopf, Inhalt weicht auf 94 % zurück; nur transform/opacity. Schließen-Knopf und Filter schweben als Glas.
+- Knöpfe, die auf dem Verlauf im Kopf liegen, haben den Kachel-Grund (sonst zu blass).
+
 ## 8. Bedienung
 - **Kein Wischen, kein Halte-Menü auf Kacheln** (Entscheidung Lars: in einer Web-App schwer zu bedienen und nicht intuitiv). Alles läuft sichtbar über ⋯.
 - Tippflächen mind. 44.
