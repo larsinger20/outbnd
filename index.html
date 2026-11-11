@@ -179,8 +179,10 @@ select.fi{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xml
 .cmx{width:28px;height:28px;flex:none;position:relative;display:flex;align-items:center;justify-content:center;color:var(--mu)}
 .cmx::after{content:'';position:absolute;inset:-8px 0 -8px -8px}
 .cmx svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
-.cma{display:flex;gap:8px;align-items:center;margin-top:6px;border-radius:999px;background:var(--fill);padding:2px 4px 2px 14px}
-.cma:focus-within{box-shadow:0 0 0 2px var(--ac)}
+.cma{display:flex;gap:8px;align-items:flex-end;margin-top:6px;border-radius:22px;background:var(--fill);padding:2px 4px 2px 14px}
+.cma:focus-within{box-shadow:inset 0 0 0 2px var(--ac)}
+.cma textarea{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);padding:9px 0;resize:none;height:40px;max-height:132px;overflow-y:auto;display:block}
+.cma button{margin-bottom:2px}
 .cma input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:40px;padding:0}
 .cma button{width:36px;height:36px;border-radius:50%;background:var(--acb);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;position:relative}
 .cma button::after{content:'';position:absolute;inset:-4px}
@@ -415,7 +417,7 @@ main.rcl.mst{animation:none}
 .tick svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:0}
 .tick.on{background:var(--acb);box-shadow:none}.tick.on svg{opacity:1}
 .sadd{display:flex;gap:8px;align-items:center;margin-top:6px;border-radius:999px;background:var(--fill);padding:2px 4px 2px 14px}
-.sadd:focus-within{box-shadow:0 0 0 2px var(--ac)}
+.sadd:focus-within{box-shadow:inset 0 0 0 2px var(--ac)}
 .sadd input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:40px;padding:0}
 .sadd button{width:36px;height:36px;border-radius:50%;background:var(--acb);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
 .sadd button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
@@ -582,10 +584,11 @@ html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar
 .tbub b{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600;margin-bottom:4px}
 .tbub b svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tbub p{margin:0 0 12px;font-size:15px;line-height:1.38;color:var(--mu)}
-.tbf{display:flex;align-items:center;gap:6px}.tdots{flex:1;display:flex;margin-left:-4px}
+.tbf{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.tdots{flex:0 0 100%;display:flex;margin:-6px 0 2px -4px}.tbf .tx{margin-right:auto;margin-left:-6px}.tbf .tn{margin-left:auto}
 .tdots button{padding:10px 3px;display:flex}.tdots i{display:block;width:7px;height:7px;border-radius:4px;background:var(--fill);transition:width .3s var(--ios),background-color .3s}
 .tdots .on i{width:18px;background:var(--ac)}
 .tbf .tx{color:var(--mu);font-size:15px;padding:8px 6px}
+.tbub button{outline:none}.tbub button:focus-visible{box-shadow:inset 0 0 0 2px var(--tx)}
 .tbf .tn{min-height:40px;padding:0 18px;border-radius:20px;background:var(--acb);color:#fff;font-size:15px;font-weight:600}
 .tfx{position:fixed;z-index:61;font-size:24px;pointer-events:none;will-change:transform}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
@@ -761,7 +764,8 @@ const PS = {};         // Ortssuche je Feld: { res, q }
 let ownBack = false, ownRep = false;
 // Lichtschein vom Antippen sofort löschen, bevor die Seite wechselt: Safari fotografiert die Seite für die Zurück-Geste, sonst ist der Schein dort noch zu sehen
 function noGlow() { const R = document.documentElement; document.querySelectorAll('.lq.pr').forEach(e => e.classList.remove('pr')); R.classList.add('noglow'); void R.offsetWidth; setTimeout(() => R.classList.remove('noglow'), 600); }
-const go = h => { noGlow(); if (location.hash === h) return route();
+const go = (h, drawn) => { if (!drawn && !document.hidden) { noGlow(); return requestAnimationFrame(() => requestAnimationFrame(() => go(h, true))); }
+  if (location.hash === h) return route();
   if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
   if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) { ownRep = true; location.replace(h); } else location.hash = h; };
 // Zurück-Knopf: eine Ebene höher (wie iOS); nur Stimmung aus „Reise bearbeiten“ führt dorthin zurück
@@ -1038,6 +1042,7 @@ function draw(force) {
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
   if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
+  A.querySelectorAll('textarea[data-cmi]').forEach(t => { if (t.value) growCm(t); });
   topTitle(); document.documentElement.classList.toggle('fo', !!(view.n === 'trip' && (F || Cf || Rv)));   // Formular offen: Reiter-Leiste weg (verdeckt sonst die Knöpfe)
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
@@ -1155,8 +1160,8 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     ${a.res && (a.res.t || a.res.p) ? `<div class="rsv">${SY.clock}<span>Reserviert${a.res.t ? ' · ' + esc(a.res.t) + ' Uhr' : ''}${a.res.p ? ' · ' + esc(a.res.p) + (a.res.p == 1 ? ' Person' : ' Personen') : ''}</span></div>` : ''}
     ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div>${Rv.err ? `<p class="err">${esc(Rv.err)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div></div>` : ''}
     ${food && a.kind === 'cook' && !a.done ? shopBox(a) : ''}`;
-  if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length ? cms.length + ' Kommentare' : 'Kommentar schreiben'}${nCm && !open ? ` · <span style="color:#ff9f0a">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
-      <div class="cma"><input data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben" value="${esc(cmDraft[a.id] || '')}"><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
+  if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length ? cms.length + ' Kommentare' : 'Kommentare'}${nCm && !open ? ` · <span style="color:#ff9f0a">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
+      <div class="cma"><textarea rows="1" data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben">${esc(cmDraft[a.id] || '')}</textarea><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
   h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ' waren dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
     ${a.done ? `<span class="dn">${SY.check}Erledigt</span>` : `<button class="go lq${mine ? ' in' : ''}" type="button" data-a="go" aria-pressed="${mine}">${food ? `${SY.thumb}<span>${ids.length}</span>` : mine ? `${SY.check}<span>Du bist dabei</span>` : `${SY.join}<span>Ich bin dabei</span>`}<span class="gl"></span></button>`}</div></div></article>`;
   return h; }
@@ -1227,7 +1232,7 @@ function tourGo(i) { while (i < TS.length && !tq(TS[i][0])) i++; if (i >= TS.len
     setHole(hr); setBub({ top: mix(fromB.top, endB.top, k), left: mix(fromB.left, endB.left, k) });
     if (k < 1) requestAnimationFrame(frame); else { tourAnim = null; tourPlace(); } };
   requestAnimationFrame(frame); setTimeout(() => { if (tourAnim === id) { tourAnim = null; scrollTo(0, y1); tourPlace(); } }, dur + 300); }
-const holeRect = (r, el) => { const pad = 6, rad = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 12, h = r.height + pad * 2; return { top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: h, rad: Math.min(rad + pad, h / 2) }; };
+const holeRect = (r, el) => { const pad = 6, rad = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 12, h = r.height + pad * 2, l = Math.max(8, r.left - pad), rt = Math.min(innerWidth - 8, r.right != null ? r.right + pad : r.left + r.width + pad); return { top: r.top - pad, left: l, width: rt - l, height: h, rad: Math.min(rad + pad, h / 2) }; };
 function bubPos(hr) { const b = $('tbub'), bw = b.offsetWidth, bh = b.offsetHeight, below = hr.top + hr.height + 14 + bh < innerHeight - 12;
   return { top: below ? hr.top + hr.height + 14 : Math.max(12, hr.top - 14 - bh), left: Math.min(Math.max(16, hr.left + hr.width / 2 - bw / 2), innerWidth - bw - 16) }; }
 function setHole(hr) { tourHole = hr; Object.assign($('thole').style, { top: hr.top + 'px', left: hr.left + 'px', width: hr.width + 'px', height: hr.height + 'px', borderRadius: hr.rad + 'px' }); }
@@ -1457,7 +1462,7 @@ function objFor(el) { const o = el.dataset.o;
   return view.n === 'new' ? Wz : view.n === 'join' ? J : view.n === 'profile' ? Pf : F; }
 $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   if (el.dataset.k === 'paste') { pasteVal = el.value; return; }
-  if (el.dataset.cmi != null) { cmDraft[el.closest('[data-id]').dataset.id] = el.value; return; }
+  if (el.dataset.cmi != null) { cmDraft[el.closest('[data-id]').dataset.id] = el.value; growCm(el); return; }
   if (el.dataset.shi != null) { shopDraft[el.dataset.shi] = el.value; return; }
   if (el.dataset.pk) { const k = el.dataset.pk; if (k === 'wstop') Wz.q = el.value; else if (k === 'estop') Ed.q = el.value; else if (k === 'fplace' && F) { F.pq = el.value; if (F.place && el.value.trim() !== F.place.name) F.place = el.value.trim() ? { name: el.value.trim() } : null; }
     else if (k.startsWith('stay-') && Ed && Ed.d) { const y = Ed.d.stay = Ed.d.stay || {}; y.addr = el.value; delete y.lat; delete y.lng; }
@@ -1469,8 +1474,9 @@ $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   if (el.type === 'date' && f === 'from' && (o === Ed || (Ed && o === Ed.d && Ed.kind === 'stop'))) { if (o.to && o.to < o.from) o.to = o.from; draw(true); }
   if (el.dataset.o === 'cf' && f === 'amt' && !Cf.pay) { const hn = el.closest('.form').querySelector('.hint'); if (hn) hn.textContent = Cf.for.length ? (parseAmt(Cf.amt) > 0 ? 'Je ' + eur(Math.round(parseAmt(Cf.amt) / Cf.for.length)) : Cf.for.length + (Cf.for.length === 1 ? ' Person' : ' Personen')) : 'Bitte wähle mindestens eine Person.'; } });
 $('app').addEventListener('change', e => { const el = e.target; if (el.tagName === 'SELECT' && el.dataset.f) { const o = objFor(el); if (o) o[el.dataset.f] = el.value; } });
-$('app').addEventListener('keydown', e => { if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return; const el = e.target;
-  if (el.dataset.cmi != null) { e.preventDefault(); sendCm(el.closest('[data-id]').dataset.id); }
+const growCm = el => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 132) + 'px'; };   // Kommentarfeld wächst mit dem Text
+$('app').addEventListener('keydown', e => { if (e.key !== 'Enter' || (e.target.tagName !== 'INPUT' && !(e.target.tagName === 'TEXTAREA' && e.target.dataset.cmi != null))) return; const el = e.target;
+  if (el.dataset.cmi != null) { if (e.shiftKey) return; e.preventDefault(); sendCm(el.closest('[data-id]').dataset.id); }
   else if (el.dataset.shi != null) { e.preventDefault(); addShop(el.dataset.shi); }
   else if (el.dataset.pk) { e.preventDefault(); const r = PS[el.dataset.pk]; if (r && r.res[0]) pickPlace(el.dataset.pk, r.res[0]); }
   else if (view.n === 'new') { e.preventDefault(); WSTEPS[Wz.step] === 'who' ? createTrip() : wizNext(); }
