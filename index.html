@@ -605,8 +605,9 @@ const parseAmt = v => { let s = String(v || '').replace(/[\s €]|eur/gi, '');
   return Math.round(parseFloat(s) * 100); };
 
 /* ---------- Dieses Gerät: Liste der Reisen (nur Name und Link; alles andere liegt geschützt in der Datenbank) ---------- */
-// Speicherschlüssel bleibt „outbnd.trips“ (Name vor der Umbenennung), sonst verlieren Geräte ihre Reiseliste
-const LS = { get() { return store.get('outbnd.trips', []); }, put(l) { store.set('outbnd.trips', l); },
+// Liste heißt seit der Umbenennung „outbndr.trips“; die alte Liste („outbnd.trips“) wird einmal übernommen, damit keine Reise verloren geht
+try { if (localStorage.getItem('outbndr.trips') == null && localStorage.getItem('outbnd.trips') != null) { localStorage.setItem('outbndr.trips', localStorage.getItem('outbnd.trips')); localStorage.removeItem('outbnd.trips'); } } catch (e) {}
+const LS = { get() { return store.get('outbndr.trips', []); }, put(l) { store.set('outbndr.trips', l); },
   add(t) { const l = LS.get(), i = l.findIndex(x => x.id === t.id); if (i >= 0) l[i] = { ...l[i], ...t }; else l.unshift(t); LS.put(l); },
   one(id) { return LS.get().find(x => x.id === id); }, del(id) { LS.put(LS.get().filter(x => x.id !== id)); } };
 
