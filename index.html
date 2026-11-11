@@ -441,7 +441,7 @@ main.rcl.mst{animation:none}
 .kbar i{position:absolute;top:0;bottom:0;border-radius:4px}
 .kbar i.p{background:var(--grn)}.kbar i.n{background:var(--red)}
 .kbar::before{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--mu);opacity:.5}
-.btns.row{grid-template-columns:1fr 1fr}
+
 /* Mein Plan */
 .pday{font-size:20px;font-weight:600;margin:22px 4px 8px;font-family:var(--rnd)}
 .pday:first-of-type{margin-top:0}
@@ -574,6 +574,19 @@ a.gl2 .chv,button.gl2 .chv{margin-left:auto}
 .appc li svg{width:19px;height:19px;vertical-align:-4px;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .appc .btn{width:100%}
 html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar{transition:transform .22s cubic-bezier(.3,.7,.4,1),opacity .25s ease,translate .35s var(--ios)}
+/* Kurze Tour (wie im Malta-Planner): Seite abgedunkelt, Lichtloch über dem erklärten Element, Glas-Blase daneben */
+.tour{position:fixed;inset:0;z-index:60;touch-action:none}
+.thole{position:fixed;border-radius:18px;pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.4),0 0 0 200vmax rgba(0,0,0,.55)}
+.tbub{position:fixed;width:min(330px,calc(100vw - 32px));padding:18px 18px 12px;border-radius:26px;color:var(--tx);background:var(--dlg);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:var(--mrim),0 16px 50px rgba(0,0,0,.35)}
+.tbub b{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600;margin-bottom:4px}
+.tbub b svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tbub p{margin:0 0 12px;font-size:15px;line-height:1.38;color:var(--mu)}
+.tbf{display:flex;align-items:center;gap:6px}.tdots{flex:1;display:flex;margin-left:-4px}
+.tdots button{padding:10px 3px;display:flex}.tdots i{display:block;width:7px;height:7px;border-radius:4px;background:var(--fill);transition:width .3s var(--ios),background-color .3s}
+.tdots .on i{width:18px;background:var(--ac)}
+.tbf .tx{color:var(--mu);font-size:15px;padding:8px 6px}
+.tbf .tn{min-height:40px;padding:0 18px;border-radius:20px;background:var(--acb);color:#fff;font-size:15px;font-weight:600}
+.tfx{position:fixed;z-index:61;font-size:24px;pointer-events:none;will-change:transform}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
 </style>
 </head>
@@ -640,6 +653,7 @@ const KIND = { flug: ['Flug', '<path d="M21 15.5 13.5 11V5.5a1.5 1.5 0 0 0-3 0V1
   bus: ['Bus', '<rect x="5" y="3.5" width="14" height="14" rx="2.5"/><path d="M5 11h14M8 17.5V20M16 17.5V20M5 7h14"/>'],
   faehre: ['Fähre', '<path d="M3 17c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0M5 14l1-5h12l1 5M8 9V6h8v3M12 6V3.5"/>'] };
 const MP = {
+  help: '<circle cx="12" cy="12" r="8.6"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7M12 16.9v.1"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', cm: '<path d="M4 5h16v11H9l-5 4z"/>', del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
   share: '<path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M6 12H5v8.5h14V12h-1"/>', ppl: '<circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.6-3.5 3.1-5.4 6.2-5.4s5.6 1.9 6.2 5.4M16 4.9a3.4 3.4 0 0 1 0 6.2M18.2 14.9c1.6.8 2.7 2.4 3 5.1"/>',
   mood: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
@@ -849,7 +863,7 @@ async function openTrip(id) {
     t.off.push(onSnapshot(tcol(id, 'invites'), s => { t.toks = []; s.forEach(d => t.toks.push({ id: d.id, ts: d.data().ts || 0 })); t.toks.sort((a, b) => b.ts - a.ts); t.tok = t.toks[0] && t.toks[0].id; if (t.tok) LS.add({ id, tok: t.tok }); }, () => {}));
   } catch (e) { if (T !== t) return; if (denied(e)) needJoin(t); else { console.error(e); t.st = 'err'; draw(); } }
 }
-function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
+function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); maybeTour(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
 // Gerät gehört (noch) nicht dazu: mit gemerktem Link zum Beitritt, sonst um den Link bitten
 function needJoin(t) { t.off.forEach(f => f()); t.off = []; const l = LS.one(t.id); if (l && l.tok) { T = null; go('#/e/' + t.id + '/' + l.tok); } else { t.st = 'nolink'; draw(); } }
 const areas = () => ({ food: true, cost: true, plan: true, map: true, ...((T && T.info && T.info.areas) || {}) });
@@ -1138,7 +1152,7 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     ${a.res && (a.res.t || a.res.p) ? `<div class="rsv">${SY.clock}<span>Reserviert${a.res.t ? ' · ' + esc(a.res.t) + ' Uhr' : ''}${a.res.p ? ' · ' + esc(a.res.p) + (a.res.p == 1 ? ' Person' : ' Personen') : ''}</span></div>` : ''}
     ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div>${Rv.err ? `<p class="err">${esc(Rv.err)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div></div>` : ''}
     ${food && a.kind === 'cook' && !a.done ? shopBox(a) : ''}`;
-  if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length + ' Kommentare'}${nCm && !open ? ` · <span style="color:#ff9f0a">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
+  if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length ? cms.length + ' Kommentare' : 'Kommentar schreiben'}${nCm && !open ? ` · <span style="color:#ff9f0a">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
       <div class="cma"><input data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben" value="${esc(cmDraft[a.id] || '')}"><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
   h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ' waren dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
     ${a.done ? `<span class="dn">${SY.check}Erledigt</span>` : `<button class="go lq${mine ? ' in' : ''}" type="button" data-a="go" aria-pressed="${mine}">${food ? `${SY.thumb}<span>${ids.length}</span>` : mine ? `${SY.check}<span>Du bist dabei</span>` : `${SY.join}<span>Ich bin dabei</span>`}<span class="gl"></span></button>`}</div></div></article>`;
@@ -1169,8 +1183,68 @@ function slowHTML(o) { if (!o || !o.t0) return ''; const s = Date.now() - o.t0; 
   return `<div class="slow" role="status"><span class="gr"><b>${s < 20000 ? 'Dauert etwas länger' : 'Keine Verbindung zur Datenbank'}</b>${navigator.onLine === false ? 'Das Gerät ist offline.' : s < 20000 ? 'Die Verbindung ist gerade langsam.' : 'Bitte Verbindung prüfen.'}${o.stage && s >= 20000 ? `<small style="display:block;font-size:12px;opacity:.7;margin-top:2px">Hängt bei: ${esc(o.stage)}</small>` : ''}</span><button class="btn g s lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button></div>`; }
 function headHTML() { const n = Object.keys(T.people).length, cd = countdown(T.info), pp = Object.entries(T.people).sort((a, b) => (b[0] === T.me) - (a[0] === T.me) || (a[1].ts || 0) - (b[1].ts || 0));
   return `<div class="hd w">${cd ? `<span class="cd">${esc(cd)}</span>` : ''}<h1>${esc(T.info.name)}</h1><p class="sub">${esc(range(T.info.from, T.info.to))} · ${n === 1 ? 'bisher nur du' : n + ' Mitreisende'}</p>${avs(pp.map(x => x[0]), 7)}</div>`; }
-function tipHTML() { if (store.get('outbndr.tip1', false)) return '';
-  return `<div class="tip"><b>So planen wir zusammen</b>Schlag vor, was du machen möchtest. Mit „Ich bin dabei“ oder dem Daumen zeigst du, was dir gefällt. Über ⋯ an jedem Vorschlag kannst du kommentieren, einen Ort oder eine Reservierung eintragen und Erledigtes abhaken.<button class="tx" type="button" data-a="tipx" aria-label="Tipp ausblenden">${XS}</button></div>`; }
+/* ---------- Kurze Tour beim ersten Öffnen einer Reise auf diesem Gerät (outbndr.tour), später über ⋯ „Kurze Tour“ ---------- */
+const tabSvg = k => { const t = document.querySelector(`#trow .tab[data-t="${k}"] svg`); return t ? t.outerHTML : ''; };
+function tourSteps() { const a = areas(), names = TABS.map(x => x[1]), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' und ' + names[names.length - 1] : names[0];
+  return [
+    ['#app [data-a=infopage], #app .navrow', SY.pin, 'Unsere Reise-Info', 'Hier stehen das Wetter an unseren Zielen, die Unterkünfte und die Anreise.'],
+    ['#tbar', tabSvg('act'), TABS.length > 1 ? TABS.length + ' Bereiche' : 'Aktivitäten', `Unten wechseln wir zwischen ${esc(list)}.${a.plan ? ' „Mein Plan“ zeigt deine Reise nach Tagen.' : ''}`],
+    ['#app [data-a=add]', SY.plus, 'Selbst vorschlagen', 'Hier schlägst du eine Aktivität vor. Unter Essen geht das genauso mit Koch- und Restaurant-Ideen.'],
+    ['#app .card[data-id]:not(.done) [data-a=go]', SY.join, 'Mitmachen', 'Mit „Ich bin dabei“ trägst du dich ein, beim Essen stimmst du mit dem Daumen ab. Nochmal tippen nimmt es zurück.'],
+    ['#app .card[data-id] .dots', `<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></svg>`, 'Mehr zu jedem Vorschlag', 'Über ⋯ schreibst du Kommentare, trägst eine Reservierung oder eine Ausgabe ein und hakst Erledigtes ab.'],
+    ['#app .filt', SY.pin, 'Nach Ziel filtern', 'Bei mehreren Zielen zeigen wir hier nur, was zu einem Ziel passt.'],
+    ['#app [data-a=map]', SY.map, 'Alles auf der Karte', 'Hier siehst du alle Vorschläge mit Ort, unsere Unterkünfte und den Weg dorthin.'],
+    ['#more', `<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></svg>`, 'Einladen und mehr', 'Oben rechts teilst du den Einladungs-Link, siehst die Mitreisenden und änderst dein Profil. Viel Spaß beim Planen!']]; }
+let tourOn = false, tourStep = 0, tourTimer = null, tourAnim = null, tourHole = null, tourBub = null, TS = [];
+const tq = sel => [...document.querySelectorAll(sel)].find(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+function maybeTour() { if (navigator.webdriver || store.get('outbndr.tour', false) || tourOn || view.n !== 'trip' || tab !== 'act' || (T.info.to && today() > T.info.to)) return;
+  setTimeout(() => { if (!tourOn && view.n === 'trip' && T && T.st === 'ok' && !store.get('outbndr.tour', false) && !document.querySelector('.dlg,.mn') && !F) startTour(); }, 900); }
+function startTour() { if (tourOn || view.n !== 'trip' || !T || T.st !== 'ok') return; closeMenu(); closeMap(true);
+  if (tab !== 'act') { tab = 'act'; mark(); draw(true); } F = Cf = Rv = null; draw(true);
+  TS = tourSteps(); tourOn = true; tourHole = tourBub = tourAnim = null;
+  document.body.insertAdjacentHTML('beforeend', '<div class="tour" id="tour" role="dialog" aria-modal="true" aria-label="Kurze Tour"><div class="thole" id="thole"></div><div class="tbub" id="tbub"></div></div>');
+  const t = $('tour'); if (!calm()) t.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease' });
+  t.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.tgo) tourGo(+b.dataset.tgo); else if (b.dataset.tn) { if (b.dataset.last) tourEnd(b); else tourGo(tourStep + 1); } else if (b.dataset.tskip) tourEnd(); });
+  addEventListener('resize', tourPlace); addEventListener('scroll', tourPlace, { passive: true }); tourTimer = setInterval(tourPlace, 600);
+  tourGo(0); }
+function tourGo(i) { while (i < TS.length && !tq(TS[i][0])) i++; if (i >= TS.length) return tourEnd();
+  tourStep = i; const [, ic, ti, tx] = TS[i], last = !TS.slice(i + 1).some(x => tq(x[0])), bub = $('tbub');
+  bub.innerHTML = `<b>${ic}<span>${ti}</span></b><p>${tx}</p><div class="tbf"><span class="tdots">${TS.map((x, k) => tq(x[0]) ? `<button type="button" class="${k === i ? 'on' : ''}" data-tgo="${k}" aria-label="Schritt ${k + 1}"><i></i></button>` : '').join('')}</span>${last ? '' : '<button type="button" class="tx" data-tskip="1">Überspringen</button>'}<button type="button" class="tn" data-tn="1"${last ? ' data-last="1"' : ''}>${last ? 'Los geht’s' : 'Weiter'}</button></div>`;
+  const el = tq(TS[i][0]), y0 = scrollY; let y1 = y0;
+  if (getComputedStyle(el).position !== 'fixed' && !el.closest('#tbar')) { const r = el.getBoundingClientRect(); y1 = Math.min(document.documentElement.scrollHeight - innerHeight, Math.max(0, r.top + y0 - Math.max(120, (innerHeight - r.height) / 2 - 80))); }
+  bub.querySelector('[data-tn]').focus({ preventScroll: true });
+  const fromH = tourHole, fromB = tourBub;
+  if (!fromH || calm()) { scrollTo(0, y1); tourAnim = null; return tourPlace(); }
+  // Seite, Lichtloch und Blase gleiten im selben Takt zum nächsten Element
+  const r0 = el.getBoundingClientRect(), endR = holeRect({ top: r0.top + y0 - y1, left: r0.left, width: r0.width, height: r0.height }, el), endB = bubPos(endR);
+  const t0 = performance.now(), dur = 520, ease = t => 1 - Math.pow(1 - t, 3), mix = (x, y, k) => x + (y - x) * k, id = tourAnim = {};
+  bub.animate([{ opacity: .4, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'ease-out' });
+  const frame = now => { if (tourAnim !== id || !tourOn) return; const k = ease(Math.min(1, (now - t0) / dur)); scrollTo(0, mix(y0, y1, k));
+    const cur = holeRect(el.getBoundingClientRect(), el), hr = {}; for (const q of ['top', 'left', 'width', 'height', 'rad']) hr[q] = mix(fromH[q], cur[q], k);
+    setHole(hr); setBub({ top: mix(fromB.top, endB.top, k), left: mix(fromB.left, endB.left, k) });
+    if (k < 1) requestAnimationFrame(frame); else { tourAnim = null; tourPlace(); } };
+  requestAnimationFrame(frame); setTimeout(() => { if (tourAnim === id) { tourAnim = null; scrollTo(0, y1); tourPlace(); } }, dur + 300); }
+const holeRect = (r, el) => { const pad = 6, rad = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 12, h = r.height + pad * 2; return { top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: h, rad: Math.min(rad + pad, h / 2) }; };
+function bubPos(hr) { const b = $('tbub'), bw = b.offsetWidth, bh = b.offsetHeight, below = hr.top + hr.height + 14 + bh < innerHeight - 12;
+  return { top: below ? hr.top + hr.height + 14 : Math.max(12, hr.top - 14 - bh), left: Math.min(Math.max(16, hr.left + hr.width / 2 - bw / 2), innerWidth - bw - 16) }; }
+function setHole(hr) { tourHole = hr; Object.assign($('thole').style, { top: hr.top + 'px', left: hr.left + 'px', width: hr.width + 'px', height: hr.height + 'px', borderRadius: hr.rad + 'px' }); }
+function setBub(bp) { tourBub = bp; Object.assign($('tbub').style, { top: bp.top + 'px', left: bp.left + 'px' }); }
+function tourPlace() { if (!tourOn || tourAnim || !$('thole')) return; const el = tq(TS[tourStep][0]); if (!el) return; const hr = holeRect(el.getBoundingClientRect(), el); setHole(hr); setBub(bubPos(hr)); }
+// Ende: beim letzten Schritt öffnet sich das Licht aus dem Knopf, ein paar Reise-Symbole fliegen; sonst einfach ausblenden
+function tourEnd(btn) { if (!tourOn) return; tourOn = false; clearInterval(tourTimer); store.set('outbndr.tour', true);
+  removeEventListener('resize', tourPlace); removeEventListener('scroll', tourPlace);
+  const t = $('tour'), done = () => { t && t.remove(); };
+  if (!t || calm()) return done();
+  if (btn) { const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, h = $('thole'), R = Math.hypot(innerWidth, innerHeight) * 1.1;
+    $('tbub').animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.85)' }], { duration: 260, easing: 'ease-in', fill: 'forwards' });
+    Object.assign(h.style, { transition: 'none', top: y - 1 + 'px', left: x - 1 + 'px', width: '2px', height: '2px', borderRadius: '50%' }); void h.offsetWidth;
+    Object.assign(h.style, { transition: 'all .7s cubic-bezier(.32,.72,0,1)', top: y - R + 'px', left: x - R + 'px', width: R * 2 + 'px', height: R * 2 + 'px' });
+    for (let i = 0; i < 18; i++) { const e = document.createElement('div'); e.className = 'tfx'; e.textContent = ['✈️', '🌍', '🏖️', '🗺️', '🎒', '☀️'][i % 6]; e.style.left = x - 12 + 'px'; e.style.top = y - 14 + 'px'; document.body.append(e);
+      const a = (-90 + (Math.random() - .5) * 120) * Math.PI / 180, v = 340 + Math.random() * 360, vx = Math.cos(a) * v, vy = Math.sin(a) * v, T2 = 1.1 + Math.random() * .4, sp = (Math.random() - .5) * 540;
+      e.animate([0, .15, .35, .55, .75, 1].map(o => ({ transform: `translate(${vx * o * T2}px,${vy * o * T2 + 1200 * (o * T2) ** 2 / 2}px) rotate(${sp * o}deg) scale(${o ? 1 : .3})`, opacity: o > .8 ? 0 : 1, offset: o })), { duration: T2 * 1000, delay: Math.random() * 100, fill: 'both' }).finished.then(() => e.remove(), () => e.remove()); }
+    t.animate([{ opacity: 1 }, { opacity: 1, offset: .5 }, { opacity: 0 }], { duration: 800, fill: 'forwards' }).finished.then(done, done); toast('Viel Spaß beim Planen!'); return; }
+  t.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' }).finished.then(done, done); }
+addEventListener('keydown', e => { if (tourOn && e.key === 'Escape') tourEnd(); });
 function recapHTML() { const i = T.info; if (!i.to || today() <= i.to) return '';
   const acts = T.acts.filter(a => a.title), act = acts.filter(a => a.cat !== 'food'), food = acts.filter(a => a.cat === 'food'), total = T.costs.filter(c => c.kind !== 'pay').reduce((n, c) => n + (c.amt || 0), 0);
   const nums = [[act.filter(a => a.done).length || act.length, act.filter(a => a.done).length ? 'erlebt' : 'Aktivitäten'], areas().food && [food.filter(a => a.done).length || food.length, 'Essen'], areas().cost && total && [Math.round(total / 100).toLocaleString('de-DE') + ' €', 'gemeinsam bezahlt'], [Object.keys(T.people).length, 'Mitreisende']].filter(x => x && x[0]);   // Nullen lassen wir weg
@@ -1178,7 +1252,7 @@ function recapHTML() { const i = T.info; if (!i.to || today() <= i.to) return ''
 function tripHTML() {
   let h = headHTML();
   if (tab === 'act') h += recapHTML();
-  if (tab === 'act' || tab === 'food') { h += infoHTML(); if (tab === 'act' && !(T.info.to && today() > T.info.to)) h += tipHTML(); }
+  if (tab === 'act' || tab === 'food') { h += infoHTML(); }
   if (tab === 'act') h += listHTML(false);
   else if (tab === 'food') h += `<div class="seg2" data-seg="food"><span class="ind2"></span><button type="button" data-fseg="sug" class="${foodView === 'sug' ? 'on' : ''}">Vorschläge</button><button type="button" data-fseg="shop" class="${foodView === 'shop' ? 'on' : ''}">Einkaufsliste</button></div>` + (foodView === 'shop' ? shopHTML() : listHTML(true));
   else if (tab === 'cost') h += costHTML();
@@ -1284,7 +1358,7 @@ function forText(f) { const all = Object.keys(T.people), miss = all.filter(id =>
   if (miss.length <= 3 && f.length > miss.length) return 'für alle außer ' + miss.map(id => id === T.me ? 'dir' : P(id).name).join(', ').replace(/, ([^,]*)$/, ' und $1');
   return 'für ' + f.length; }
 function costHTML() { const list = COSTS(), b = balances(), tr = settle(b), mine = b[T.me] || 0, total = list.filter(c => c.kind !== 'pay').reduce((n, c) => n + c.amt, 0);
-  let h = Cf ? costForm() : `<div class="btns row" style="margin:0 0 14px"><button class="btn lq" type="button" data-a="cadd">${SY.plus}<span>Ausgabe</span><span class="gl"></span></button><button class="btn g lq" type="button" data-a="cpay"><span>Überweisung</span><span class="gl"></span></button></div>`;
+  let h = Cf ? costForm() : `<div class="btns two" style="margin:0 0 14px"><button class="btn lq" type="button" data-a="cadd">${SY.plus}<span>Ausgabe</span><span class="gl"></span></button><button class="btn g lq" type="button" data-a="cpay"><span>Überweisung</span><span class="gl"></span></button></div>`;
   if (!list.length) return h + `<div class="card"><div class="empty"><b>Noch keine Ausgaben</b>Trag ein, was du für die Gruppe bezahlt hast. outbndr rechnet aus, wer wem wie viel überweist.</div></div>`;
   h += `<div class="card" style="margin-bottom:14px"><div class="c"><div class="kst"><small>Dein Stand</small><b class="${mine > 0 ? 'pos' : mine < 0 ? 'neg' : ''}">${mine > 0 ? '+' : mine < 0 ? '−' : ''}${eur(Math.abs(mine))}</b><p>${mine > 0 ? 'Du bekommst noch Geld' : mine < 0 ? 'Du schuldest noch Geld' : 'Du bist ausgeglichen'} · gesamt ${eur(total)}</p></div></div></div>`;
   const myTr = tr.filter(t => t.from === T.me || t.to === T.me), other = tr.filter(t => !myTr.includes(t));
@@ -1460,7 +1534,6 @@ $('app').addEventListener('click', async e => {
   if (a === 'wdone') { const t = Wz.t; Wz = null; return go('#/r/' + t); }
   if (a === 'jgo') return submitJoin();
   if (!T || T.st !== 'ok') return;
-  if (a === 'tipx') { store.set('outbndr.tip1', true); return draw(true); }
   if (a === 'edit') return go('#/r/' + T.id + '/reise');
   if (a === 'mood') return go('#/r/' + T.id + '/stimmung');
   if (a === 'infopage') return go('#/r/' + T.id + '/info');
@@ -1689,7 +1762,7 @@ function dots() { for (const r of [trow]) [...r.children].forEach(b => { const h
 /* ---------- Was steht in welchem ⋯-Menü ---------- */
 function menuFor(btn) { const k = btn.dataset.menu;
   if (k === 'home') { const id = btn.closest('[data-id]').dataset.id, t = LS.one(id); return [[[MP.share, 'Einladungs-Link teilen', () => t && t.tok ? share(id, t.tok, t.name) : toast('Öffne die Reise einmal, dann ist der Link da')]], [[MP.remove, 'Von diesem Gerät entfernen', async () => { if (!await ask({ t: `„${t.name}“ von diesem Gerät entfernen?`, m: 'Mit dem Einladungs-Link, deinem Namen und deiner PIN kommst du jederzeit zurück.', ok: 'Entfernen', danger: true })) return; LS.del(id); draw(true); }, 'dg']]]; }
-  if (btn.id === 'more') { const g = [[[MP.share, 'Einladungs-Link teilen', () => T.tok ? share(T.id, T.tok, T.info.name) : toast('Einen Moment, der Link lädt noch')], [MP.ppl, 'Mitreisende', () => go('#/r/' + T.id + '/leute')], [MP.me, 'Mein Profil', () => go('#/r/' + T.id + '/profil')]]];
+  if (btn.id === 'more') { const g = [[[MP.share, 'Einladungs-Link teilen', () => T.tok ? share(T.id, T.tok, T.info.name) : toast('Einen Moment, der Link lädt noch')], [MP.ppl, 'Mitreisende', () => go('#/r/' + T.id + '/leute')], [MP.me, 'Mein Profil', () => go('#/r/' + T.id + '/profil')], [MP.help, 'Kurze Tour', () => setTimeout(startTour, 350)]]];
     g.push(isAdmin() ? [[MP.gear, 'Reise bearbeiten', () => go('#/r/' + T.id + '/reise')], [MP.mood, 'Stimmung ändern', () => go('#/r/' + T.id + '/stimmung')]] : [[MP.remove, 'Reise auf diesem Gerät entfernen', leaveTrip]]);
     return g; }
   if (k === 'act') { const id = btn.closest('[data-id]').dataset.id, a = T.acts.find(x => x.id === id); if (!a) return null; const g = [[], []];
