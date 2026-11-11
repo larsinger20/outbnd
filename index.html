@@ -573,6 +573,7 @@ a.gl2 .chv,button.gl2 .chv{margin-left:auto}
 .appc li .n{width:24px;height:24px;border-radius:50%;background:var(--fill);color:var(--ac);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;margin-top:-1px}
 .appc li svg{width:19px;height:19px;vertical-align:-4px;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .appc .btn{width:100%}
+html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar{transition:transform .22s cubic-bezier(.3,.7,.4,1),opacity .25s ease,translate .35s var(--ios)}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
 </style>
 </head>
@@ -944,7 +945,7 @@ function paintPs(key) { const el = document.querySelector(`#app [data-ps="${CSS.
 // Auswahl übernehmen: je Feld ein Ziel
 function pickPlace(key, x) { delete PS[key];
   if (key === 'wstop') { Wz.stops.push({ id: rid(8), name: x.name, lat: x.lat, lng: x.lng }); Wz.q = ''; }
-  else if (key === 'estop') { Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openAnim('#app .edw'); return; }
+  else if (key === 'estop') { Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openForm('#app .edw'); return; }
   else if (key === 'fplace' && F) { F.place = { name: x.name, lat: x.lat, lng: x.lng, addr: x.addr || '' }; F.pq = x.name; }
   else if (key.startsWith('stay-') && Ed && Ed.d) { Ed.d.stay = { ...(Ed.d.stay || {}), addr: [x.name, x.addr].filter(Boolean).join(', '), lat: x.lat, lng: x.lng }; }
   draw(true); }
@@ -1018,7 +1019,7 @@ function draw(force) {
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
   if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
-  topTitle();
+  topTitle(); document.documentElement.classList.toggle('fo', !!(view.n === 'trip' && (F || Cf || Rv)));   // Formular offen: Reiter-Leiste weg (verdeckt sonst die Knöpfe)
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
   segPos();
@@ -1115,7 +1116,7 @@ function wxHTML(s, multi) { const w = wxFor(s), a = s.from || T.info.from || '',
 /* ---------- Vorschläge ---------- */
 function formHTML() { const f = F, food = f.cat === 'food', days = tripDays(T.info), st = stops();
   return `<div class="form" id="form"><h3>${f.id === 'new' ? (food ? 'Neues Essen' : 'Neue Aktivität') : 'Vorschlag bearbeiten'}</h3>
-    <label class="fl" for="ft">Titel</label><input class="fi" id="ft" data-k="ft" data-f="title" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="${food ? 'z. B. Grillabend' : 'z. B. Bootstour'}" value="${esc(f.title)}">
+    <label class="fl" for="ft">${food ? 'Was essen wir?' : 'Was machen wir?'}</label><input class="fi" id="ft" data-k="ft" data-f="title" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="${food ? 'z. B. Grillabend' : 'z. B. Bootstour'}" value="${esc(f.title)}">
     <label class="fl" for="fd">Beschreibung (wenn du magst)</label><textarea class="fi" id="fd" data-k="fd" data-f="desc" maxlength="2000" placeholder="Infos, Preis, Link …">${esc(f.desc)}</textarea>
     ${food ? `<span class="fl">Art</span><div class="ch">${[['cook', 'Kochen'], ['rest', 'Restaurant']].map(k => `<button type="button" data-kind="${k[0]}" class="${f.kind === k[0] ? 'on' : ''}" aria-pressed="${f.kind === k[0]}">${k[1]}</button>`).join('')}</div>` : ''}
     <label class="fl">Ort (wenn du magst)</label>${placeHTML('fplace', f.pq ?? (f.place ? f.place.name : ''), food ? 'z. B. Restaurant suchen' : 'Ort suchen')}${f.place && f.place.lat != null ? `<p class="hint" style="margin-top:6px">${SY.pin.replace('<svg', '<svg style="width:13px;height:13px;vertical-align:-2px;fill:none;stroke:var(--ac);stroke-width:2"')} Auf der Karte: ${esc(f.place.name)}${f.place.addr ? ', ' + esc(f.place.addr) : ''}</p>` : ''}
@@ -1465,7 +1466,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'tshare') { if (!T.tok) return toast('Einen Moment, der Link lädt noch'); return share(T.id, T.tok, T.info.name); }
   if (a === 'psave') return saveProfile();
   if (a === 'pinsave') return savePin();
-  if (a === 'add') { F = { id: 'new', cat: tab === 'food' ? 'food' : 'act', title: '', desc: '', day: '', time: '', kind: '', place: null, stop: stopF }; draw(true); openAnim($('form')); $('ft')?.focus({ preventScroll: true }); return; }
+  if (a === 'add') { F = { id: 'new', cat: tab === 'food' ? 'food' : 'act', title: '', desc: '', day: '', time: '', kind: '', place: null, stop: stopF }; draw(true); openForm('#form', '#ft'); return; }
   if (a === 'fx') return closeForm('#form', () => { F = null; delete PS.fplace; });
   if (a === 'fsave') return saveAct();
   if (a === 'go' && id) return toggleGo(id);
@@ -1491,8 +1492,8 @@ $('app').addEventListener('click', async e => {
   if (a === 'archt') return foldRow(archOpen, v => { archOpen = v; }, '#app .al', '#app [data-a=archt] svg');
   if (a === 'sback') { try { await updateDoc(shopRef(sid), { ['shop.' + k2 + '.arch']: deleteField(), ['shop.' + k2 + '.ok']: false }); toast('Wieder auf der Liste'); } catch (err) { console.error(err); toast(FAIL); } return; }
   // Kosten
-  if (a === 'cadd') { Cf = { t: '', amt: '', dt: today(), by: T.me, for: Object.keys(T.people) }; draw(true); openAnim($('cform')); $('ct')?.focus({ preventScroll: true }); return; }
-  if (a === 'cpay') { const o = Object.keys(T.people).find(x => x !== T.me) || T.me; Cf = { pay: true, amt: '', by: T.me, to: o }; draw(true); openAnim($('cform')); return; }
+  if (a === 'cadd') { Cf = { t: '', amt: '', dt: today(), by: T.me, for: Object.keys(T.people) }; draw(true); openForm('#cform', '#ct'); return; }
+  if (a === 'cpay') { const o = Object.keys(T.people).find(x => x !== T.me) || T.me; Cf = { pay: true, amt: '', by: T.me, to: o }; draw(true); openForm('#cform'); return; }
   if (a === 'cx') return closeForm('#cform', () => { Cf = null; });
   if (a === 'call') { Cf.for = Cf.for.length === Object.keys(T.people).length ? [] : Object.keys(T.people); return draw(true); }
   if (a === 'csave') return saveCost();
@@ -1504,7 +1505,7 @@ $('app').addEventListener('click', async e => {
   // Reise bearbeiten
   if (a === 'sopen') { const id2 = b.closest('[data-stop]').dataset.stop, x = (T.info.stops || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'stop', open: id2, d: clone(x), isNew: false, derr: '' }); draw(true); openAnim('#app .edw'); return; }
   if (a === 'lopen') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'leg', open: id2, d: clone(x), isNew: false, derr: '' }); draw(true); openAnim('#app .edw'); return; }
-  if (a === 'ladd') { const d = { id: rid(8), kind: 'flug', title: '', who: [] }; Object.assign(Ed, { kind: 'leg', open: d.id, d, isNew: true, derr: '' }); draw(true); openAnim('#app .edw'); $('elt')?.focus({ preventScroll: true }); return; }
+  if (a === 'ladd') { const d = { id: rid(8), kind: 'flug', title: '', who: [] }; Object.assign(Ed, { kind: 'leg', open: d.id, d, isNew: true, derr: '' }); draw(true); openForm('#app .edw', '#elt'); return; }
   if (a === 'dcancel') return closeForm('#app .edw', () => { if (Ed.d) delete PS['stay-' + Ed.d.id]; Object.assign(Ed, { kind: '', open: '', d: null, isNew: false, derr: '' }); });
   if (a === 'dsave') return saveDraft();
   if (a === 'ncancel') { Object.assign(Ed, { name: T.info.name, from: T.info.from || '', to: T.info.to || '', err: '' }); return draw(true); }
@@ -1535,7 +1536,25 @@ function turn(chev, open) { const c = q(chev); if (!c || calm()) return; c.anima
 // Aufklapp-Zeile: offen → zu gleiten und dann neu zeichnen; zu → zeichnen und auf gleiten
 function foldRow(isOpen, set, body, chev) { if (isOpen) shut(body, chev, () => { set(false); draw(true); }); else { set(true); draw(true); openAnim(body, chev); } }
 // Formular schließen: erst gleiten, dann den Zustand leeren
-function closeForm(el, clear) { shut(el, null, () => { clear(); draw(true); }); }
+// Seite gleitet zu y: Scroll-Stelle sofort setzen und den Inhalt per Verschiebung weich nachziehen (nur transform, kein Ruckeln mit der Tastatur)
+const topGap = () => (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat')) || 0) + 64;
+function glideTo(y, done) { const A = $('app'), max = document.documentElement.scrollHeight - innerHeight; y = Math.max(0, Math.min(Math.round(y), max)); const d = y - scrollY;
+  if (Math.abs(d) < 2 || calm()) { scrollTo(0, y); return done && done(); }
+  scrollTo(0, y); slides++; const a = A.animate([{ transform: `translateY(${d}px)` }, { transform: 'none' }], { duration: Math.min(460, 300 + Math.abs(d) * .25), easing: MO.on });
+  a.onfinish = a.oncancel = () => { slideDone(); done && done(); }; }
+// Formular öffnen: Formular steht sofort in voller Größe (das iPhone rechnet dann richtig), blendet ein, die Seite gleitet so,
+// dass es direkt unter der Leiste oben steht; erstes Feld bekommt sofort den Fokus (noch im Tipp, sonst keine Tastatur)
+let formY = null;
+function openForm(el, fsel) { el = q(el); if (!el) return; if (formY == null) formY = scrollY;
+  if (!calm()) el.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: MO.on });
+  glideTo(el.getBoundingClientRect().top + scrollY - topGap());
+  const f = fsel && document.querySelector(fsel); if (f) f.focus({ preventScroll: true }); }
+// Formular schließen: Tastatur weg, Formular gleitet zu, die Seite bleibt erst stehen und gleitet dann dorthin zurück, wo wir vorher waren (kein Springen)
+function closeForm(el, clear = () => {}) { const ae = document.activeElement; if (ae && ae.blur && $('app').contains(ae)) ae.blur();
+  const A = $('app'), y0 = formY; formY = null;
+  shut(el, null, () => { A.style.minHeight = (document.documentElement.scrollHeight - A.offsetTop) + 'px'; clear(); draw(true);
+    const fin = () => { A.style.minHeight = ''; };
+    if (y0 != null && Math.abs(y0 - scrollY) > 2) glideTo(y0, fin); else fin(); }); }
 // Umschalter: Perle gleitet von der alten Stelle, Inhalt darunter blendet ein
 function segSwitch(btn, apply) { const s = btn.closest('.seg2'), key = s.dataset.seg, ind = s.querySelector('.ind2'), old = { w: ind.style.width, x: ind.style.translate };
   apply(); draw(true); const s2 = document.querySelector(`#app .seg2[data-seg="${key}"]`); if (!s2 || calm()) return; const i2 = s2.querySelector('.ind2'), fin = { w: i2.style.width, x: i2.style.translate };
@@ -1549,7 +1568,7 @@ function segMove(btn) { const s = btn.closest('.seg2'), ind = s.querySelector('.
 const alive = id => T && T.acts && T.acts.some(a => a.id === id);
 async function saveAct() { const f = F; if (!f) return; const title = f.title.trim(); f.err = ''; if (!title) { f.err = 'Bitte gib einen Titel ein.'; draw(true); return; }
   const pl = f.place && f.place.name ? { name: f.place.name.slice(0, 80), ...(typeof f.place.lat === 'number' ? { lat: f.place.lat, lng: f.place.lng } : {}), ...(f.place.addr ? { addr: f.place.addr.slice(0, 120) } : {}) } : null;
-  const t = T, data = { title, desc: f.desc.trim(), day: f.day, time: f.time, stop: f.stop || '' }; F = null; delete PS.fplace; shut('#form', null, () => draw(true));   // sofort schließen: kein Doppelspeichern bei schlechtem Netz
+  const t = T, data = { title, desc: f.desc.trim(), day: f.day, time: f.time, stop: f.stop || '' }; F = null; delete PS.fplace; closeForm('#form');   // sofort schließen: kein Doppelspeichern bei schlechtem Netz
   try {
     if (f.id === 'new') { const id = rid(16), b = writeBatch(db); flash = id;
       b.set(tdoc(t.id, 'acts', id), { ...data, ...(pl ? { place: pl } : {}), cat: f.cat, kind: f.cat === 'food' ? f.kind : '', by: t.me, ts: Date.now() });
@@ -1609,7 +1628,7 @@ async function saveCost() { const f = Cf; if (!f) return; const amt = parseAmt(f
   if (f.pay) { if (!f.to || f.to === f.by) return bad('Bitte wähle, wer an wen überwiesen hat.'); data = { title: 'Ausgleich', kind: 'pay', amt, by: f.by, for: [f.to] }; }
   else { const t = f.t.trim(); if (!t) return bad('Bitte schreib, wofür.'); if (!f.for.length) return bad('Bitte wähle, für wen.');
     data = { title: t.slice(0, 80), amt, by: f.by, for: [...f.for] }; if (DAY_OK(f.dt) && f.dt !== today()) data.dt = f.dt; }
-  const t = T; Cf = null; shut('#cform', null, () => draw(true));
+  const t = T; Cf = null; closeForm('#cform');
   try { if (f.id) { const old = t.costs.find(c => c.id === f.id); if (!old) return toast('Die Ausgabe gibt es nicht mehr');
       await setDoc(tdoc(t.id, 'costs', f.id), { ...data, dt: data.dt || (DAY_OK(f.dt) ? f.dt : ''), ts: old.ts, cby: old.cby, ets: Date.now(), eby: t.me }); toast('Gespeichert'); }
     else { const id = rid(16); flash = id; await setDoc(tdoc(t.id, 'costs', id), { ...data, ts: Date.now(), cby: t.me }); toast('Eingetragen'); } }
@@ -1672,10 +1691,10 @@ function menuFor(btn) { const k = btn.dataset.menu;
     g.push(isAdmin() ? [[MP.gear, 'Reise bearbeiten', () => go('#/r/' + T.id + '/reise')], [MP.mood, 'Stimmung ändern', () => go('#/r/' + T.id + '/stimmung')]] : [[MP.remove, 'Reise auf diesem Gerät entfernen', leaveTrip]]);
     return g; }
   if (k === 'act') { const id = btn.closest('[data-id]').dataset.id, a = T.acts.find(x => x.id === id); if (!a) return null; const g = [[], []];
-    if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: a.stop || '' }; draw(true); openAnim('#form'); $('form')?.scrollIntoView({ block: 'nearest', behavior: calm() ? 'auto' : 'smooth' }); }]);
-    if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); openAnim(`#app [data-id="${id}"] .rvw`); document.querySelector('#rvt')?.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); }]);
-    g[0].push([MP.cm, 'Kommentar', () => { cmOpen.add(id); readCm(id); draw(true); const el = document.querySelector(`#app [data-k="cm-${id}"]`); if (el) { el.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); el.focus({ preventScroll: true }); } }]);
-    if (a.cat === 'food' && a.kind === 'cook' && !a.done) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); document.querySelector(`#app [data-shi="${id}"]`)?.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); }]);
+    if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: a.stop || '' }; draw(true); openForm('#form'); }]);
+    if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); openForm(`#app [data-id="${CSS.escape(id)}"] .rvw`); }]);
+    g[0].push([MP.cm, 'Kommentar', () => { cmOpen.add(id); readCm(id); draw(true); const el = document.querySelector(`#app [data-k="cm-${CSS.escape(id)}"]`); if (el) { glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); el.focus({ preventScroll: true }); } }]);
+    if (a.cat === 'food' && a.kind === 'cook' && !a.done) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); const el = document.querySelector(`#app [data-shi="${CSS.escape(id)}"]`); if (el) glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); }]);
     if (areas().cost) g[0].push([MP.euro, 'Ausgabe eintragen', () => { tab = 'cost'; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); Cf = { t: a.title, amt: '', dt: today(), by: T.me, for: (sigBy()[id] || []).length > 1 ? [...sigBy()[id]] : Object.keys(T.people) }; draw(true); scrollTo(0, 0); $('ca')?.focus({ preventScroll: true }); }]);
     g[1].push(a.done ? [MP.back, 'Wieder offen', () => setDone(id, false)] : [MP.done, 'Als erledigt markieren', () => setDone(id, true)]);
     if (canEdit(a)) g.push([[MP.del, 'Löschen', () => delAct(id), 'dg']]);
@@ -1731,6 +1750,10 @@ function topTitle() { const R = document.documentElement, h1 = document.querySel
   R.classList.toggle('scrolled', y > 6); const nt = $('ntitle').firstChild, t = h1 ? h1.textContent.trim() : ''; if (nt.textContent !== t) nt.textContent = t;
   R.classList.toggle('ttl', !!h1 && h1.getBoundingClientRect().bottom < (parseFloat(getComputedStyle(R).getPropertyValue('--sat')) || 0) + 50); }
 addEventListener('scroll', topTitle, { passive: true });
+// Tastatur offen (Handy, Textfeld hat Fokus): Reiter-Leiste ausblenden, sie würde sonst über der Tastatur Platz wegnehmen
+const typing = el => el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]), textarea') && matchMedia('(pointer:coarse)').matches;
+addEventListener('focusin', e => document.documentElement.classList.toggle('kb', typing(e.target)));
+addEventListener('focusout', () => setTimeout(() => document.documentElement.classList.toggle('kb', typing(document.activeElement)), 60));
 
 /* ---------- Ohne Netz: Hinweis oben; Firestore schickt Änderungen, sobald wieder Netz da ist ---------- */
 function netState() { const off = navigator.onLine === false; let el = document.querySelector('.net'); if (off && !el) document.body.insertAdjacentHTML('beforeend', '<div class="net" role="status">Offline · wir speichern, sobald wieder Netz da ist</div>'); else if (!off && el) { el.remove(); if (T && T.st === 'load') draw(); } }
