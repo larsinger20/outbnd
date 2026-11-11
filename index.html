@@ -592,7 +592,9 @@ html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar
 <script type="module">
 /*FIREBASE-ANFANG (die Testkopie ersetzt diesen Block durch Beispieldaten)*/
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+// Anmeldung ohne das unsichtbare Google-Fenster (nur für Google-/Apple-Login nötig); in der Home-Bildschirm-App blockiert das iPhone es manchmal, dann hing der Start
+const authOf = a => initializeAuth(a, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] });
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, deleteField, onSnapshot, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 // Zugangsdaten des Firebase-Projekts (ID outbnd-947bc aus der Zeit vor dem neuen Namen, lässt sich nicht ändern) (kommen von Lars; sind nicht geheim, der Schutz liegt in den Regeln firestore.rules)
 const CFG = { apiKey: 'AIzaSyD6E_6_SMSh2xBx29cTYMHO4k-Pqr9EVKQ', authDomain: 'outbnd-947bc.firebaseapp.com', projectId: 'outbnd-947bc', storageBucket: 'outbnd-947bc.firebasestorage.app', messagingSenderId: '457847861075', appId: '1:457847861075:web:7183aeb8ffbee9a248bba6' };
@@ -716,7 +718,7 @@ const LS = { get() { return store.get('outbndr.trips', []); }, put(l) { store.se
 
 /* ---------- Firebase: jedes Gerät meldet sich still (anonym) an; Zugriff regeln die Datenbank-Regeln ---------- */
 let db = null, uid = null, ready = null;
-if (CFG) { const app = initializeApp(CFG), auth = getAuth(app); db = getFirestore(app);
+if (CFG) { const app = initializeApp(CFG), auth = authOf(app); db = getFirestore(app);
   ready = new Promise((res, rej) => { const off = onAuthStateChanged(auth, u => { if (u) { uid = u.uid; off(); res(); } else signInAnonymously(auth).catch(rej); }, rej); }); ready.catch(() => {}); }
 const tdoc = (t, ...p) => doc(db, 'trips', t, ...p), tcol = (t, ...p) => collection(db, 'trips', t, ...p);
 
@@ -834,7 +836,7 @@ async function openTrip(id) {
   const t = T = { id, t0: Date.now(), st: 'load', me: null, info: null, people: null, acts: null, sig: null, costs: null, gen: {}, tok: null, toks: [], off: [] };
   [8100, 20100].forEach(ms => setTimeout(() => { if (T === t && t.st === 'load') draw(); }, ms));
   if (!db) return;
-  try { await ready; const m = await getDoc(tdoc(id, 'members', uid)); if (T !== t) return;
+  try { t.stage = 'Anmeldung'; await ready; t.stage = 'Mitgliedschaft'; const m = await getDoc(tdoc(id, 'members', uid)); if (T !== t) return; t.stage = 'Daten';
     if (!m.exists() || !m.data().pid) return needJoin(t);
     t.me = m.data().pid;
     const fail = e => { if (T !== t) return; if (denied(e)) { if (t.st === 'ok') { t.st = 'gone'; t.off.forEach(f => f()); t.off = []; draw(); } else needJoin(t); } else console.error(e); };
@@ -847,7 +849,7 @@ async function openTrip(id) {
     t.off.push(onSnapshot(tcol(id, 'invites'), s => { t.toks = []; s.forEach(d => t.toks.push({ id: d.id, ts: d.data().ts || 0 })); t.toks.sort((a, b) => b.ts - a.ts); t.tok = t.toks[0] && t.toks[0].id; if (t.tok) LS.add({ id, tok: t.tok }); }, () => {}));
   } catch (e) { if (T !== t) return; if (denied(e)) needJoin(t); else { console.error(e); t.st = 'err'; draw(); } }
 }
-function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); } }
+function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
 // Gerät gehört (noch) nicht dazu: mit gemerktem Link zum Beitritt, sonst um den Link bitten
 function needJoin(t) { t.off.forEach(f => f()); t.off = []; const l = LS.one(t.id); if (l && l.tok) { T = null; go('#/e/' + t.id + '/' + l.tok); } else { t.st = 'nolink'; draw(); } }
 const areas = () => ({ food: true, cost: true, plan: true, map: true, ...((T && T.info && T.info.areas) || {}) });
@@ -862,7 +864,7 @@ async function startJoin(t, tok) {
   const j = J = { t, t0: Date.now(), tok, st: 'load', info: null, people: {}, name: '', pin: '', col: '', err: '', busy: false };
   [8100, 20100].forEach(ms => setTimeout(() => { if (J === j && j.st === 'load') draw(); }, ms));
   if (!db) return;
-  try { await ready;
+  try { j.stage = 'Anmeldung'; await ready; j.stage = 'Einladung';
     const mref = tdoc(t, 'members', uid); let m = await getDoc(mref);
     if (!m.exists()) { await setDoc(mref, { inv: tok }); m = null; }   // scheitert, wenn der Link nicht (mehr) gilt
     const rd = () => getDoc(tdoc(t)).catch(e => { if (denied(e)) return null; throw e; });
@@ -1164,7 +1166,7 @@ function tripSkel() { const l = T && LS.one(T.id), card = n => `<div class="skc 
     ${slowHTML(T)}<div class="skc shim" style="margin-bottom:14px;padding:16px 18px"><span class="skl" style="width:34%;height:17px"></span><span class="skl" style="width:62%"></span></div><div class="skc shim" style="height:50px;border-radius:999px;margin-bottom:14px;padding:0"></div><div class="list">${card(1)}${card(0)}${card(1)}</div>`; }
 // dauert es länger als 8 Sekunden: Hinweis mit „Nochmal“; nach 20 Sekunden deutlicher
 function slowHTML(o) { if (!o || !o.t0) return ''; const s = Date.now() - o.t0; if (s < 8000) return '';
-  return `<div class="slow" role="status"><span class="gr"><b>${s < 20000 ? 'Dauert etwas länger' : 'Keine Verbindung zur Datenbank'}</b>${navigator.onLine === false ? 'Das Gerät ist offline.' : s < 20000 ? 'Die Verbindung ist gerade langsam.' : 'Bitte Verbindung prüfen.'}</span><button class="btn g s lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button></div>`; }
+  return `<div class="slow" role="status"><span class="gr"><b>${s < 20000 ? 'Dauert etwas länger' : 'Keine Verbindung zur Datenbank'}</b>${navigator.onLine === false ? 'Das Gerät ist offline.' : s < 20000 ? 'Die Verbindung ist gerade langsam.' : 'Bitte Verbindung prüfen.'}${o.stage && s >= 20000 ? `<small style="display:block;font-size:12px;opacity:.7;margin-top:2px">Hängt bei: ${esc(o.stage)}</small>` : ''}</span><button class="btn g s lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button></div>`; }
 function headHTML() { const n = Object.keys(T.people).length, cd = countdown(T.info), pp = Object.entries(T.people).sort((a, b) => (b[0] === T.me) - (a[0] === T.me) || (a[1].ts || 0) - (b[1].ts || 0));
   return `<div class="hd w">${cd ? `<span class="cd">${esc(cd)}</span>` : ''}<h1>${esc(T.info.name)}</h1><p class="sub">${esc(range(T.info.from, T.info.to))} · ${n === 1 ? 'bisher nur du' : n + ' Mitreisende'}</p>${avs(pp.map(x => x[0]), 7)}</div>`; }
 function tipHTML() { if (store.get('outbndr.tip1', false)) return '';
