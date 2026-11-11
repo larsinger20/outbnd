@@ -168,7 +168,7 @@ select.fi{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xml
 /* Kommentare: Aufklapp-Zeile, nur der Pfeil dreht sich */
 .cmts{margin-top:12px;border-top:.5px solid var(--bd)}
 .cmh{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;font-size:15px;font-weight:600;color:var(--ac);text-align:left}
-.cmh svg{width:13px;height:8px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:rotate .3s cubic-bezier(.45,0,.15,1)}
+.cmh svg{width:13px;height:8px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:rotate .36s cubic-bezier(.32,.72,0,1)}
 .cmts.open .cmh svg{rotate:180deg}
 .cmb{overflow:hidden}
 .cm{display:flex;gap:10px;padding:6px 0;font-size:15px;line-height:1.33}
@@ -279,7 +279,7 @@ main.rcl.mst{animation:none}
 .dlgf .y{background:var(--acb);color:#fff}.dlgf .y.dz{background:var(--mrd);color:#fff}
 .dlg.out{animation:dOut .18s ease-in forwards}
 @keyframes dIn{from{opacity:0}}@keyframes dOut{to{opacity:0}}@keyframes dPop{from{opacity:0;transform:scale(.9)}}
-.fade{animation:fd .28s ease-out}@keyframes fd{from{opacity:0;transform:translateY(6px)}}
+.fade{animation:fd .3s cubic-bezier(.32,.72,0,1)}@keyframes fd{from{opacity:0}}
 /* Platzhalter beim Laden */
 /* ===== Laden: Startbildschirm mit Schriftzug, Platzhalter in Form der echten Inhalte, Hinweis bei langsamer Verbindung ===== */
 :root{--skb:rgba(118,118,128,.14);--skg:rgba(255,255,255,.55)}
@@ -326,7 +326,7 @@ main.rcl.mst{animation:none}
 .infh .gr{flex:1;min-width:0}
 .infh b{display:block;font-size:17px;font-weight:600}
 .infh small{display:block;font-size:15px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.infh>svg{width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:rotate .34s cubic-bezier(.45,0,.15,1);flex:none}
+.infh>svg{width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:rotate .36s cubic-bezier(.32,.72,0,1);flex:none}
 .info.open .infh>svg{rotate:180deg}
 .infb{padding:0 18px 16px}
 .wxi{width:30px;height:30px;flex:none;fill:none;stroke:var(--ac);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -398,7 +398,7 @@ main.rcl.mst{animation:none}
 .dn{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:var(--grn);white-space:nowrap}
 .dn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .fold{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 18px;margin-top:14px;border-radius:22px;background:var(--card);font-size:17px;font-weight:600;text-align:left}
-.fold svg{width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:rotate .34s cubic-bezier(.45,0,.15,1)}
+.fold svg{width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:rotate .36s cubic-bezier(.32,.72,0,1)}
 .fold.open svg{rotate:180deg}
 .fold small{color:var(--mu);font-weight:400;margin-left:6px}
 .tab{position:relative}
@@ -500,6 +500,69 @@ main.wash .btn.g{background:var(--card)}
 .cmx.up svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .rowb{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;min-height:44px;border-radius:12px}
 #mclose{position:static!important;flex:none}
+/* ===== Wie iOS: Seitenwechsel, oberer Rand, Reise-Info als eigene Seite ===== */
+:root{--sat:env(safe-area-inset-top,0px);--ios:cubic-bezier(.32,.72,0,1);--rain:#0a84ff;--glass-edge:color-mix(in srgb,var(--bg) 88%,transparent)}
+@media (prefers-color-scheme:dark){:root{--rain:#64d2ff}}
+/* Neue Seite schiebt sich von rechts herein, Zurück schiebt sie hinaus; Reiterwechsel blendet kurz über (View Transitions, nur Bildschirmfotos werden bewegt) */
+#tbar{view-transition-name:tbar}#back{view-transition-name:nback}#more{view-transition-name:nmore}#ntitle{view-transition-name:ntitle}#sedge{view-transition-name:sedge}
+::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation-duration:.42s;animation-timing-function:var(--ios)}
+::view-transition-old(root),::view-transition-new(root){mix-blend-mode:normal}
+html[data-nav=push]::view-transition-old(root){animation-name:navOutL}
+html[data-nav=push]::view-transition-new(root){animation-name:navInR}
+html[data-nav=pop]::view-transition-old(root){animation-name:navOutR;z-index:2}
+html[data-nav=pop]::view-transition-new(root){animation-name:navInL}
+html[data-nav=tab]::view-transition-old(root){animation:vtOut .2s ease both}
+html[data-nav=tab]::view-transition-new(root){animation:vtIn .2s ease both}
+@keyframes navInR{from{transform:translateX(100%)}}
+@keyframes navOutL{to{transform:translateX(-30%);opacity:.75}}
+@keyframes navOutR{to{transform:translateX(100%)}}
+@keyframes navInL{from{transform:translateX(-30%);opacity:.75}}
+/* Reiter-Leiste bleibt beim Reiterwechsel einfach stehen (ihre Perle gleitet selbst) */
+html[data-nav=tab]::view-transition-old(tbar){display:none}html[data-nav=tab]::view-transition-new(tbar){animation:none}
+@keyframes vtIn{from{opacity:0}}@keyframes vtOut{to{opacity:0}}
+/* Oberer Rand beim Scrollen (iOS 26): Inhalt unter Uhr und Akku wird weich unscharf, der Titel erscheint klein in der Mitte */
+.sedge{position:fixed;z-index:11;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 66px);pointer-events:none;opacity:0;transition:opacity .25s var(--ios);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);background-image:linear-gradient(var(--glass-edge) 45%,transparent);-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+html.scrolled .sedge{opacity:1}
+.ntitle{position:fixed;z-index:13;top:calc(10px + env(safe-area-inset-top,0px));left:72px;right:72px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .2s var(--ios),transform .32s var(--ios)}
+.ntitle span{overflow:hidden;text-overflow:ellipsis}
+html.ttl .ntitle{opacity:1;transform:none}
+/* Zeile mit Pfeil, die zu einer eigenen Seite führt (wie in den Einstellungen) */
+.navrow{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 16px 12px 14px;margin-bottom:14px;background:var(--card);border-radius:22px;text-align:left}
+.navrow .ic{width:40px;height:40px;border-radius:12px;background:var(--fill);display:flex;align-items:center;justify-content:center;flex:none}
+.navrow .ic svg{width:24px;height:24px;fill:none;stroke:var(--ac);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.navrow .gr{flex:1;min-width:0}.navrow b{display:block;font-size:17px;font-weight:600}
+.navrow small{display:block;font-size:15px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.navrow.lq.pr{transform:scale(.98)}
+/* Wetter wie die Wetter-App: jetzt oben, darunter Tagesliste mit Temperatur-Balken */
+.wxc{margin-bottom:14px}
+.wxc .c{padding:16px 18px 4px}
+.wxn{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:.5px solid var(--bd)}
+.wxn .wxi{width:46px;height:46px}
+.wxn b{font-size:44px;font-weight:300;line-height:1;font-family:var(--rnd);font-variant-numeric:tabular-nums}
+.wxn .gr{flex:1;min-width:0;font-size:15px;color:var(--mu);line-height:1.35}
+.wxn .gr span{display:block;color:var(--tx);font-size:17px}
+.wxr{display:grid;grid-template-columns:minmax(58px,auto) 34px 38px 1fr 38px;align-items:center;column-gap:10px;min-height:50px;border-bottom:.5px solid var(--bd);font-size:17px;font-variant-numeric:tabular-nums}
+.wxr:last-child{border-bottom:0}
+.wxr .wd{font-weight:500;white-space:nowrap}
+.wxr .wic{display:flex;flex-direction:column;align-items:center;line-height:1}
+.wxr .wic .wxi{width:24px;height:24px}
+.wxr .wic small{font-size:11px;font-weight:600;color:var(--rain);margin-top:2px}
+.wxr .wlo{color:var(--mu);text-align:right}.wxr .whi{text-align:right}
+.wbar{position:relative;height:5px;border-radius:3px;background:var(--fill)}
+.wbar i{position:absolute;top:0;bottom:0;border-radius:3px}
+.wbar b{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--card);translate:-50% -50%}
+.wxh{font-size:13px;color:var(--mu);margin:2px 2px 0;padding:10px 0 12px}
+/* Gruppierte Liste (Unterkunft, Anreise) */
+.glist{background:var(--card);border-radius:22px;padding:2px 18px;margin-bottom:14px}
+.gl2{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:.5px solid var(--bd)}
+.gl2:last-child{border-bottom:0}
+.gl2 .ic{width:34px;height:34px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;flex:none}
+.gl2 .ic svg{width:19px;height:19px;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gl2 .gr{flex:1;min-width:0}.gl2 b{display:block;font-size:17px;font-weight:600}
+.gl2 p{margin:2px 0 0;font-size:15px;line-height:1.35;color:var(--mu)}
+a.gl2,button.gl2{width:100%;text-align:left;text-decoration:none;color:var(--ac);align-items:center;font-size:17px;font-weight:500}
+a.gl2 .chv,button.gl2 .chv{margin-left:auto}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
 </style>
 </head>
@@ -507,6 +570,7 @@ main.wash .btn.g{background:var(--card)}
 <main id="app"><div class="boot" role="status" aria-label="outbndr. lädt"><div class="wm">outbndr<i>.</i></div><p>Einen Moment, wir packen noch.</p><p>Die Verbindung ist gerade langsam.</p><button class="btn g s" type="button" onclick="location.reload()" style="width:auto">Neu laden</button></div></main>
 <button class="nb l lq" id="back" type="button" aria-label="Zurück" hidden><svg viewBox="0 0 24 24"><path d="M14.5 5 7.5 12l7 7"/></svg><span class="gl"></span></button>
 <button class="nb r dots lq" id="more" type="button" aria-label="Mehr" hidden><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg><span class="gl"></span></button>
+<div class="sedge" id="sedge" aria-hidden="true"></div><div class="ntitle" id="ntitle" aria-hidden="true"><span></span></div>
 <nav class="tbar" id="tbar" aria-label="Reiter" hidden>
   <div class="gb"><div class="glow"></div></div><div class="refr" id="refr"></div>
   <div class="clip"><div class="trow" id="trow"></div></div>
@@ -667,15 +731,24 @@ const PS = {};         // Ortssuche je Feld: { res, q }
 const go = h => { if (location.hash === h) route(); else location.hash = h; };
 const inviteUrl = (t, tok) => location.origin + location.pathname + '#/e/' + t + '/' + tok;
 function parseInvite(s) { const m = /#\/e\/([A-Za-z0-9]{8,40})\/([A-Za-z0-9]{8,40})/.exec(s || ''); return m ? { t: m[1], tok: m[2] } : null; }
-const SUB = { leute: 'people', profil: 'profile', stimmung: 'mood', reise: 'edit' };
-function route() {
+const SUB = { leute: 'people', profil: 'profile', stimmung: 'mood', reise: 'edit', info: 'info' };
+// Tiefe einer Adresse: Start 0, Reise/Assistent/Beitritt 1, Unterseite einer Reise 2. Tiefer = hinein schieben, flacher = hinaus.
+const depth = h => { const p = (h || '').replace(/^#\/?/, '').split('/').filter(Boolean); return !p.length ? 0 : p[0] === 'r' && p[2] ? 2 : 1; };
+let lastHash = null, navBusy = false;
+function navTo(dir, fn) { const R = document.documentElement;
+  if (!dir || calm() || !document.startViewTransition || document.hidden) { fn(); return; }
+  R.dataset.nav = dir; navBusy = true; const vt = document.startViewTransition(() => { fn(); });
+  vt.finished.catch(() => {}).finally(() => { if (R.dataset.nav === dir) delete R.dataset.nav; navBusy = false; refrSoon(); }); }
+function route() { const h = location.hash, d0 = lastHash == null ? null : depth(lastHash), d1 = depth(h); lastHash = h;
+  navTo(d0 == null ? '' : d1 > d0 ? 'push' : d1 < d0 ? 'pop' : 'tab', routeNow); }
+function routeNow() {
   const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   closeMenu(); closeMap(true); F = null; Pf = null; Cf = null; Rv = null;
   if (p[0] === 'neu') { if (!Wz) Wz = newWizard(); view = { n: 'new' }; }
   else if (p[0] === 'e' && p[1] && p[2]) { view = { n: 'join' }; startJoin(p[1], p[2]); }
   else if (p[0] === 'r' && p[1]) { view = { n: SUB[p[2]] || 'trip' }; if (view.n !== 'edit') Ed = null; openTrip(p[1]); }
   else { view = { n: 'home' }; }
-  if (!['trip', 'people', 'profile', 'mood', 'edit'].includes(view.n)) closeTrip();
+  if (!['trip', 'people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) closeTrip();
   draw(true); scrollTo(0, 0);
 }
 addEventListener('hashchange', route);
@@ -758,7 +831,7 @@ async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.
     b.set(tdoc(t, 'members', uid), { inv: tok, pid, ph });
     await b.commit();
     LS.add({ id: t, name: w.name.trim(), from: w.from, to: w.from ? (w.to || w.from) : '', mood: w.mood, tok });
-    w.busy = false; w.t = t; w.tok = tok; w.step = WSTEPS.indexOf('link'); draw(true); scrollTo(0, 0);
+    w.busy = false; w.t = t; w.tok = tok; navTo('push', () => { w.step = WSTEPS.indexOf('link'); draw(true); scrollTo(0, 0); });
   } catch (e) { console.error(e); w.busy = false; w.err = denied(e) ? 'Die Datenbank-Regeln sind noch nicht auf dem neuesten Stand. Bitte die Regeln aus firestore.rules in Firebase einfügen.' : FAIL; draw(true); }
 }
 // Stopp nur mit erlaubten Feldern speichern (kein Rest aus der Ortssuche)
@@ -816,7 +889,7 @@ function wxFor(s) { const k = s.lat.toFixed(2) + ',' + s.lng.toFixed(2); let w =
       .then(r => r.json()).then(j => { if (!j.daily) throw 0; const d = j.daily; Object.assign(w, { st: 'ok', at: Date.now(), cur: j.current ? { t: Math.round(j.current.temperature_2m), c: j.current.weather_code } : null,
         days: d.time.map((t, i) => ({ d: t, c: d.weather_code[i], hi: Math.round(d.temperature_2m_max[i]), lo: Math.round(d.temperature_2m_min[i]), p: d.precipitation_probability_max ? d.precipitation_probability_max[i] : null })) });
         store.set('outbndr.wx.' + k, { at: w.at, cur: w.cur, days: w.days }); })
-      .catch(() => { if (w.st !== 'ok') w.st = 'err'; }).finally(() => { clearTimeout(to); w.busy = false; if (infoOpen && infoSeg === 'wx') draw(); }); }
+      .catch(() => { if (w.st !== 'ok') w.st = 'err'; }).finally(() => { clearTimeout(to); w.busy = false; if (view.n === 'info' && infoSeg === 'wx' || view.n === 'trip') draw(); }); }
   return w; }
 
 /* ---------- Zeichnen ---------- */
@@ -859,15 +932,17 @@ function draw(force) {
   else if (view.n === 'profile') { h = profileHTML(); back = 1; }
   else if (view.n === 'mood') { h = moodHTML(); back = 1; }
   else if (view.n === 'edit') { h = editHTML(); back = 1; }
+  else if (view.n === 'info') { h = infoPageHTML(); back = 1; }
   else { h = tripHTML(); back = 1; more = true; }
   A.className = (back ? 'nav' : '') + (inTrip ? ' tabs wash' : view.n !== 'home' && view.n !== 'new' && view.n !== 'join' && T && T.st === 'load' ? ' wash' : '');
   // Akzentfarbe folgt der Stimmung der Reise (Startseite: Meer)
   document.documentElement.dataset.m = moodOf(view.n === 'new' ? Wz.mood : view.n === 'join' ? (J && J.info && J.info.mood) : T && T.info ? T.info.mood : T ? (LS.one(T.id) || {}).mood : '');
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
-  if (fresh && !calm()) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
+  if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
+  topTitle();
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
-  if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.3,.7,.4,1)' }); }
+  if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
   segPos();
   if (inTrip) { mark(); dots(); refrSoon(); watchSeen(); }
 }
@@ -918,34 +993,44 @@ function joinHTML() { const j = J;
     <p class="hint c">Schon dabei? Mit gleichem Namen und gleicher PIN kommt dein Profil auf dieses Gerät.</p></div>`; }
 
 /* ---------- Reise-Info: Wetter · Unterkunft · Anreise ---------- */
-function infoHTML() { const st = stops(), geo = st.filter(s => typeof s.lat === 'number'), stays = st.filter(s => s.stay), tr = (T.info.travel || []).filter(x => x && (x.kind || x.title));
-  const segs = [geo.length && ['wx', 'Wetter'], stays.length && ['stay', 'Unterkunft'], tr.length && ['tr', 'Anreise']].filter(Boolean);
-  if (!segs.length) return isAdmin() ? `<button class="info infh lq" type="button" data-a="edit" style="width:100%"><span class="gr"><b>Reise-Info ergänzen</b><small style="white-space:normal">Ziel, Unterkunft, Anreise – daraus kommen Wetter und Karte</small></span>${CHR}<span class="gl"></span></button>` : '';
-  if (!segs.some(x => x[0] === infoSeg)) infoSeg = segs[0][0];
-  let sum = []; if (geo.length) { const w = WX[geo[0].lat.toFixed(2) + ',' + geo[0].lng.toFixed(2)]; sum.push(w && w.cur ? w.cur.t + '° ' + geo[0].name : geo[0].name + (st.length > 1 ? ' + ' + (st.length - 1) : '')); }
+function infoParts() { const st = stops(); return { st, geo: st.filter(s => typeof s.lat === 'number'), stays: st.filter(s => s.stay && (s.stay.name || s.stay.link || s.stay.addr || s.stay.note)), tr: (T.info.travel || []).filter(x => x && (x.kind || x.title)) }; }
+// Auf der Reiseseite: eine Zeile mit Pfeil (wie in den Einstellungen), die zur Reise-Info führt
+function infoHTML() { const { st, geo, stays, tr } = infoParts();
+  if (!geo.length && !stays.length && !tr.length) return isAdmin() ? `<button class="navrow lq" type="button" data-a="edit"><span class="ic">${SY.pin}</span><span class="gr"><b>Reise-Info ergänzen</b><small style="white-space:normal">Ziel, Unterkunft, Anreise – daraus kommen Wetter und Karte</small></span>${CHR}<span class="gl"></span></button>` : '';
+  let sum = [], ic = SY.pin; if (geo.length) { const w = wxFor(geo[0]); if (w.cur) { sum.push(w.cur.t + '° ' + geo[0].name); ic = wxIcon(w.cur.c, ''); } else sum.push(geo[0].name); if (st.length > 1) sum[0] += ' + ' + (st.length - 1); }
   if (stays.length) sum.push(stays[0].stay.name || 'Unterkunft'); if (tr.length) sum.push(KIND[tr[0].kind] ? KIND[tr[0].kind][0] : tr[0].title);
-  let h = `<div class="info${infoOpen ? ' open' : ''}"><button class="infh" type="button" data-a="info" aria-expanded="${infoOpen}"><span class="gr"><b>Reise-Info</b><small>${esc(sum.join(' · '))}</small></span>${CHEV}</button>`;
-  if (infoOpen) { h += `<div class="infb">${segs.length > 1 ? `<div class="seg2" data-seg="info"><span class="ind2"></span>${segs.map(([k, n]) => `<button type="button" data-iseg="${k}" class="${k === infoSeg ? 'on' : ''}">${n}</button>`).join('')}</div>` : ''}`;
-    if (infoSeg === 'wx') h += geo.map(s => wxHTML(s)).join('');
-    if (infoSeg === 'stay') h += stays.map(s => { const y = s.stay, q = typeof y.lat === 'number' ? `${y.lat},${y.lng}` : encodeURIComponent(y.addr || y.name);
-      return `<div class="stay">${st.length > 1 ? `<p style="margin:0 0 2px">${esc(s.name)}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}</p>` : ''}<h4>${esc(y.name || 'Unterkunft')}</h4>${y.addr ? `<p>${esc(y.addr)}</p>` : ''}${y.note ? `<p style="white-space:pre-wrap">${linkify(y.note)}</p>` : ''}
-        <div style="display:flex;gap:18px;flex-wrap:wrap">${y.link ? `<a class="lk" href="${esc(y.link)}" target="_blank" rel="noopener">${SY.out}Zur Unterkunft</a>` : ''}${y.addr || typeof y.lat === 'number' ? `<a class="lk" href="https://maps.apple.com/?q=${encodeURIComponent(y.name || 'Unterkunft')}&ll=${typeof y.lat === 'number' ? q : ''}&address=${encodeURIComponent(y.addr || '')}" target="_blank" rel="noopener">${SY.pin}Route</a>` : ''}</div></div>`; }).join('');
-    if (infoSeg === 'tr') h += tr.map(x => { const k = KIND[x.kind] || KIND.auto, who = (x.who || []).filter(id => T.people[id]);
-      return `<div class="leg"><svg viewBox="0 0 24 24">${k[1]}</svg><div class="gr"><h4>${esc(x.title || k[0])}</h4><p>${esc([x.from && x.to ? x.from + ' → ' + x.to : x.from || x.to, x.date ? dayName(x.date) : '', x.time].filter(Boolean).join(' · ') || k[0])}</p>${x.note ? `<p style="white-space:pre-wrap">${linkify(x.note)}</p>` : ''}${who.length ? `<div style="display:flex;align-items:center;gap:8px">${avs(who, 6)}<p style="margin:8px 0 0">${esc(names(who))}</p></div>` : ''}</div></div>`; }).join('');
-    if (isAdmin()) h += `<button class="txb" type="button" data-a="edit" style="margin-top:8px">Reise-Info bearbeiten</button>`;
-    h += '</div>'; }
-  return h + '</div>'; }
-// Wetter je Ziel: Liegen unsere Tage dort in der Vorhersage, zeigen wir genau diese Tage (alle Kacheln gleich); sonst die nächsten Tage mit Hinweis
-function wxHTML(s) { const w = wxFor(s), multi = stops().filter(x => typeof x.lat === 'number').length > 1;
-  const a = s.from || T.info.from || '', b = s.to || (s.from ? s.from : T.info.to) || a;
-  let h = `<div class="wxs">${multi ? `<h4>${esc(s.name)}${s.from ? ` <small style="font-weight:400;color:var(--mu)">${esc(shortRange(s.from, s.to))}</small>` : ''}</h4>` : ''}`;
-  if (w.st !== 'ok') return h + (w.st === 'err' ? '<p class="muted">Wetter gerade nicht erreichbar. Wir versuchen es gleich nochmal.</p>' : '<div class="wxsk shim" aria-label="Wetter lädt">' + '<i></i>'.repeat(5) + '</div>') + '</div>';
+  return `<button class="navrow lq" type="button" data-a="infopage"><span class="ic">${ic}</span><span class="gr"><b>Reise-Info</b><small>${esc(sum.join(' · '))}</small></span>${CHR}<span class="gl"></span></button>`; }
+// Eigene Seite: Umschalter Wetter · Unterkunft · Anreise
+function infoPageHTML() { const { st, geo, stays, tr } = infoParts(), segs = [geo.length && ['wx', 'Wetter'], stays.length && ['stay', 'Unterkunft'], tr.length && ['tr', 'Anreise']].filter(Boolean);
+  let h = `<div class="hd"><h1>Reise-Info</h1><p class="sub">${esc(T.info.name)} · ${esc(range(T.info.from, T.info.to))}</p></div>`;
+  if (!segs.length) return h + `<div class="card"><div class="empty"><b>Noch keine Reise-Info</b>${isAdmin() ? 'Trag Ziel, Unterkunft und Anreise ein, dann stehen hier Wetter, Adressen und Fahrten.' : 'Sobald ein Admin Ziel, Unterkunft oder Anreise einträgt, steht es hier.'}</div></div>${isAdmin() ? `<div class="btns"><button class="btn lq" type="button" data-a="edit">Reise-Info ergänzen<span class="gl"></span></button></div>` : ''}`;
+  if (!segs.some(x => x[0] === infoSeg)) infoSeg = segs[0][0];
+  if (segs.length > 1) h += `<div class="seg2" data-seg="info"><span class="ind2"></span>${segs.map(([k, n]) => `<button type="button" data-iseg="${k}" class="${k === infoSeg ? 'on' : ''}" aria-pressed="${k === infoSeg}">${n}</button>`).join('')}</div>`;
+  h += '<div>';
+  if (infoSeg === 'wx') h += geo.map(s => wxHTML(s, geo.length > 1)).join('');
+  if (infoSeg === 'stay') h += stays.map(s => { const y = s.stay, ll = typeof y.lat === 'number' ? [y.lat, y.lng] : typeof s.lat === 'number' && !y.addr ? null : null;
+    return `<p class="sec">${esc(s.name)}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}</p><div class="glist"><div class="gl2"><span class="ic">${SY.house}</span><span class="gr"><b>${esc(y.name || 'Unterkunft')}</b>${y.addr ? `<p>${esc(y.addr)}</p>` : ''}${y.note ? `<p style="white-space:pre-wrap">${linkify(y.note)}</p>` : ''}</span></div>
+      ${y.link ? `<a class="gl2" href="${esc(y.link)}" target="_blank" rel="noopener"><span class="ic">${SY.out}</span><span>Zur Unterkunft</span>${CHR}</a>` : ''}${y.addr || ll ? `<a class="gl2" href="https://maps.apple.com/?daddr=${ll ? ll.join(',') : encodeURIComponent(y.addr)}" target="_blank" rel="noopener"><span class="ic">${SY.pin}</span><span>Route dorthin</span>${CHR}</a>` : ''}</div>`; }).join('');
+  if (infoSeg === 'tr') h += `<div class="glist">` + tr.map(x => { const k = KIND[x.kind] || KIND.auto, who = (x.who || []).filter(id => T.people[id]);
+      return `<div class="gl2"><span class="ic"><svg viewBox="0 0 24 24">${k[1]}</svg></span><span class="gr"><b>${esc(x.title || k[0])}</b><p>${esc([x.from && x.to ? x.from + ' → ' + x.to : x.from || x.to, x.date ? dayName(x.date) : '', x.time ? x.time + ' Uhr' : ''].filter(Boolean).join(' · ') || k[0])}</p>${x.note ? `<p style="white-space:pre-wrap">${linkify(x.note)}</p>` : ''}${who.length ? `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">${avs(who, 6)}<p style="margin:0">${esc(names(who))}</p></div>` : ''}</span></div>`; }).join('') + `</div>`;
+  h += '</div>';
+  if (isAdmin()) h += `<div class="btns"><button class="btn g lq" type="button" data-a="edit">Reise-Info bearbeiten<span class="gl"></span></button></div>`;
+  return h; }
+// Wetter je Ziel wie in der Wetter-App: jetzt, Höchst/Tiefst, darunter die Tage mit Temperatur-Balken.
+// Liegen unsere Tage dort in der Vorhersage, zeigen wir genau diese; sonst die nächsten 7 Tage mit Hinweis.
+const TCOL = [[-10, '#5e5ce6'], [0, '#0a84ff'], [8, '#40c8e0'], [14, '#34c759'], [20, '#ffcc00'], [26, '#ff9500'], [32, '#ff3b30']];
+function tempCol(t) { if (t <= TCOL[0][0]) return TCOL[0][1]; for (let i = 1; i < TCOL.length; i++) if (t <= TCOL[i][0]) return TCOL[i][1]; return TCOL[TCOL.length - 1][1]; }
+function wxHTML(s, multi) { const w = wxFor(s), a = s.from || T.info.from || '', b = s.to || (s.from ? s.from : T.info.to) || a;
+  let h = `<p class="sec">${esc(s.name)}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}</p><div class="card wxc"><div class="c">`;
+  if (w.st !== 'ok') return h + (w.st === 'err' ? '<p class="muted" style="padding-bottom:14px">Wetter gerade nicht erreichbar. Wir versuchen es gleich nochmal.</p>' : '<div class="shim" aria-label="Wetter lädt" style="padding-bottom:12px"><span class="skl t" style="width:40%;height:44px"></span><span class="skl" style="margin-top:16px"></span><span class="skl" style="margin-top:22px"></span><span class="skl" style="margin-top:22px"></span></div>') + '</div></div>';
   const last = w.days.length ? w.days[w.days.length - 1].d : '', ours = a ? w.days.filter(d => d.d >= a && d.d <= b && d.d >= today()) : [], over = a && b < today();
-  const show = ours.length ? ours : over ? [] : w.days.slice(0, 7);
-  if (w.cur) h += `<div class="wxnow">${wxIcon(w.cur.c)}<div><b>${w.cur.t}°</b><small>${esc(WCODE(w.cur.c)[0])} · jetzt${multi ? '' : ' in ' + esc(s.name)}</small></div></div>`;
-  if (show.length) h += `${a && ours.length && !(today() >= a && today() <= b) ? '<p class="muted" style="margin:0 0 8px">Unsere Tage dort</p>' : !ours.length && a ? '<p class="muted" style="margin:0 0 8px">Die nächsten Tage</p>' : ''}<div class="wxd">${show.map(d => `<div class="wxt">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}${wxIcon(d.c)}<b>${d.hi}°</b>${d.lo}°${d.p != null && d.p >= 30 ? `<br>${d.p} %` : ''}</div>`).join('')}</div>`;
-  if (a && !ours.length && !over && last && a > last) h += `<p class="muted" style="margin-top:8px">Die Vorhersage reicht 16 Tage. Für unsere Tage dort kommt sie ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}.</p>`;
-  return h + '</div>'; }
+  const show = ours.length ? ours : over ? [] : w.days.slice(0, 7), td = w.days.find(d => d.d === today());
+  if (w.cur) h += `<div class="wxn">${wxIcon(w.cur.c)}<b>${w.cur.t}°</b><div class="gr"><span>${esc(WCODE(w.cur.c)[0])}</span>${td ? `H: ${td.hi}° · T: ${td.lo}°` : 'jetzt'}</div></div>`;
+  if (show.length) { const mn = Math.min(...show.map(d => d.lo)), mx = Math.max(...show.map(d => d.hi)), sp = Math.max(1, mx - mn);
+    h += show.map(d => { const l = (d.lo - mn) / sp * 100, r = (d.hi - mn) / sp * 100, now = d.d === today() && w.cur ? Math.min(100, Math.max(0, (w.cur.t - mn) / sp * 100)) : null;
+      return `<div class="wxr"><span class="wd">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}</span><span class="wic">${wxIcon(d.c)}${d.p != null && d.p >= 30 ? `<small>${d.p} %</small>` : ''}</span><span class="wlo">${d.lo}°</span><span class="wbar"><i style="left:${l.toFixed(1)}%;width:${Math.max(4, r - l).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(d.lo)},${tempCol(d.hi)})"></i>${now != null ? `<b style="left:${now.toFixed(1)}%"></b>` : ''}</span><span class="whi">${d.hi}°</span></div>`; }).join('');
+    h += `<p class="wxh">${ours.length ? (today() >= a && today() <= b ? 'Unsere restlichen Tage dort' : 'Unsere Tage dort') : 'Die nächsten Tage'}${a && !ours.length && !over && last && a > last ? ` · für unsere Tage ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}` : ''}</p>`; }
+  return h + '</div></div>'; }
 
 /* ---------- Vorschläge ---------- */
 function formHTML() { const f = F, food = f.cat === 'food', days = tripDays(T.info), st = stops();
@@ -1239,12 +1324,11 @@ function wizNext() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { if (!w.from) { w.err = 'Bitte wähle den ersten Tag, oder tippe auf „Steht noch nicht fest“.'; return draw(true); } if (w.to && w.to < w.from) w.to = w.from; }
   if (s === 'where' && (w.q || '').trim() && !w.stops.length) { w.stops.push({ id: rid(8), name: w.q.trim() }); w.q = ''; }
   if (s === 'stay') for (const x of w.stops) if (x.stay && x.stay.link && normLink(x.stay.link) === false) { w.err = `Der Link bei „${x.name}“ sieht nicht wie eine Internetadresse aus.`; return draw(true); }
-  w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++;
-  draw(true); scrollTo(0, 0); }
+  navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
 function wizSkip() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { w.from = w.to = ''; } if (s === 'stay') w.stops.forEach(x => delete x.stay); if (s === 'travel') { w.travel = ''; w.tnote = ''; }
   if (s === 'where' && (w.q || '').trim()) { w.stops.push({ id: rid(8), name: w.q.trim() }); w.q = ''; }
-  w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }
+  navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
 function pasteGo() { const p = parseInvite(pasteVal); if (!p) return toast('Das ist kein Einladungs-Link von outbndr'); pasteOpen = false; pasteVal = ''; go('#/e/' + p.t + '/' + p.tok); }
 
 /* ---------- Tippen: ein Verteiler, jeder Knopf hat seinen eigenen Fall ---------- */
@@ -1290,7 +1374,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'tipx') { store.set('outbndr.tip1', true); return draw(true); }
   if (a === 'edit') return go('#/r/' + T.id + '/reise');
   if (a === 'mood') return go('#/r/' + T.id + '/stimmung');
-  if (a === 'info') return foldRow(infoOpen, v => { infoOpen = v; }, '#app .infb', '#app .infh>svg');
+  if (a === 'infopage') return go('#/r/' + T.id + '/info');
   if (a === 'map') return openMap(b);
   if (a === 'tshare') { if (!T.tok) return toast('Einen Moment, der Link lädt noch'); return share(T.id, T.tok, T.info.name); }
   if (a === 'psave') return saveProfile();
@@ -1348,20 +1432,20 @@ $('app').addEventListener('click', async e => {
   if (a === 'leave') return leaveTrip();
   if (a === 'tdel') return deleteTrip();
 });
-$('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) { Wz.step--; if (WSTEPS[Wz.step] === 'stay' && !Wz.stops.length) Wz.step--; Wz.err = ''; draw(true); return; }
-  if (['people', 'profile', 'mood', 'edit'].includes(view.n)) return go('#/r/' + T.id + (view.n === 'mood' && Ed ? '/reise' : '')); Wz = null; go('#/'); });
+$('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) { navTo('pop', () => { Wz.step--; if (WSTEPS[Wz.step] === 'stay' && !Wz.stops.length) Wz.step--; Wz.err = ''; draw(true); scrollTo(0, 0); }); return; }
+  if (['people', 'profile', 'mood', 'edit', 'info'].includes(view.n)) return go('#/r/' + T.id + (view.n === 'mood' && Ed ? '/reise' : '')); Wz = null; go('#/'); });
 /* ---------- Bewegung: Gleichartiges bewegt sich gleich (DESIGN.md Abschnitt 5) ----------
    Aufklappen: Höhe + Deckkraft, Dauer wächst mit der Höhe (0,32–0,56 s), Kurve (.45,0,.15,1); Zuklappen ¾ der Zeit, Kurve (.4,0,.2,1).
    Pfeil dreht sich im selben Takt. Umschalter: Perle gleitet 0,42 s (Feder), neuer Inhalt blendet ein. Während einer Bewegung warten Live-Daten (slides). */
-const MO = { dur: h => Math.min(560, 320 + h * .25), on: 'cubic-bezier(.45,0,.15,1)', off: 'cubic-bezier(.4,0,.2,1)' };
+const MO = { dur: h => Math.min(460, 300 + h * .2), on: 'cubic-bezier(.32,.72,0,1)', off: 'cubic-bezier(.32,.72,0,1)' };   // eine Kurve wie iOS (weich auslaufend), zu etwas schneller
 let slides = 0;
 const slideDone = () => { slides = Math.max(0, slides - 1); if (!slides && pending && !inField()) draw(); };
 const q = sel => typeof sel === 'string' ? document.querySelector(sel) : sel;
 function openAnim(el, chev) { el = q(el); turn(chev, true); if (!el || calm()) return; const h = el.offsetHeight; el.style.overflow = 'hidden'; slides++;
   const a = el.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: MO.dur(h), easing: MO.on }); a.onfinish = a.oncancel = () => { el.style.overflow = ''; slideDone(); }; }
 function shut(el, chev, then) { el = q(el); turn(chev, false); if (!el || calm()) return then(); const h = el.offsetHeight; el.style.overflow = 'hidden'; slides++;
-  const a = el.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: MO.dur(h) * .75, easing: MO.off, fill: 'forwards' }); a.onfinish = a.oncancel = () => { slides = Math.max(0, slides - 1); then(); }; }
-function turn(chev, open) { const c = q(chev); if (!c || calm()) return; c.animate([{ rotate: open ? '0deg' : '180deg' }, { rotate: open ? '180deg' : '0deg' }], { duration: 340, easing: open ? MO.on : MO.off, fill: open ? 'none' : 'forwards' }); }
+  const a = el.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: MO.dur(h) * .7, easing: MO.off, fill: 'forwards' }); a.onfinish = a.oncancel = () => { slides = Math.max(0, slides - 1); then(); }; }
+function turn(chev, open) { const c = q(chev); if (!c || calm()) return; c.animate([{ rotate: open ? '0deg' : '180deg' }, { rotate: open ? '180deg' : '0deg' }], { duration: open ? 360 : 280, easing: MO.on, fill: open ? 'none' : 'forwards' }); }
 // Aufklapp-Zeile: offen → zu gleiten und dann neu zeichnen; zu → zeichnen und auf gleiten
 function foldRow(isOpen, set, body, chev) { if (isOpen) shut(body, chev, () => { set(false); draw(true); }); else { set(true); draw(true); openAnim(body, chev); } }
 // Formular schließen: erst gleiten, dann den Zustand leeren
@@ -1370,7 +1454,7 @@ function closeForm(el, clear) { shut(el, null, () => { clear(); draw(true); }); 
 function segSwitch(btn, apply) { const s = btn.closest('.seg2'), key = s.dataset.seg, ind = s.querySelector('.ind2'), old = { w: ind.style.width, x: ind.style.translate };
   apply(); draw(true); const s2 = document.querySelector(`#app .seg2[data-seg="${key}"]`); if (!s2 || calm()) return; const i2 = s2.querySelector('.ind2'), fin = { w: i2.style.width, x: i2.style.translate };
   i2.style.transition = 'none'; i2.style.width = old.w; i2.style.translate = old.x; void i2.offsetWidth; i2.style.transition = ''; i2.style.width = fin.w; i2.style.translate = fin.x;
-  let n = s2.nextElementSibling; while (n) { n.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: MO.on }); n = n.nextElementSibling; } }
+  let n = s2.nextElementSibling; while (n) { n.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease' }); n = n.nextElementSibling; } }
 // Umschalter: Perle gleitet zum gewählten Knopf (Position per translate, wie in der Vorlage)
 function segPos() { document.querySelectorAll('#app .seg2').forEach(s => { const on = s.querySelector('button.on'), ind = s.querySelector('.ind2'); if (!on || !ind) return; ind.style.transition = 'none'; ind.style.width = on.offsetWidth + 'px'; ind.style.translate = (on.offsetLeft - 4) + 'px 0'; void ind.offsetWidth; ind.style.transition = ''; }); }
 function segMove(btn) { const s = btn.closest('.seg2'), ind = s.querySelector('.ind2'); s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === btn)); ind.style.width = btn.offsetWidth + 'px'; ind.style.translate = (btn.offsetLeft - 4) + 'px 0'; }
@@ -1554,6 +1638,12 @@ $('mapv').addEventListener('click', e => { const f = e.target.closest('[data-mf]
   const g = e.target.closest('[data-mgo]'); if (g) { const id = g.dataset.mgo; closeMap(); setTimeout(() => goToCard(id), 360); return; }
   if (e.target.closest('#mclose')) closeMap(); });
 
+/* ---------- Oberer Rand: ab etwas Scrollen unscharf; ist der große Titel weg, steht er klein in der Mitte (wie iOS) ---------- */
+function topTitle() { const R = document.documentElement, h1 = document.querySelector('#app h1, #app .wm'), y = scrollY;
+  R.classList.toggle('scrolled', y > 6); const nt = $('ntitle').firstChild, t = h1 ? h1.textContent.trim() : ''; if (nt.textContent !== t) nt.textContent = t;
+  R.classList.toggle('ttl', !!h1 && h1.getBoundingClientRect().bottom < (parseFloat(getComputedStyle(R).getPropertyValue('--sat')) || 0) + 50); }
+addEventListener('scroll', topTitle, { passive: true });
+
 /* ---------- Ohne Netz: Hinweis oben; Firestore schickt Änderungen, sobald wieder Netz da ist ---------- */
 function netState() { const off = navigator.onLine === false; let el = document.querySelector('.net'); if (off && !el) document.body.insertAdjacentHTML('beforeend', '<div class="net" role="status">Offline · wir speichern, sobald wieder Netz da ist</div>'); else if (!off && el) { el.remove(); if (T && T.st === 'load') draw(); } }
 addEventListener('online', netState); addEventListener('offline', netState); netState();
@@ -1618,7 +1708,7 @@ function drawBar() {
     k.style.clipPath = B <= t0 || A >= t1 ? '' : A <= t0 && B >= t1 ? 'inset(0 100% 0 0)' : A > t0 ? `inset(0 ${(t1 - A).toFixed(1)}px 0 0)` : `inset(0 0 0 ${(B - t0).toFixed(1)}px)`; }
 }
 function select(k) { if (k === tab) { scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
-  tab = k; F = null; Cf = null; Rv = null; shownNew = new Set(); if (k === 'food') foodView = 'sug'; infoOpen = false; mark(); lastKey = ''; draw(true); scrollTo(0, 0); }
+  mark(); navTo('tab', () => { tab = k; F = null; Cf = null; Rv = null; shownNew = new Set(); if (k === 'food') foodView = 'sug'; lastKey = 'tab'; draw(true); scrollTo(0, 0); }); }
 let drag = null;
 const glowAt = e => { const r = bar.getBoundingClientRect(); bar.style.setProperty('--gx', (e.clientX - r.left) + 'px'); bar.style.setProperty('--gy', (e.clientY - r.top) + 'px'); };
 bar.addEventListener('pointerdown', e => {
@@ -1715,7 +1805,8 @@ $('more').addEventListener('click', e => { if (e.detail === 0) openMenu($('more'
 /* ---------- Lichtbrechung am Rand der Leiste: Kopie des Inhalts in Randstreifen, läuft beim Scrollen mit ---------- */
 let refrEls = [], refrT = 0;
 const SDA = CSS.supports('animation-timeline', 'scroll()');
-function refrSoon() { clearTimeout(refrT); refrT = setTimeout(refrBuild, 40); }
+// Kopien für die Lichtbrechung erst neu bauen, wenn nichts mehr gleitet (sonst fehlen mitten in der Bewegung Bilder)
+function refrSoon() { clearTimeout(refrT); refrT = setTimeout(() => { if (slides || navBusy) return refrSoon(); (window.requestIdleCallback || (f => setTimeout(f, 1)))(refrBuild, { timeout: 600 }); }, 160); }
 function refrBuild() { const box = $('refr'); box.innerHTML = ''; refrEls = []; if (bar.hidden) return;
   const src = $('app'), H = 64;
   for (const [k, x, y, w, h] of [['t', 0, 0, W, 9], ['b', 0, H - 9, W, 9], ['l', 0, 0, 14, H], ['r', W - 14, 0, 14, H]]) { const b = document.createElement('div'), sc = document.createElement('div'), c = src.cloneNode(true);

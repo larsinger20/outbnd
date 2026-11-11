@@ -42,10 +42,16 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 - Apple ist schneller und ruhiger als gedacht: erst messen. Apples SwiftUI-Voreinstellungen als Anhalt: smooth (0,5 s, kein Nachfedern), snappy (leicht), bouncy (Bounce 0,3). Umrechnung: Steifheit = (2π/Dauer)², Dämpfungsverhältnis = 1 − Bounce.
 - Nur `transform`/`opacity` animieren; Weichzeichnen während großer Bewegungen ruckelt auf dem iPhone.
 
-- **Wetter**: alle Tageskacheln gleich (keine Umrandung). Liegen unsere Tage am Ziel in der 16-Tage-Vorhersage, zeigen wir genau diese („Unsere Tage dort“), sonst die nächsten 7 Tage mit Hinweis, ab wann unsere Tage kommen. Aktuelle Temperatur steht immer darüber.
+- **Seiten wie in iOS** (Wunsch Lars 12.11.2026: „aus einem Guss“): Tiefer gehen (Start → Reise → Unterseite, Assistent weiter) schiebt die neue Seite von rechts herein, die alte weicht ein Stück nach links und wird blasser; Zurück umgekehrt. Reiterwechsel blendet kurz über (0,2 s), die Reiter-Leiste bleibt stehen. Technik: View Transitions (`navTo('push'|'pop'|'tab')`, Tiefe per `depth()`), bewegt werden nur Bildschirmfotos; ohne Unterstützung oder bei „Bewegung reduzieren“ einfach ohne.
+- **Eine Kurve für alles**: `cubic-bezier(.32,.72,0,1)` (iOS: schnell los, weich auslaufend, Variable `--ios`, im Code `MO`). Dauern: Seiten 0,42 s, Aufklappen 0,30–0,46 s je nach Höhe, zu 70 % davon, Umschalter 0,42 s, Inhalt blendet 0,22 s ein.
+- **Oberer Rand beim Scrollen** (iOS 26): Inhalt unter Uhr und Akku wird weich unscharf (`.sedge`, ohne Hintergrundfarbe auf `html`, damit Safaris Leiste neutral bleibt); ist der große Titel weggescrollt, steht er klein in der Mitte (`#ntitle`, `topTitle`).
+- **Lichtbrechung der Reiter-Leiste** wird erst neu berechnet, wenn keine Bewegung läuft (`refrSoon` wartet auf `slides`/`navBusy`), sonst ruckeln Bewegungen.
+- **Reise-Info** ist eine eigene Seite (`#/r/{id}/info`), auf der Reiseseite nur eine Zeile mit Pfeil wie in den Einstellungen (Wetter-Symbol, Temperatur, Unterkunft, Anreise). Riesige Aufklapp-Kacheln vermeiden.
+- **Wetter wie die Wetter-App**: oben jetzt (Symbol, große Temperatur, Beschreibung, H/T), darunter eine Zeile je Tag (Tag, Symbol mit Regen-% ab 30 %, Tiefst, Balken mit Temperatur-Verlauf über die Spanne aller gezeigten Tage, Punkt = jetzt, Höchst). Liegen unsere Tage am Ziel in der 16-Tage-Vorhersage, zeigen wir genau diese („Unsere Tage dort“), sonst die nächsten 7 Tage mit Hinweis.
+- **Unterkunft und Anreise** als gruppierte Listen (`.glist`/`.gl2`) wie in den Einstellungen; Links als eigene Zeilen mit Pfeil.
 - **Eine Bewegungssprache** (Wunsch Lars 12.11.2026: Gleiches muss sich gleich anfühlen; im Code `MO`, `openAnim`, `shut`, `foldRow`, `closeForm`, `segSwitch`):
-  - Aufklapp-Zeilen (Reise-Info, Kommentare, Einkaufsliste, Erledigt, Archiv, Vorschläge, Kosten-Übersichten) und Formulare (Vorschlag, Ausgabe, Reservierung, Stopp, Fahrt): Höhe + Deckkraft, auf 0,32–0,56 s je nach Höhe mit (.45,0,.15,1), zu ¾ der Zeit mit (.4,0,.2,1). Gilt für Abbrechen und Speichern gleich. Der Pfeil dreht sich im selben Takt.
-  - Umschalter (Reise-Info, Essen): Perle gleitet 0,42 s mit Feder von der alten Stelle, der Inhalt darunter blendet in 0,26 s ein.
+  - Aufklapp-Zeilen (Kommentare, Einkaufsliste, Erledigt, Archiv, Vorschläge, Kosten-Übersichten) und Formulare (Vorschlag, Ausgabe, Reservierung, Stopp, Fahrt): Höhe + Deckkraft mit der iOS-Kurve (siehe oben). Gilt für Abbrechen und Speichern gleich. Der Pfeil dreht sich im selben Takt.
+  - Umschalter (Reise-Info, Essen): Perle gleitet 0,42 s mit Feder von der alten Stelle, der Inhalt darunter blendet in 0,22 s ein.
   - Während einer Bewegung warten Live-Daten anderer (`slides`), damit nichts abreißt.
 - **Antippen statt Berühren** bei Auswahllisten (Ortsvorschläge): Übernommen wird erst beim Loslassen ohne Bewegung und ohne Scrollen (Lars: Scrollen übernahm sonst einen Vorschlag).
 
