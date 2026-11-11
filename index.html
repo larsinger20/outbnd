@@ -921,7 +921,7 @@ function joinHTML() { const j = J;
 /* ---------- Reise-Info: Wetter · Unterkunft · Anreise ---------- */
 function infoHTML() { const st = stops(), geo = st.filter(s => typeof s.lat === 'number'), stays = st.filter(s => s.stay), tr = (T.info.travel || []).filter(x => x && (x.kind || x.title));
   const segs = [geo.length && ['wx', 'Wetter'], stays.length && ['stay', 'Unterkunft'], tr.length && ['tr', 'Anreise']].filter(Boolean);
-  if (!segs.length) return isAdmin() ? `<button class="info infh lq" type="button" data-a="edit" style="width:100%"><span class="gr"><b>Reise-Info ergänzen</b><small>Ziel, Unterkunft, Anreise – daraus kommen Wetter und Karte</small></span>${CHR}<span class="gl"></span></button>` : '';
+  if (!segs.length) return isAdmin() ? `<button class="info infh lq" type="button" data-a="edit" style="width:100%"><span class="gr"><b>Reise-Info ergänzen</b><small style="white-space:normal">Ziel, Unterkunft, Anreise – daraus kommen Wetter und Karte</small></span>${CHR}<span class="gl"></span></button>` : '';
   if (!segs.some(x => x[0] === infoSeg)) infoSeg = segs[0][0];
   let sum = []; if (geo.length) { const w = WX[geo[0].lat.toFixed(2) + ',' + geo[0].lng.toFixed(2)]; sum.push(w && w.cur ? w.cur.t + '° ' + geo[0].name : geo[0].name + (st.length > 1 ? ' + ' + (st.length - 1) : '')); }
   if (stays.length) sum.push(stays[0].stay.name || 'Unterkunft'); if (tr.length) sum.push(KIND[tr[0].kind] ? KIND[tr[0].kind][0] : tr[0].title);
