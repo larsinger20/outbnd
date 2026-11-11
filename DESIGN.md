@@ -62,6 +62,8 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 - **Karte**: Vollbild, wächst per `transform: scale` aus dem Karte-Knopf, Inhalt weicht auf 94 % zurück; nur transform/opacity. Schließen-Knopf und Filter schweben als Glas.
 - Knöpfe, die auf dem Verlauf im Kopf liegen, haben den Kachel-Grund (sonst zu blass).
 
+- **Laden** (Wunsch Lars 11.11.2026): Startbildschirm mit Schriftzug „outbndr.“, der Punkt hüpft leise (steht schon im HTML, erscheint also vor dem Programm; nach 6 s „Einen Moment, wir packen noch.“, nach 15 s „Die Verbindung ist gerade langsam.“ + Neu laden). Beim Öffnen einer Reise: Name, Zeitraum und Stimmung sofort aus der gemerkten Liste, der Rest als Platzhalter in Form der echten Kacheln mit wanderndem Glanz (nur transform, bei „Bewegung reduzieren“ ohne). Nach 8 s Hinweis „Dauert etwas länger“ mit „Nochmal“, nach 20 s „Keine Verbindung“. Wetter lädt als Platzhalter-Kacheln, Karte zeigt „Karte lädt …“. Offline: Glas-Hinweis oben, Änderungen gehen raus, sobald wieder Netz da ist.
+
 ## 8. Bedienung
 - **Kein Wischen, kein Halte-Menü auf Kacheln** (Entscheidung Lars: in einer Web-App schwer zu bedienen und nicht intuitiv). Alles läuft sichtbar über ⋯.
 - Tippflächen mind. 44.

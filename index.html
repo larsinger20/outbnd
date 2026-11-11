@@ -281,9 +281,38 @@ main.rcl.mst{animation:none}
 @keyframes dIn{from{opacity:0}}@keyframes dOut{to{opacity:0}}@keyframes dPop{from{opacity:0;transform:scale(.9)}}
 .fade{animation:fd .28s ease-out}@keyframes fd{from{opacity:0;transform:translateY(6px)}}
 /* Platzhalter beim Laden */
-.sk{border-radius:22px;background:var(--card);height:132px;animation:sk 1.2s ease-in-out infinite alternate}
-.sk.h{height:40px;width:60%;margin-bottom:22px;border-radius:12px}
-@keyframes sk{to{opacity:.45}}
+/* ===== Laden: Startbildschirm mit Schriftzug, Platzhalter in Form der echten Inhalte, Hinweis bei langsamer Verbindung ===== */
+:root{--skb:rgba(118,118,128,.14);--skg:rgba(255,255,255,.55)}
+@media (prefers-color-scheme:dark){:root{--skb:rgba(118,118,128,.22);--skg:rgba(255,255,255,.07)}}
+.boot{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--bg);padding:24px}
+.boot .wm{font-size:44px;animation:bootIn .5s .15s both cubic-bezier(.3,.7,.4,1)}
+.boot .wm i{display:inline-block;animation:dot 1.4s .6s infinite cubic-bezier(.45,0,.15,1)}
+.boot p{margin:0;font-size:15px;color:var(--mu);text-align:center;animation:bootIn .4s 6s both}
+.boot p+p{animation-delay:15s}
+.boot button{margin-top:6px;animation:bootIn .4s 15s both}
+@keyframes bootIn{from{opacity:0;transform:translateY(6px)}}
+@keyframes dot{0%,100%{transform:none}35%{transform:translateY(-9px) scale(1.15)}60%{transform:translateY(1px) scale(.92,1.06)}}
+.skc{background:var(--card);border-radius:22px;padding:18px 18px 16px;position:relative;overflow:hidden}
+.skl{display:block;height:14px;border-radius:7px;background:var(--skb);margin-top:10px}
+.skl:first-child{margin-top:0}
+.skl.t{height:22px;border-radius:9px;width:68%}
+.skl.w{background:rgba(255,255,255,.28)}
+.skr{display:flex;align-items:center;gap:10px;margin-top:16px}
+.skr .skl{margin:0}
+.skd{width:26px;height:26px;border-radius:50%;background:var(--skb);flex:none}
+.skd.w{background:rgba(255,255,255,.28)}
+.skp{width:118px;height:36px;border-radius:999px;background:var(--skb);margin-left:auto;flex:none}
+/* Glanz wandert über die Platzhalter (nur transform) */
+.shim{position:relative;overflow:hidden}
+.shim::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--skg) 50%,transparent 70%);transform:translateX(-100%);animation:shim 1.5s infinite cubic-bezier(.4,0,.2,1)}
+@keyframes shim{to{transform:translateX(100%)}}
+.slow{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:22px;padding:14px 16px;margin-bottom:14px;font-size:15px;line-height:1.33;color:var(--mu);animation:bootIn .3s both}
+.slow .gr{flex:1;min-width:0}.slow b{display:block;color:var(--tx);font-size:17px;font-weight:600}
+.slow .btn{width:auto;min-height:40px;padding:0 16px;font-size:15px;flex:none}
+.wxsk{display:flex;gap:8px;margin-top:4px}.wxsk i{flex:none;width:62px;height:118px;border-radius:16px;background:var(--skb)}
+.net{position:fixed;z-index:60;left:50%;translate:-50% 0;top:calc(10px + env(safe-area-inset-top,0px));padding:10px 16px;border-radius:999px;font-size:15px;font-weight:600;color:var(--tx);background:var(--mg);-webkit-backdrop-filter:blur(20px) saturate(200%);backdrop-filter:blur(20px) saturate(200%);box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),0 8px 24px rgba(0,0,0,.16);width:max-content;max-width:calc(100% - 120px);text-align:center;animation:tin .35s cubic-bezier(.3,1.3,.5,1)}
+.mload{position:absolute;z-index:500;left:50%;top:50%;translate:-50% -50%;padding:12px 18px;border-radius:999px;background:var(--gb);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--gbsh);font-size:15px;font-weight:600}
+@media (prefers-reduced-motion:reduce){.shim::after,.boot .wm i{animation:none}}
 
 /* ===== Etappe 2/3: Reise-Info, Ortssuche, Einkaufsliste, Kosten, Mein Plan, Karte ===== */
 :root{--grn:#248a3d;--red:#d70015;--sw:#34c759}
@@ -476,7 +505,7 @@ main.wash .btn.g{background:var(--card)}
 </style>
 </head>
 <body>
-<main id="app"></main>
+<main id="app"><div class="boot" role="status" aria-label="outbndr. lädt"><div class="wm">outbndr<i>.</i></div><p>Einen Moment, wir packen noch.</p><p>Die Verbindung ist gerade langsam.</p><button class="btn g s" type="button" onclick="location.reload()" style="width:auto">Neu laden</button></div></main>
 <button class="nb l lq" id="back" type="button" aria-label="Zurück" hidden><svg viewBox="0 0 24 24"><path d="M14.5 5 7.5 12l7 7"/></svg><span class="gl"></span></button>
 <button class="nb r dots lq" id="more" type="button" aria-label="Mehr" hidden><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg><span class="gl"></span></button>
 <nav class="tbar" id="tbar" aria-label="Reiter" hidden>
@@ -656,7 +685,8 @@ addEventListener('hashchange', route);
 function closeTrip() { if (T) { T.off.forEach(f => f()); T = null; cmOpen.clear(); shopOpen.clear(); kOpen.clear(); stopF = ''; infoOpen = false; } }
 async function openTrip(id) {
   if (T && T.id === id) return; closeTrip(); tab = 'act'; foodView = 'sug';   // jede Reise öffnet mit Aktivitäten
-  const t = T = { id, st: 'load', me: null, info: null, people: null, acts: null, sig: null, costs: null, gen: {}, tok: null, toks: [], off: [] };
+  const t = T = { id, t0: Date.now(), st: 'load', me: null, info: null, people: null, acts: null, sig: null, costs: null, gen: {}, tok: null, toks: [], off: [] };
+  [8100, 20100].forEach(ms => setTimeout(() => { if (T === t && t.st === 'load') draw(); }, ms));
   if (!db) return;
   try { await ready; const m = await getDoc(tdoc(id, 'members', uid)); if (T !== t) return;
     if (!m.exists() || !m.data().pid) return needJoin(t);
@@ -683,7 +713,8 @@ function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'ac
 /* ---------- Beitritt über den Einladungs-Link ---------- */
 async function startJoin(t, tok) {
   if (J && J.t === t && J.tok === tok && J.st !== 'bad') return;
-  const j = J = { t, tok, st: 'load', info: null, people: {}, name: '', pin: '', col: '', err: '', busy: false };
+  const j = J = { t, t0: Date.now(), tok, st: 'load', info: null, people: {}, name: '', pin: '', col: '', err: '', busy: false };
+  [8100, 20100].forEach(ms => setTimeout(() => { if (J === j && j.st === 'load') draw(); }, ms));
   if (!db) return;
   try { await ready;
     const s = await getDoc(tdoc(t)); if (J !== j) return; if (!s.exists()) { j.st = 'bad'; return draw(); }
@@ -823,16 +854,16 @@ function draw(force) {
   if (view.n === 'home') h = homeHTML();
   else if (view.n === 'new') { h = wizHTML(); back = Wz.step === WSTEPS.length - 1 ? null : 1; }
   else if (view.n === 'join') { h = joinHTML(); back = 1; }
-  else if (!T || T.st === 'load') { h = '<div class="sk h"></div><div class="list"><div class="sk"></div><div class="sk"></div></div>'; back = 1; }
+  else if (!T || T.st === 'load') { h = tripSkel(); back = 1; }
   else if (T.st !== 'ok') { h = `<div class="q"><h1>${T.st === 'gone' ? 'Diese Reise gibt es nicht mehr' : T.st === 'err' ? 'Keine Verbindung' : 'Einladungs-Link nötig'}</h1><p class="sub">${T.st === 'err' ? 'Wir erreichen die Datenbank gerade nicht. Bitte später nochmal versuchen.' : T.st === 'gone' ? 'Sie wurde gelöscht, oder wir gehören nicht mehr dazu.' : 'Auf diesem Gerät sind wir bei dieser Reise noch nicht dabei. Öffne den Einladungs-Link der Reise, dann geht es mit deinem Namen und deiner PIN weiter.'}</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`; back = 1; }
   else if (view.n === 'people') { h = peopleHTML(); back = 1; }
   else if (view.n === 'profile') { h = profileHTML(); back = 1; }
   else if (view.n === 'mood') { h = moodHTML(); back = 1; }
   else if (view.n === 'edit') { h = editHTML(); back = 1; }
   else { h = tripHTML(); back = 1; more = true; }
-  A.className = (back ? 'nav' : '') + (inTrip ? ' tabs wash' : '');
+  A.className = (back ? 'nav' : '') + (inTrip ? ' tabs wash' : view.n !== 'home' && view.n !== 'new' && view.n !== 'join' && T && T.st === 'load' ? ' wash' : '');
   // Akzentfarbe folgt der Stimmung der Reise (Startseite: Meer)
-  document.documentElement.dataset.m = moodOf(view.n === 'new' ? Wz.mood : view.n === 'join' ? (J && J.info && J.info.mood) : T && T.info ? T.info.mood : '');
+  document.documentElement.dataset.m = moodOf(view.n === 'new' ? Wz.mood : view.n === 'join' ? (J && J.info && J.info.mood) : T && T.info ? T.info.mood : T ? (LS.one(T.id) || {}).mood : '');
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
   if (fresh && !calm()) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
@@ -879,7 +910,7 @@ function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="
 
 function joinHTML() { const j = J;
   if (!CFG) return `<div class="q"><h1>Noch nicht eingerichtet</h1><p class="sub">Die Datenbank von outbndr fehlt noch.</p></div>`;
-  if (!j || j.st === 'load') return '<div class="sk h"></div><div class="sk"></div>';
+  if (!j || j.st === 'load') return `<div class="q">${slowHTML(j)}<div class="shim" style="border-radius:12px"><span class="skl" style="width:40%"></span><span class="skl t" style="margin-top:14px;height:34px;width:80%"></span><span class="skl" style="width:55%;margin-top:12px"></span></div><div class="skc shim" style="margin-top:22px"><span class="skl" style="width:30%"></span><span class="skl" style="height:46px;border-radius:14px"></span><span class="skl" style="width:30%;margin-top:16px"></span><span class="skl" style="height:46px;border-radius:14px"></span></div></div>`;
   if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`;
   const n = Object.keys(j.people).length;
   return `<div class="q"><p class="sub" style="margin:0 0 4px">Einladung zur Reise</p><h1>${esc(j.info.name)}</h1><p class="sub">${esc(range(j.info.from, j.info.to))} · ${n === 1 ? '1 Person ist' : n + ' Leute sind'} schon dabei</p>
@@ -907,7 +938,7 @@ function infoHTML() { const st = stops(), geo = st.filter(s => typeof s.lat === 
   return h + '</div>'; }
 function wxHTML(s) { const w = wxFor(s), multi = stops().filter(x => typeof x.lat === 'number').length > 1, days = tripDays(T.info);
   let h = `<div class="wxs">${multi ? `<h4>${esc(s.name)}${s.from ? ` <small style="font-weight:400;color:var(--mu)">${esc(shortRange(s.from, s.to))}</small>` : ''}</h4>` : ''}`;
-  if (w.st !== 'ok') return h + `<p class="muted">${w.st === 'err' ? 'Wetter gerade nicht erreichbar.' : 'Wetter lädt …'}</p></div>`;
+  if (w.st !== 'ok') return h + (w.st === 'err' ? '<p class="muted">Wetter gerade nicht erreichbar. Wir versuchen es gleich nochmal.</p>' : '<div class="wxsk shim" aria-label="Wetter lädt">' + '<i></i>'.repeat(5) + '</div>') + '</div>';
   if (w.cur) h += `<div class="wxnow">${wxIcon(w.cur.c)}<div><b>${w.cur.t}°</b><small>${esc(WCODE(w.cur.c)[0])} · jetzt${multi ? '' : ' in ' + esc(s.name)}</small></div></div>`;
   h += `<div class="wxd">${w.days.map(d => `<div class="wxt${days.includes(d.d) ? ' trip' : ''}">${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', '') + ' ' + D(d.d).getDate() + '.')}${wxIcon(d.c)}<b>${d.hi}°</b>${d.lo}°${d.p != null && d.p >= 30 ? `<br>${d.p} %` : ''}</div>`).join('')}</div>`;
   if (days.length && w.days.length && days[0] > w.days[w.days.length - 1].d) h += `<p class="muted" style="margin-top:8px">Die Vorhersage reicht 16 Tage. Für unsere Reisetage kommt sie ab ${esc(dayLong(iso(new Date(D(days[0]).getTime() - 15 * 864e5))))}.</p>`;
@@ -958,6 +989,13 @@ function listHTML(food) { const by = sigBy(), st = stops();
     if (o) h += '<div class="list" style="margin-top:14px">' + done.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by)).join('') + '</div>'; }
   return h; }
 
+// Platzhalter beim Öffnen einer Reise: Name, Zeitraum und Stimmung kennt dieses Gerät schon (Liste der Reisen), der Rest erscheint als Form
+function tripSkel() { const l = T && LS.one(T.id), card = n => `<div class="skc shim"><span class="skl t"></span><span class="skl" style="width:46%"></span>${n ? '<span class="skl" style="width:88%;margin-top:14px"></span>' : ''}<div class="skr"><span class="skd"></span><span class="skd" style="margin-left:-17px"></span><span class="skl" style="width:70px"></span><span class="skp"></span></div></div>`;
+  return `<div class="hd w">${l && l.name ? `<h1>${esc(l.name)}</h1><p class="sub">${esc(range(l.from, l.to))}</p>` : '<span class="skl t w" style="width:70%;height:34px"></span><span class="skl w" style="width:50%"></span>'}<div class="skr" style="margin-top:12px"><span class="skd w"></span><span class="skd w" style="margin-left:-17px"></span><span class="skd w" style="margin-left:-17px"></span></div></div>
+    ${slowHTML(T)}<div class="skc shim" style="margin-bottom:14px;padding:16px 18px"><span class="skl" style="width:34%;height:17px"></span><span class="skl" style="width:62%"></span></div><div class="skc shim" style="height:50px;border-radius:999px;margin-bottom:14px;padding:0"></div><div class="list">${card(1)}${card(0)}${card(1)}</div>`; }
+// dauert es länger als 8 Sekunden: Hinweis mit „Nochmal“; nach 20 Sekunden deutlicher
+function slowHTML(o) { if (!o || !o.t0) return ''; const s = Date.now() - o.t0; if (s < 8000) return '';
+  return `<div class="slow" role="status"><span class="gr"><b>${s < 20000 ? 'Dauert etwas länger' : 'Keine Verbindung zur Datenbank'}</b>${navigator.onLine === false ? 'Das Gerät ist offline.' : s < 20000 ? 'Die Verbindung ist gerade langsam.' : 'Bitte Verbindung prüfen.'}</span><button class="btn g s lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button></div>`; }
 function headHTML() { const n = Object.keys(T.people).length, cd = countdown(T.info), pp = Object.entries(T.people).sort((a, b) => (b[0] === T.me) - (a[0] === T.me) || (a[1].ts || 0) - (b[1].ts || 0));
   return `<div class="hd w">${cd ? `<span class="cd">${esc(cd)}</span>` : ''}<h1>${esc(T.info.name)}</h1><p class="sub">${esc(range(T.info.from, T.info.to))} · ${n === 1 ? 'bisher nur du' : n + ' Mitreisende'}</p>${avs(pp.map(x => x[0]), 7)}</div>`; }
 function tipHTML() { if (store.get('outbndr.tip1', false)) return '';
@@ -1435,11 +1473,12 @@ async function openMap(btn) { mapBtn = btn; mapF = tab === 'food' ? 'food' : tab
   const v = $('mapv'), r = btn.getBoundingClientRect(); v.style.setProperty('--mx', (r.left + r.width / 2) + 'px'); v.style.setProperty('--my', (r.top + r.height / 2) + 'px');
   v.hidden = false; history.pushState({ map: 1 }, ''); paintMapBar();
   if (!calm()) { v.animate([{ transform: 'scale(.12)', opacity: 0, borderRadius: '40px' }, { transform: 'none', opacity: 1, borderRadius: '0px' }], { duration: 400, easing: 'cubic-bezier(.32,.72,0,1)' }); $('app').animate([{ transform: 'none' }, { transform: 'scale(.94)', opacity: .6 }], { duration: 400, easing: 'cubic-bezier(.32,.72,0,1)' }); }
-  try { await loadLeaflet(); } catch (e) { $('mnote').hidden = false; $('mnote').textContent = 'Die Karte lädt gerade nicht. Bitte später nochmal versuchen.'; return; }
+  if (!window.L) { $('mnote').hidden = true; $('map').insertAdjacentHTML('afterend', '<div class="mload" id="mload">Karte lädt …</div>'); }
+  try { await loadLeaflet(); } catch (e) { $('mload')?.remove(); $('mnote').hidden = false; $('mnote').textContent = 'Die Karte lädt gerade nicht. Bitte später nochmal versuchen.'; return; }
   if (!MAP) { MAP = L.map('map', { zoomControl: false, attributionControl: true }); MAP.attributionControl.setPrefix(false);
     const dark = matchMedia('(prefers-color-scheme: dark)').matches;
     L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'rastertiles/voyager'}/{z}/{x}/{y}{r}.png`, { maxZoom: 19, attribution: '© OpenStreetMap · © CARTO' }).addTo(MAP); }
-  setTimeout(() => { MAP.invalidateSize(); paintMap(true); }, 30); }
+  $('mload')?.remove(); setTimeout(() => { MAP.invalidateSize(); paintMap(true); }, 30); }
 function hideMap(now) { const v = $('mapv'); if (!v || v.hidden) return; if (now || calm()) { v.hidden = true; return; }
   v.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(.12)', opacity: 0 }], { duration: 300, easing: 'cubic-bezier(.4,0,1,1)' }).onfinish = () => { v.hidden = true; };
   $('app').animate([{ transform: 'scale(.94)', opacity: .6 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)' }); }
@@ -1461,6 +1500,10 @@ function paintMap(fit) { if (!MAP || !T) return; if (mapLayer) mapLayer.remove()
 $('mapv').addEventListener('click', e => { const f = e.target.closest('[data-mf]'); if (f) { mapF = f.dataset.mf; paintMapBar(); paintMap(true); return; }
   const g = e.target.closest('[data-mgo]'); if (g) { const id = g.dataset.mgo; closeMap(); setTimeout(() => goToCard(id), 360); return; }
   if (e.target.closest('#mclose')) closeMap(); });
+
+/* ---------- Ohne Netz: Hinweis oben; Firestore schickt Änderungen, sobald wieder Netz da ist ---------- */
+function netState() { const off = navigator.onLine === false; let el = document.querySelector('.net'); if (off && !el) document.body.insertAdjacentHTML('beforeend', '<div class="net" role="status">Offline · wir speichern, sobald wieder Netz da ist</div>'); else if (!off && el) { el.remove(); if (T && T.st === 'load') draw(); } }
+addEventListener('online', netState); addEventListener('offline', netState); netState();
 
 /* ---------- Neue Version: prüft beim Zurückkommen und alle 15 Min., ob es eine neuere Seite gibt ---------- */
 let etag = null;
