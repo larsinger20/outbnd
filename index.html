@@ -563,6 +563,16 @@ html.ttl .ntitle{opacity:1;transform:none}
 .gl2 p{margin:2px 0 0;font-size:15px;line-height:1.35;color:var(--mu)}
 a.gl2,button.gl2{width:100%;text-align:left;text-decoration:none;color:var(--ac);align-items:center;font-size:17px;font-weight:500}
 a.gl2 .chv,button.gl2 .chv{margin-left:auto}
+.appc{margin-bottom:14px}.appc .c{padding:18px 18px 16px}
+.appt{display:flex;align-items:center;justify-content:space-between;gap:10px}.appt b{font-size:20px;font-weight:600}
+.appt .x{width:30px;height:30px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;position:relative;flex:none}
+.appt .x::after{content:"";position:absolute;inset:-7px}.appt .x svg{width:12px;height:12px;stroke:var(--mu);stroke-width:2.4;fill:none;stroke-linecap:round}
+.appc p{margin:6px 0 0;font-size:15px;line-height:1.35;color:var(--mu)}
+.appc ol{list-style:none;margin:14px 0 14px;padding:0;display:grid;gap:10px}
+.appc li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.35}
+.appc li .n{width:24px;height:24px;border-radius:50%;background:var(--fill);color:var(--ac);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;margin-top:-1px}
+.appc li svg{width:19px;height:19px;vertical-align:-4px;fill:none;stroke:var(--ac);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.appc .btn{width:100%}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
 </style>
 </head>
@@ -735,6 +745,30 @@ const go = h => { if (location.hash === h) return route();
   if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
   if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) location.replace(h); else location.hash = h; };
 const inviteUrl = (t, tok) => location.origin + location.pathname + '#/e/' + t + '/' + tok;
+/* ---------- Als App vom Home-Bildschirm: dort hat das iPhone einen eigenen Speicher (getrennt von Safari) ----------
+   Darum: in Safari auf dem iPhone von Anfang an zur App raten; wer schon Reisen in Safari hat, nimmt sie per Link mit (#/mit/…). */
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const APP = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const IOSWEB = IOS && !APP;
+const b64u = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+const carryUrl = () => location.origin + location.pathname + '#/mit/' + b64u(JSON.stringify(LS.get().filter(t => t.id && t.tok).map(t => [t.id, t.tok, t.name || '', t.from || '', t.to || '', t.mood || ''])));
+function parseCarry(s) { const m = /#\/mit\/([A-Za-z0-9_-]{4,})/.exec(s || ''); if (!m) return null;
+  try { const l = JSON.parse(unb64u(m[1])); return Array.isArray(l) ? l.filter(x => Array.isArray(x) && /^[A-Za-z0-9]{8,40}$/.test(x[0]) && /^[A-Za-z0-9]{8,40}$/.test(x[1])) : null; } catch (e) { return null; } }
+function takeCarry(l) { l.slice().reverse().forEach(x => { const o = LS.one(x[0]); LS.add({ id: x[0], tok: x[1], name: String(x[2]).slice(0, 80), from: String(x[3]).slice(0, 10), to: String(x[4]).slice(0, 10), mood: String(x[5]).slice(0, 12), ...(o || {}) }); });
+  toast(l.length === 1 ? '1 Reise übernommen' : l.length + ' Reisen übernommen'); }
+async function copy(txt, msg) { try { await navigator.clipboard.writeText(txt); toast(msg); } catch (e) { toast('Kopieren ging nicht, bitte nochmal versuchen'); } }
+const SHAREIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M6 12H5v8.5h14V12h-1"/></svg>', ADDIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>';
+// Hinweis-Kachel in Safari: „Am besten als App“
+function appCardHTML(kind) { const n = LS.get().filter(t => t.tok).length;
+  const step3 = kind === 'join' ? '<b>outbndr.</b> vom Home-Bildschirm öffnen und „Link einfügen“ tippen' : n ? '<b>outbndr.</b> vom Home-Bildschirm öffnen und „Link einfügen“ tippen' : '<b>outbndr.</b> ab jetzt vom Home-Bildschirm starten';
+  const first = kind === 'join' ? `<li><span class="n">1</span><span>Einladung kopieren</span></li>` : n ? `<li><span class="n">1</span><span>Unsere ${n === 1 ? 'Reise' : n + ' Reisen'} kopieren</span></li>` : '';
+  const k = first ? 1 : 0;
+  return `<div class="card appc"><div class="c"><div class="appt"><b>Am besten als App</b>${kind === 'home' ? `<button class="x" type="button" data-a="apphide" aria-label="Hinweis ausblenden">${XS}</button>` : ''}</div>
+    <p>Auf dem iPhone läuft outbndr vom Home-Bildschirm wie eine App. Die App hat einen eigenen Speicher, darum am besten gleich dort starten.</p>
+    <ol>${first}<li><span class="n">${k + 1}</span><span>Unten auf ${SHAREIC} tippen, dann ${ADDIC} „Zum Home-Bildschirm“</span></li><li><span class="n">${k + 2}</span><span>${step3}</span></li></ol>
+    ${kind === 'join' ? `<button class="btn lq" type="button" data-a="copyinv">${SY.link}<span>Einladung kopieren</span><span class="gl"></span></button><p class="hint c" style="margin-top:10px">Oder einfach hier im Browser weitermachen.</p>`
+      : n ? `<button class="btn lq" type="button" data-a="carry">${SY.share}<span>${n === 1 ? 'Reise' : 'Reisen'} kopieren</span><span class="gl"></span></button><p class="hint c" style="margin-top:10px">Der Link enthält unsere Einladungen, also nur für dich. In der App meldest du dich dann mit deinem Namen und deiner PIN an.</p>` : ''}</div></div>`; }
 function parseInvite(s) { const m = /#\/e\/([A-Za-z0-9]{8,40})\/([A-Za-z0-9]{8,40})/.exec(s || ''); return m ? { t: m[1], tok: m[2] } : null; }
 const SUB = { leute: 'people', profil: 'profile', stimmung: 'mood', reise: 'edit', info: 'info' };
 // Tiefe einer Adresse: Start 0, Reise/Assistent/Beitritt 1, Unterseite einer Reise 2. Tiefer = hinein schieben, flacher = hinaus.
@@ -756,6 +790,7 @@ function route() { const h = location.hash, d0 = lastHash == null ? null : depth
 function routeNow() {
   const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   closeMenu(); closeMap(true); F = null; Pf = null; Cf = null; Rv = null;
+  if (p[0] === 'mit') { const c = parseCarry(location.hash); if (c && c.length) takeCarry(c); return location.replace('#/'); }
   if (p[0] === 'neu') { if (!Wz) Wz = newWizard(); view = { n: 'new' }; }
   else if (p[0] === 'e' && p[1] && p[2]) { view = { n: 'join' }; startJoin(p[1], p[2]); }
   else if (p[0] === 'r' && p[1]) { view = { n: SUB[p[2]] || 'trip' }; if (view.n !== 'edit' && view.n !== 'mood') Ed = null; openTrip(p[1]); }
@@ -965,10 +1000,11 @@ function homeHTML() { const l = LS.get();
   if (!CFG) h += `<div class="card"><div class="empty"><b>Noch nicht eingerichtet</b>Die Datenbank von outbndr fehlt noch. Sobald sie verbunden ist, können wir hier Reisen planen.</div></div>`;
   else {
     h += l.length ? '<div class="rows">' + l.map(t => `<div class="row" data-id="${esc(t.id)}"><button class="rowb lq" type="button" data-a="open"><span class="mchip" style="background:${moodG(t.mood)}"></span><span class="gr">${esc(t.name || 'Reise')}<small>${esc(range(t.from, t.to))}</small></span><span class="gl"></span></button><button class="dots lq" type="button" aria-label="Mehr zu ${esc(t.name || 'Reise')}" data-menu="home">${DOTS}<span class="gl"></span></button></div>`).join('') + '</div>'
-      : `<div class="card"><div class="empty"><b>Noch keine Reise</b>Planen wir eine neue Reise, oder öffne den Einladungs-Link, den du bekommen hast.</div></div>`;
+      : `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Planen wir eine neue Reise, oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Planen wir eine neue Reise, oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
+    if (IOSWEB && !store.get('outbndr.apphide', false)) h = h.replace('</p></div>', '</p></div>' + appCardHTML('home'));
     h += `<div class="btns"><button class="btn lq" type="button" data-a="new">${SY.plus}<span>Reise planen</span><span class="gl"></span></button>`;
     h += pasteOpen ? `</div><div class="form" style="margin-top:14px"><label class="fl" for="pl">Einladungs-Link</label><input class="fi" id="pl" data-k="paste" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="Link hier einfügen" value="${esc(pasteVal)}"><div class="btns two"><button class="btn g s" type="button" data-a="pasteX">Abbrechen</button><button class="btn s" type="button" data-a="pasteGo">Öffnen</button></div></div>`
-      : `<button class="btn g lq" type="button" data-a="paste">${SY.link}<span>Einladungs-Link einfügen</span><span class="gl"></span></button></div>`;
+      : `<button class="btn g lq" type="button" data-a="paste">${SY.link}<span>${APP ? 'Link einfügen' : 'Einladungs-Link einfügen'}</span><span class="gl"></span></button></div>`;
     h += `<p class="hint c">Hier stehen die Reisen, bei denen wir auf diesem Gerät dabei sind.</p>`;
   }
   return h; }
@@ -1000,7 +1036,7 @@ function joinHTML() { const j = J;
   if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`;
   const n = Object.keys(j.people).length;
   return `<div class="q"><p class="sub" style="margin:0 0 4px">Einladung zur Reise</p><h1>${esc(j.info.name)}</h1><p class="sub">${esc(range(j.info.from, j.info.to))} · ${n === 1 ? '1 Person ist' : n + ' Leute sind'} schon dabei</p>
-    ${whoHTML(j, j.people, 'j')}${j.err ? `<p class="err">${esc(j.err)}</p>` : ''}
+    ${IOSWEB ? appCardHTML('join') : ''}${whoHTML(j, j.people, 'j')}${j.err ? `<p class="err">${esc(j.err)}</p>` : ''}
     <div class="btns"><button class="btn lq" type="button" data-a="jgo"${j.busy ? ' disabled' : ''}>${j.busy ? 'Einen Moment …' : 'Mitplanen'}<span class="gl"></span></button></div>
     <p class="hint c">Schon dabei? Mit gleichem Namen und gleicher PIN kommt dein Profil auf dieses Gerät.</p></div>`; }
 
@@ -1341,7 +1377,8 @@ function wizSkip() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { w.from = w.to = ''; } if (s === 'stay') w.stops.forEach(x => delete x.stay); if (s === 'travel') { w.travel = ''; w.tnote = ''; }
   if (s === 'where' && (w.q || '').trim()) { w.stops.push({ id: rid(8), name: w.q.trim() }); w.q = ''; }
   navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
-function pasteGo() { const p = parseInvite(pasteVal); if (!p) return toast('Das ist kein Einladungs-Link von outbndr'); pasteOpen = false; pasteVal = ''; go('#/e/' + p.t + '/' + p.tok); }
+function pasteGo() { const c = parseCarry(pasteVal); if (c && c.length) { pasteOpen = false; pasteVal = ''; takeCarry(c); return draw(true); }
+  const p = parseInvite(pasteVal); if (!p) return toast('Das ist kein Link von outbndr'); pasteOpen = false; pasteVal = ''; go('#/e/' + p.t + '/' + p.tok); }
 
 /* ---------- Tippen: ein Verteiler, jeder Knopf hat seinen eigenen Fall ---------- */
 // Ortsvorschlag: schon beim Berühren übernehmen (sonst schließt das Verlassen des Feldes die Liste vorher)
@@ -1372,7 +1409,11 @@ $('app').addEventListener('click', async e => {
   if (a === 'home') return go('#/');
   if (a === 'open') return go('#/r/' + id);
   if (a === 'new') { Wz = null; return go('#/neu'); }
-  if (a === 'paste') { pasteOpen = true; draw(true); $('pl')?.focus(); return; }
+  if (a === 'paste') { if (APP && navigator.clipboard && navigator.clipboard.readText) { try { const t = await navigator.clipboard.readText(); if (parseInvite(t) || parseCarry(t)) { pasteVal = t; return pasteGo(); } } catch (e) {} }
+    pasteOpen = true; draw(true); $('pl')?.focus(); return; }
+  if (a === 'apphide') { store.set('outbndr.apphide', true); return draw(true); }
+  if (a === 'carry') return copy(carryUrl(), 'Kopiert. Jetzt outbndr. vom Home-Bildschirm öffnen.');
+  if (a === 'copyinv') return copy(location.href, 'Kopiert. Jetzt outbndr. zum Home-Bildschirm hinzufügen.');
   if (a === 'pasteX') { pasteOpen = false; pasteVal = ''; return draw(true); }
   if (a === 'pasteGo') return pasteGo();
   if (a === 'wnext') return wizNext();
