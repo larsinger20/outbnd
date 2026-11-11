@@ -42,6 +42,12 @@ Stand: 10.11.2026. **Vorlage mit allen Mustern zum Abschauen: `vorlagen/glas-pro
 - Apple ist schneller und ruhiger als gedacht: erst messen. Apples SwiftUI-Voreinstellungen als Anhalt: smooth (0,5 s, kein Nachfedern), snappy (leicht), bouncy (Bounce 0,3). Umrechnung: Steifheit = (2π/Dauer)², Dämpfungsverhältnis = 1 − Bounce.
 - Nur `transform`/`opacity` animieren; Weichzeichnen während großer Bewegungen ruckelt auf dem iPhone.
 
+- **Eine Bewegungssprache** (Wunsch Lars 12.11.2026: Gleiches muss sich gleich anfühlen; im Code `MO`, `openAnim`, `shut`, `foldRow`, `closeForm`, `segSwitch`):
+  - Aufklapp-Zeilen (Reise-Info, Kommentare, Einkaufsliste, Erledigt, Archiv, Vorschläge, Kosten-Übersichten) und Formulare (Vorschlag, Ausgabe, Reservierung, Stopp, Fahrt): Höhe + Deckkraft, auf 0,32–0,56 s je nach Höhe mit (.45,0,.15,1), zu ¾ der Zeit mit (.4,0,.2,1). Gilt für Abbrechen und Speichern gleich. Der Pfeil dreht sich im selben Takt.
+  - Umschalter (Reise-Info, Essen): Perle gleitet 0,42 s mit Feder von der alten Stelle, der Inhalt darunter blendet in 0,26 s ein.
+  - Während einer Bewegung warten Live-Daten anderer (`slides`), damit nichts abreißt.
+- **Antippen statt Berühren** bei Auswahllisten (Ortsvorschläge): Übernommen wird erst beim Loslassen ohne Bewegung und ohne Scrollen (Lars: Scrollen übernahm sonst einen Vorschlag).
+
 ## 6. Schrift
 - `-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif`. Keine eigenen Buchstabenabstände, keine gesperrten Großbuchstaben.
 - **Titel, Knöpfe und Countdown in Apples runder Schrift** (`ui-rounded`, Variable `--rnd`; Entscheidung Lars 10.11.2026). Fließtext, Infozeilen, Menüs und Reiter bleiben in der Standardschrift. Windows hat keine runde Schrift, dort Segoe UI.

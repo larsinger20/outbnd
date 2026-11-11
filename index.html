@@ -794,7 +794,7 @@ function paintPs(key) { const el = document.querySelector(`#app [data-ps="${key}
 // Auswahl übernehmen: je Feld ein Ziel
 function pickPlace(key, x) { delete PS[key];
   if (key === 'wstop') { Wz.stops.push({ id: rid(8), name: x.name, lat: x.lat, lng: x.lng }); Wz.q = ''; }
-  else if (key === 'estop') { Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; }
+  else if (key === 'estop') { Ed.d = { id: rid(8), name: x.name, lat: x.lat, lng: x.lng, from: '', to: '', stay: {} }; Ed.kind = 'stop'; Ed.isNew = true; Ed.open = Ed.d.id; Ed.derr = ''; Ed.q = ''; draw(true); openAnim('#app .edw'); return; }
   else if (key === 'fplace' && F) { F.place = { name: x.name, lat: x.lat, lng: x.lng, addr: x.addr || '' }; F.pq = x.name; }
   else if (key.startsWith('stay-') && Ed && Ed.d) { Ed.d.stay = { ...(Ed.d.stay || {}), addr: [x.name, x.addr].filter(Boolean).join(', '), lat: x.lat, lng: x.lng }; }
   draw(true); }
@@ -845,7 +845,7 @@ function tabDot(k) { if (!T || T.st !== 'ok') return false;
   if (k === 'cost') return T.costs.some(isNewCost); return false; }
 
 function draw(force) {
-  if (!force && inField()) { pending = true; return; }   // während jemand tippt, nichts neu aufbauen (iPhone würde die Tastatur schließen)
+  if (!force && (inField() || slides)) { pending = true; return; }   // während jemand tippt, nichts neu aufbauen (iPhone würde die Tastatur schließen)
   pending = false;
   const A = $('app'), key = view.n + '|' + (view.n === 'new' ? Wz.step : '') + '|' + (T ? T.st : '') + '|' + (J ? J.st : ''), fresh = key !== lastKey; lastKey = key;
   const act = document.activeElement, fk = act && A.contains(act) && act.dataset.k, sel = fk && act.selectionStart != null ? [act.selectionStart, act.selectionEnd] : null;
@@ -965,7 +965,7 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     <p class="inf">${esc(inf)}</p>${a.desc ? `<p class="desc">${linkify(a.desc)}</p>` : ''}
     ${a.place && a.place.name ? `<a class="pl" href="${esc(mapsUrl(a.place))}" target="_blank" rel="noopener">${SY.pin}<span>${esc(a.place.name)}</span></a>` : ''}
     ${a.res && (a.res.t || a.res.p) ? `<div class="rsv">${SY.clock}<span>Reserviert${a.res.t ? ' · ' + esc(a.res.t) + ' Uhr' : ''}${a.res.p ? ' · ' + esc(a.res.p) + (a.res.p == 1 ? ' Person' : ' Personen') : ''}</span></div>` : ''}
-    ${Rv && Rv.id === a.id ? `<div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div><div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div>` : ''}
+    ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div><div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div></div>` : ''}
     ${food && a.kind === 'cook' && !a.done ? shopBox(a) : ''}`;
   if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length + ' Kommentare'}${nCm && !open ? ` · <span style="color:#ff9f0a">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
       <div class="cma"><input data-k="cm-${a.id}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben" value="${esc(cmDraft[a.id] || '')}"><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
@@ -986,7 +986,7 @@ function listHTML(food) { const by = sigBy(), st = stops();
     : `<div class="card"><div class="empty"><b>${done.length ? 'Alles erledigt' : food ? 'Noch kein Essen' : 'Noch keine Aktivität'}</b>${done.length ? 'Neue Ideen? Einfach vorschlagen.' : food ? 'Kochen oder essen gehen: Was schlagen wir vor?' : 'Was wollen wir unternehmen? Der erste Vorschlag kommt von dir.'}</div></div>`) + '</div>';
   if (done.length) { const k = food ? 'food' : 'act', o = dOpen[k];
     h += `<button class="fold${o ? ' open' : ''}" type="button" data-a="dfold" aria-expanded="${o}"><span>Erledigt<small>${done.length}</small></span>${CHEV}</button>`;
-    if (o) h += '<div class="list" style="margin-top:14px">' + done.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by)).join('') + '</div>'; }
+    if (o) h += '<div class="list dl" style="margin-top:14px">' + done.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by)).join('') + '</div>'; }
   return h; }
 
 // Platzhalter beim Öffnen einer Reise: Name, Zeitraum und Stimmung kennt dieses Gerät schon (Liste der Reisen), der Rest erscheint als Form
@@ -1075,7 +1075,7 @@ const shopRef = id => id === GEN ? tdoc(T.id, 'lists', GEN) : tdoc(T.id, 'acts',
 function shopRows(id) { return shopItems(id).map(x => `<div class="si${x.ok ? ' ok' : ''}" data-sid="${esc(id)}" data-k2="${esc(x.k)}"><button class="tick" type="button" data-a="stick" role="checkbox" aria-checked="${!!x.ok}" aria-label="${esc(x.t)} abhaken">${SY.check}</button><span class="t">${esc(x.t)}${x.by && x.by !== T.me && T.people[x.by] ? `<small>${esc(P(x.by).name)}</small>` : ''}</span><button class="cmx" type="button" data-a="sdel" aria-label="${esc(x.t)} löschen">${SY.x}</button></div>`).join(''); }
 function sugChips(id) { const a = id === GEN ? null : shopSrc(id), have = new Set([...shopItems(id), ...shopItems(id, true)].map(x => fold(x.t))), list = suggestFor(a).filter(i => !have.has(fold(i))).slice(0, 14);
   if (!list.length) return ''; const o = sugOpen.has(id);
-  return `<button class="txb" type="button" data-a="sugt" data-sid="${esc(id)}" aria-expanded="${o}">Vorschläge (${list.length})${CHEV}</button>${o ? `<div class="chips">${list.map(i => `<button type="button" data-a="sugadd" data-sid="${esc(id)}" data-t="${esc(i)}">+ ${esc(i)}</button>`).join('')}</div>` : ''}`; }
+  return `<button class="txb" type="button" data-a="sugt" data-sid="${esc(id)}" aria-expanded="${o}">Vorschläge (${list.length})${CHEV}</button>${o ? `<div class="chips" data-sg="${esc(id)}">${list.map(i => `<button type="button" data-a="sugadd" data-sid="${esc(id)}" data-t="${esc(i)}">+ ${esc(i)}</button>`).join('')}</div>` : ''}`; }
 const addRow = id => `<div class="sadd"><input data-k="sh-${esc(id)}" data-shi="${esc(id)}" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="Eintragen …" aria-label="Eintrag hinzufügen" value="${esc(shopDraft[id] || '')}"><button type="button" data-a="sadd" data-sid="${esc(id)}" aria-label="Hinzufügen">${SY.plus}</button></div>`;
 function shopBox(a) { const n = shopItems(a.id).filter(x => !x.ok).length, o = shopOpen.has(a.id);
   return `<div class="cmts shop${o ? ' open' : ''}"><button class="cmh" type="button" data-a="shopt" aria-expanded="${o}"><span>Einkaufsliste${n ? ' · ' + n : ''}</span>${CHEV}</button>${o ? `<div class="cmb">${shopRows(a.id)}${addRow(a.id)}${sugChips(a.id)}</div>` : ''}</div>`; }
@@ -1085,7 +1085,7 @@ function shopHTML() { const cook = T.acts.filter(a => a.title && a.cat === 'food
   const ticked = lists.reduce((n, [id]) => n + shopItems(id).filter(x => x.ok).length, 0), arch = lists.flatMap(([id, t]) => shopItems(id, true).map(x => ({ ...x, id, lt: t })));
   if (ticked) h += `<button class="btn g lq" type="button" data-a="sarch">${ticked === 1 ? '1 abgehakten Eintrag' : ticked + ' abgehakte Einträge'} ins Archiv<span class="gl"></span></button>`;
   if (arch.length) { h += `<button class="fold${archOpen ? ' open' : ''}" type="button" data-a="archt" aria-expanded="${archOpen}"><span>Archiv<small>${arch.length}</small></span>${CHEV}</button>`;
-    if (archOpen) h += `<div class="rows" style="margin-top:14px">${arch.sort((a, b) => (b.arch || 0) - (a.arch || 0)).map(x => `<div class="krow" data-sid="${esc(x.id)}" data-k2="${esc(x.k)}"><span class="gr"><b>${esc(x.t)}</b><small>${esc(x.lt)}</small></span><button class="txb" type="button" data-a="sback">Zurück auf die Liste</button></div>`).join('')}</div>`; }
+    if (archOpen) h += `<div class="rows al" style="margin-top:14px">${arch.sort((a, b) => (b.arch || 0) - (a.arch || 0)).map(x => `<div class="krow" data-sid="${esc(x.id)}" data-k2="${esc(x.k)}"><span class="gr"><b>${esc(x.t)}</b><small>${esc(x.lt)}</small></span><button class="txb" type="button" data-a="sback">Zurück auf die Liste</button></div>`).join('')}</div>`; }
   if (!cook.length) h += `<p class="hint c">Kochvorschläge bekommen hier automatisch ihre eigene Liste.</p>`;
   return h; }
 
@@ -1120,12 +1120,12 @@ function costHTML() { const list = COSTS(), b = balances(), tr = settle(b), mine
   if (tr.length) { h += `<p class="sec">So gleichen wir aus</p><div class="rows">`;
     const row = t => `<div class="krow" data-tf="${esc(t.from)}" data-tt="${esc(t.to)}" data-amt="${t.amt}">${ava(P(t.from))}<span class="gr"><b>${esc(payText(t))}</b><small>Abhaken, sobald das Geld da ist</small></span><span class="amt">${eur(t.amt)}</span><button class="tick" type="button" data-a="ctick" aria-label="Überweisung abhaken">${SY.check}</button></div>`;
     h += myTr.map(row).join('') || `<div class="krow"><span class="gr"><b>Du bist ausgeglichen</b></span></div>`;
-    if (other.length) { const o = kOpen.has('other'); h += `<button class="krow" type="button" data-a="kfold" data-k2="other" aria-expanded="${o}"><span class="gr"><b style="color:var(--ac);font-weight:600">Weitere Überweisungen (${other.length})</b></span>${CHEV.replace('<svg', `<svg style="width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;${o ? 'rotate:180deg' : ''}"`)}</button>${o ? other.map(row).join('') : ''}`; }
+    if (other.length) { const o = kOpen.has('other'); h += `<button class="krow" type="button" data-a="kfold" data-k2="other" aria-expanded="${o}"><span class="gr"><b style="color:var(--ac);font-weight:600">Weitere Überweisungen (${other.length})</b></span>${CHEV.replace('<svg', `<svg style="width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;flex:none;${o ? 'rotate:180deg' : ''}"`)}</button>${o ? `<div data-kg="other">${other.map(row).join('')}</div>` : ''}`; }
     h += '</div>'; }
   const o2 = kOpen.has('who'), ppl = Object.keys(T.people).filter(id => b[id]), mx = Math.max(1, ...ppl.map(id => Math.abs(b[id])));
   h += `<p class="sec">Übersicht</p><div class="rows"><button class="krow" type="button" data-a="kfold" data-k2="who" aria-expanded="${o2}"><span class="gr"><b style="font-weight:600">Wer steht wo?</b></span>${CHEV.replace('<svg', `<svg style="width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;${o2 ? 'rotate:180deg' : ''}"`)}</button>`;
-  if (o2) h += Object.keys(T.people).sort((x, y) => (b[y] || 0) - (b[x] || 0)).map(id => { const v = b[id] || 0, w = Math.abs(v) / mx * 50;
-    return `<div class="krow">${ava(P(id))}<span class="gr"><b>${esc(nm(id))}</b><div class="kbar"><i class="${v >= 0 ? 'p' : 'n'}" style="${v >= 0 ? 'left:50%' : 'right:50%'};width:${w.toFixed(1)}%"></i></div></span><span class="amt" style="color:${v > 0 ? 'var(--grn)' : v < 0 ? 'var(--red)' : 'var(--mu)'}">${v > 0 ? '+' : v < 0 ? '−' : ''}${eur(Math.abs(v))}</span></div>`; }).join('');
+  if (o2) h += '<div data-kg="who">' + Object.keys(T.people).sort((x, y) => (b[y] || 0) - (b[x] || 0)).map(id => { const v = b[id] || 0, w = Math.abs(v) / mx * 50;
+    return `<div class="krow">${ava(P(id))}<span class="gr"><b>${esc(nm(id))}</b><div class="kbar"><i class="${v >= 0 ? 'p' : 'n'}" style="${v >= 0 ? 'left:50%' : 'right:50%'};width:${w.toFixed(1)}%"></i></div></span><span class="amt" style="color:${v > 0 ? 'var(--grn)' : v < 0 ? 'var(--red)' : 'var(--mu)'}">${v > 0 ? '+' : v < 0 ? '−' : ''}${eur(Math.abs(v))}</span></div>`; }).join('') + '</div>';
   h += '</div>';
   h += `<p class="sec">Alle Ausgaben</p><div class="rows">` + list.map(c => { const pay = c.kind === 'pay', ed = canEditCost(c), chgRaw = !!c.ets && c.eby !== T.me && (c.for || []).includes(T.me) && (c.ets || 0) > base() && !seen(c.id + ':' + c.ets), nwc = isNewCost(c) || (shownNew.has(c.id) && !chgRaw), chg = !nwc && (chgRaw || shownNew.has(c.id + ':' + c.ets)), sk = isNewCost(c) ? c.id : chgRaw ? c.id + ':' + c.ets : '';
     const inner = `${ava(P(c.by))}<span class="gr"><b>${pay ? esc(nm(c.by) + ' → ' + nm((c.for || [])[0])) : esc(c.title)}${nwc ? '<span class="nw">Neu</span>' : chg ? '<span class="nw">Geändert</span>' : ''}</b><small>${esc(pay ? 'Ausgleich' : nm(c.by) + ' · ' + forText(c.for || []))} · ${esc(fmt(D(cDay(c)), { day: '2-digit', month: '2-digit' }))}</small></span><span class="amt">${eur(c.amt)}</span>`;
@@ -1171,18 +1171,18 @@ const dErr = () => Ed.derr ? `<p class="err">${esc(Ed.derr)}</p>` : '';
 const dBtns = () => `<div class="btns two"><button class="btn g" type="button" data-a="dcancel">Abbrechen</button><button class="btn" type="button" data-a="dsave">${Ed.isNew ? 'Hinzufügen' : 'Speichern'}</button></div>`;
 // Stopp bearbeiten: Ankunft/Abreise nur innerhalb des Reisezeitraums, Abreise nie vor Ankunft
 function stopForm(d) { const y = d.stay = d.stay || {}, tf = T.info.from || '', tt = T.info.to || '';
-  return `<div class="f2"><div><label class="fl" for="esf">Ankunft</label><input class="fi" id="esf" type="date" data-o="ed2" data-f="from" data-k="esf" min="${esc(tf)}" max="${esc(tt)}" value="${esc(d.from || '')}"></div><div><label class="fl" for="est">Abreise</label><input class="fi" id="est" type="date" data-o="ed2" data-f="to" data-k="est" min="${esc(d.from || tf)}" max="${esc(tt)}" value="${esc(d.to || '')}"></div></div>
+  return `<div class="edw"><div class="f2"><div><label class="fl" for="esf">Ankunft</label><input class="fi" id="esf" type="date" data-o="ed2" data-f="from" data-k="esf" min="${esc(tf)}" max="${esc(tt)}" value="${esc(d.from || '')}"></div><div><label class="fl" for="est">Abreise</label><input class="fi" id="est" type="date" data-o="ed2" data-f="to" data-k="est" min="${esc(d.from || tf)}" max="${esc(tt)}" value="${esc(d.to || '')}"></div></div>
     <label class="fl" for="esn">Unterkunft</label><input class="fi" id="esn" data-o="ed2y" data-f="name" data-k="esn" maxlength="80" placeholder="z. B. Villa Sole" value="${esc(y.name || '')}">
     <label class="fl" for="esl">Link</label><input class="fi" id="esl" data-o="ed2y" data-f="link" data-k="esl" inputmode="url" autocapitalize="off" placeholder="airbnb.de/…" value="${esc(y.link || '')}">
     <label class="fl">Adresse (für Karte und Route)</label>${placeHTML('stay-' + d.id, y.addr || '', 'Adresse suchen')}
-    <label class="fl" for="eso">Notiz (z. B. Check-in)</label><textarea class="fi" id="eso" data-o="ed2y" data-f="note" data-k="eso" maxlength="600" placeholder="Keine Tür- oder Schlüsselcodes eintragen">${esc(y.note || '')}</textarea>${dErr()}${dBtns()}`; }
+    <label class="fl" for="eso">Notiz (z. B. Check-in)</label><textarea class="fi" id="eso" data-o="ed2y" data-f="note" data-k="eso" maxlength="600" placeholder="Keine Tür- oder Schlüsselcodes eintragen">${esc(y.note || '')}</textarea>${dErr()}${dBtns()}</div>`; }
 function legForm(x) { const ppl = Object.entries(T.people);
-  return `${kindChips(x.kind, 'data-lkind')}
+  return `<div class="edw">${kindChips(x.kind, 'data-lkind')}
     <label class="fl" for="elt">Bezeichnung</label><input class="fi" id="elt" data-o="ed2" data-f="title" data-k="elt" maxlength="60" placeholder="z. B. Hinflug" value="${esc(x.title || '')}">
     <div class="f2"><div><label class="fl" for="elf">Von</label><input class="fi" id="elf" data-o="ed2" data-f="from" data-k="elf" maxlength="40" placeholder="z. B. München" value="${esc(x.from || '')}"></div><div><label class="fl" for="elo">Nach</label><input class="fi" id="elo" data-o="ed2" data-f="to" data-k="elo" maxlength="40" placeholder="z. B. Split" value="${esc(x.to || '')}"></div></div>
     <div class="f2"><div><label class="fl" for="eld">Datum</label><input class="fi" id="eld" type="date" data-o="ed2" data-f="date" data-k="eld" value="${esc(x.date || '')}"></div><div><label class="fl" for="elh">Uhrzeit</label><input class="fi" id="elh" type="time" data-o="ed2" data-f="time" data-k="elh" value="${esc(x.time || '')}"></div></div>
     <label class="fl" for="eln">Notiz (Flugnummer, Treffpunkt …)</label><input class="fi" id="eln" data-o="ed2" data-f="note" data-k="eln" maxlength="300" value="${esc(x.note || '')}">
-    <span class="fl">Wer fährt mit?</span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-lwho="${esc(id)}" class="${(x.who || []).includes(id) ? 'on' : ''}" aria-pressed="${(x.who || []).includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(p.name)}</button>`).join('')}</div>${dErr()}${dBtns()}`; }
+    <span class="fl">Wer fährt mit?</span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-lwho="${esc(id)}" class="${(x.who || []).includes(id) ? 'on' : ''}" aria-pressed="${(x.who || []).includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(p.name)}</button>`).join('')}</div>${dErr()}${dBtns()}</div>`; }
 function editHTML() { if (!isAdmin()) return `<div class="hd"><h1>Reise</h1><p class="sub">${esc(T.info.name)}</p></div><div class="btns"><button class="btn dz lq" type="button" data-a="leave">Reise auf diesem Gerät entfernen<span class="gl"></span></button></div><p class="hint c">Nur Admins können die Reise bearbeiten.</p>`;
   if (!Ed) startEdit(); const e = Ed, st = T.info.stops || [], tr = T.info.travel || [], ed = (k, id) => e.kind === k && e.open === id;
   let h = `<div class="hd"><h1>Reise bearbeiten</h1><p class="sub">Was du speicherst, sehen alle sofort.</p></div>`;
@@ -1246,8 +1246,16 @@ function pasteGo() { const p = parseInvite(pasteVal); if (!p) return toast('Das 
 
 /* ---------- Tippen: ein Verteiler, jeder Knopf hat seinen eigenen Fall ---------- */
 // Ortsvorschlag: schon beim Berühren übernehmen (sonst schließt das Verlassen des Feldes die Liste vorher)
-$('app').addEventListener('pointerdown', e => { const p = e.target.closest('[data-pick]'); if (!p) return; e.preventDefault(); const r = PS[p.dataset.pick]; if (r && r.res[+p.dataset.i]) pickPlace(p.dataset.pick, r.res[+p.dataset.i]); });
+// Ortsvorschlag: nur ein echtes Antippen übernimmt (Finger drauf und ohne Bewegung wieder hoch). Beim Scrollen passiert nichts.
+// preventDefault beim Berühren hält die Tastatur offen; Scrollen bleibt möglich, der Browser meldet dann pointercancel.
+let pk = null;
+$('app').addEventListener('pointerdown', e => { const p = e.target.closest('[data-pick]'); if (!p) return; e.preventDefault(); pk = { x: e.clientX, y: e.clientY, sy: scrollY, key: p.dataset.pick, i: +p.dataset.i }; });
+$('app').addEventListener('pointermove', e => { if (pk && Math.hypot(e.clientX - pk.x, e.clientY - pk.y) > 8) pk = null; });
+$('app').addEventListener('pointercancel', () => { pk = null; });
+addEventListener('scroll', () => { if (pk && Math.abs(scrollY - pk.sy) > 4) pk = null; }, { passive: true });
+$('app').addEventListener('pointerup', e => { if (!pk) return; const p = pk; pk = null; if (Math.abs(scrollY - p.sy) > 4) return; const el = e.target.closest('[data-pick]'); if (!el || el.dataset.pick !== p.key || +el.dataset.i !== p.i) return; const r = PS[p.key]; if (r && r.res[p.i]) pickPlace(p.key, r.res[p.i]); });
 $('app').addEventListener('click', async e => {
+  const pkb = e.target.closest('[data-pick]'); if (pkb) { if (e.detail === 0) { const r = PS[pkb.dataset.pick]; if (r && r.res[+pkb.dataset.i]) pickPlace(pkb.dataset.pick, r.res[+pkb.dataset.i]); } return; }
   const colB = e.target.closest('[data-col]'); if (colB) { const o = view.n === 'new' ? Wz : view.n === 'join' ? J : Pf; if (o && !colB.disabled) { o.col = colB.dataset.col; draw(true); } return; }
   const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
   const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; try { await updateDoc(tdoc(T.id), { areas: a2 }); toast(a2[k] ? 'Eingeschaltet' : 'Ausgeschaltet'); } catch (err) { console.error(err); toast(FAIL); } return; }
@@ -1257,8 +1265,8 @@ $('app').addEventListener('click', async e => {
   const lw = e.target.closest('[data-lwho]'); if (lw && Ed && Ed.d) { const w = Ed.d.who = Ed.d.who || [], i = w.indexOf(lw.dataset.lwho); i >= 0 ? w.splice(i, 1) : w.push(lw.dataset.lwho); draw(true); return; }
   const kd = e.target.closest('[data-kind]'); if (kd && F) { F.kind = F.kind === kd.dataset.kind ? '' : kd.dataset.kind; draw(true); return; }
   const cf = e.target.closest('[data-cfor]'); if (cf && Cf) { const i = Cf.for.indexOf(cf.dataset.cfor); i >= 0 ? Cf.for.splice(i, 1) : Cf.for.push(cf.dataset.cfor); draw(true); return; }
-  const is = e.target.closest('[data-iseg]'); if (is) { infoSeg = is.dataset.iseg; segMove(is); draw(true); return; }
-  const fs = e.target.closest('[data-fseg]'); if (fs) { if (foodView !== fs.dataset.fseg) { foodView = fs.dataset.fseg; F = null; segMove(fs); setTimeout(() => draw(true), calm() ? 0 : 140); } return; }
+  const is = e.target.closest('[data-iseg]'); if (is) { if (infoSeg !== is.dataset.iseg) segSwitch(is, () => { infoSeg = is.dataset.iseg; }); return; }
+  const fs = e.target.closest('[data-fseg]'); if (fs) { if (foodView !== fs.dataset.fseg) segSwitch(fs, () => { foodView = fs.dataset.fseg; F = null; }); return; }
   const sf = e.target.closest('[data-stopf]'); if (sf) { stopF = sf.dataset.stopf; draw(true); return; }
   const d = e.target.closest('.dots'); if (d) { if (e.detail === 0) openMenu(d); return; }   // Tastatur; Finger/Maus siehe unten
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, card = b.closest('[data-id]'), id = card && card.dataset.id;
@@ -1279,52 +1287,52 @@ $('app').addEventListener('click', async e => {
   if (a === 'tipx') { store.set('outbndr.tip1', true); return draw(true); }
   if (a === 'edit') return go('#/r/' + T.id + '/reise');
   if (a === 'mood') return go('#/r/' + T.id + '/stimmung');
-  if (a === 'info') { infoOpen = !infoOpen; draw(true); if (infoOpen) openAnim(document.querySelector('#app .infb')); return; }
+  if (a === 'info') return foldRow(infoOpen, v => { infoOpen = v; }, '#app .infb', '#app .infh>svg');
   if (a === 'map') return openMap(b);
   if (a === 'tshare') { if (!T.tok) return toast('Einen Moment, der Link lädt noch'); return share(T.id, T.tok, T.info.name); }
   if (a === 'psave') return saveProfile();
   if (a === 'pinsave') return savePin();
   if (a === 'add') { F = { id: 'new', cat: tab === 'food' ? 'food' : 'act', title: '', desc: '', day: '', time: '', kind: '', place: null, stop: stopF }; draw(true); openAnim($('form')); $('ft')?.focus({ preventScroll: true }); return; }
-  if (a === 'fx') { F = null; delete PS.fplace; return draw(true); }
+  if (a === 'fx') return closeForm('#form', () => { F = null; delete PS.fplace; });
   if (a === 'fsave') return saveAct();
   if (a === 'go' && id) return toggleGo(id);
-  if (a === 'dfold') { dOpen[tab] = !dOpen[tab]; draw(true); return; }
-  if (a === 'cm' && id) { if (cmOpen.has(id)) { cmOpen.delete(id); delete cmDraft[id]; draw(true); } else { cmOpen.add(id); readCm(id); draw(true); openAnim(document.querySelector(`#app [data-id="${id}"] .cmts:not(.shop) .cmb`)); } return; }
+  if (a === 'dfold') return foldRow(dOpen[tab], v => { dOpen[tab] = v; }, '#app .dl', '#app [data-a=dfold] svg');
+  if (a === 'cm' && id) { const o = cmOpen.has(id); if (!o) readCm(id); return foldRow(o, v => { v ? cmOpen.add(id) : (cmOpen.delete(id), delete cmDraft[id]); }, `#app [data-id="${id}"] .cmts:not(.shop) .cmb`, `#app [data-id="${id}"] .cmts:not(.shop) .cmh svg`); }
   if (a === 'cmsend' && id) return sendCm(id);
   if (a === 'cmdel' && id) { if (!await ask({ t: 'Kommentar löschen?', ok: 'Löschen', danger: true })) return; if (!alive(id)) return;
     try { await updateDoc(tdoc(T.id, 'acts', id), { ['cm.' + b.dataset.c]: deleteField() }); } catch (err) { console.error(err); toast(FAIL); } return; }
-  if (a === 'rvx') { const was = T.acts.find(x => x.id === id); Rv = null; if (was && was.res && b.textContent === 'Entfernen') { try { await updateDoc(tdoc(T.id, 'acts', id), { res: deleteField() }); } catch (err) { console.error(err); toast(FAIL); } } draw(true); return; }
+  if (a === 'rvx') { const was = T.acts.find(x => x.id === id), del = was && was.res && b.textContent === 'Entfernen'; return closeForm(`#app [data-id="${id}"] .rvw`, () => { Rv = null; if (del) updateDoc(tdoc(T.id, 'acts', id), { res: deleteField() }).catch(err => { console.error(err); toast(FAIL); }); }); }
   if (a === 'rvsave') return saveRes();
   // Einkaufsliste
   const sid = b.dataset.sid || (b.closest('[data-sid]') || {}).dataset?.sid, k2 = (b.closest('[data-k2]') || {}).dataset?.k2;
-  if (a === 'shopt' && id) { shopOpen.has(id) ? shopOpen.delete(id) : shopOpen.add(id); draw(true); if (shopOpen.has(id)) openAnim(document.querySelector(`#app [data-id="${id}"] .shop .cmb`)); return; }
+  if (a === 'shopt' && id) return foldRow(shopOpen.has(id), v => { v ? shopOpen.add(id) : shopOpen.delete(id); }, `#app [data-id="${id}"] .shop .cmb`, `#app [data-id="${id}"] .shop .cmh svg`);
   if (a === 'sadd') return addShop(sid);
   if (a === 'stick') return tickShop(sid, k2);
   if (a === 'sdel') { const x = shopItems(sid).find(i => i.k === k2); if (!x || !await ask({ t: `„${x.t}“ löschen?`, ok: 'Löschen', danger: true })) return;
     try { await updateDoc(shopRef(sid), { ['shop.' + k2]: deleteField() }); } catch (err) { console.error(err); toast(FAIL); } return; }
-  if (a === 'sugt') { sugOpen.has(sid) ? sugOpen.delete(sid) : sugOpen.add(sid); return draw(true); }
+  if (a === 'sugt') return foldRow(sugOpen.has(sid), v => { v ? sugOpen.add(sid) : sugOpen.delete(sid); }, `#app [data-sg="${sid}"]`, `#app [data-a=sugt][data-sid="${sid}"] svg`);
   if (a === 'sugadd') { shopDraft[sid] = b.dataset.t; return addShop(sid, true); }
   if (a === 'noshop') { const x = shopSrc(sid); if (!x || !await ask({ t: `„${x.title}“ aus der Einkaufsliste nehmen?`, m: 'Der Vorschlag bleibt. Sobald jemand eine Zutat einträgt, steht er wieder hier.', ok: 'Herausnehmen' })) return;
     try { await updateDoc(tdoc(T.id, 'acts', sid), { noshop: true }); } catch (err) { console.error(err); toast(FAIL); } return; }
   if (a === 'sarch') return archShop();
-  if (a === 'archt') { archOpen = !archOpen; return draw(true); }
+  if (a === 'archt') return foldRow(archOpen, v => { archOpen = v; }, '#app .al', '#app [data-a=archt] svg');
   if (a === 'sback') { try { await updateDoc(shopRef(sid), { ['shop.' + k2 + '.arch']: deleteField(), ['shop.' + k2 + '.ok']: false }); toast('Wieder auf der Liste'); } catch (err) { console.error(err); toast(FAIL); } return; }
   // Kosten
   if (a === 'cadd') { Cf = { t: '', amt: '', dt: today(), by: T.me, for: Object.keys(T.people) }; draw(true); openAnim($('cform')); $('ct')?.focus({ preventScroll: true }); return; }
   if (a === 'cpay') { const o = Object.keys(T.people).find(x => x !== T.me) || T.me; Cf = { pay: true, amt: '', by: T.me, to: o }; draw(true); openAnim($('cform')); return; }
-  if (a === 'cx') { Cf = null; return draw(true); }
+  if (a === 'cx') return closeForm('#cform', () => { Cf = null; });
   if (a === 'call') { Cf.for = Cf.for.length === Object.keys(T.people).length ? [] : Object.keys(T.people); return draw(true); }
   if (a === 'csave') return saveCost();
   if (a === 'cedit') { const c = T.costs.find(x => x.id === b.dataset.cid); if (!c) return; markSeen([c.id, c.ets ? c.id + ':' + c.ets : null].filter(Boolean)); Cf = { id: c.id, t: c.title, amt: (c.amt / 100).toFixed(2).replace('.', ','), dt: cDay(c), by: c.by, for: [...(c.for || [])] }; draw(true); scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); return; }
   if (a === 'cdel') return delCost(b.dataset.cid);
   if (a === 'ctick') { const r = b.closest('[data-tf]'); return tickPay(r.dataset.tf, r.dataset.tt, +r.dataset.amt); }
-  if (a === 'kfold') { const k = b.dataset.k2; kOpen.has(k) ? kOpen.delete(k) : kOpen.add(k); return draw(true); }
+  if (a === 'kfold') { const k = b.dataset.k2; return foldRow(kOpen.has(k), v => { v ? kOpen.add(k) : kOpen.delete(k); }, `#app [data-kg="${k}"]`, `#app [data-k2="${k}"] svg`); }
   if (a === 'goto') return goToCard(b.dataset.aid);
   // Reise bearbeiten
-  if (a === 'sopen') { const id2 = b.closest('[data-stop]').dataset.stop, x = (T.info.stops || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'stop', open: id2, d: clone(x), isNew: false, derr: '' }); return draw(true); }
-  if (a === 'lopen') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'leg', open: id2, d: clone(x), isNew: false, derr: '' }); return draw(true); }
-  if (a === 'ladd') { const d = { id: rid(8), kind: 'flug', title: '', who: [] }; Object.assign(Ed, { kind: 'leg', open: d.id, d, isNew: true, derr: '' }); draw(true); $('elt')?.focus({ preventScroll: true }); return; }
-  if (a === 'dcancel') { if (Ed.d) delete PS['stay-' + Ed.d.id]; Object.assign(Ed, { kind: '', open: '', d: null, isNew: false, derr: '' }); return draw(true); }
+  if (a === 'sopen') { const id2 = b.closest('[data-stop]').dataset.stop, x = (T.info.stops || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'stop', open: id2, d: clone(x), isNew: false, derr: '' }); draw(true); openAnim('#app .edw'); return; }
+  if (a === 'lopen') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x) return; Object.assign(Ed, { kind: 'leg', open: id2, d: clone(x), isNew: false, derr: '' }); draw(true); openAnim('#app .edw'); return; }
+  if (a === 'ladd') { const d = { id: rid(8), kind: 'flug', title: '', who: [] }; Object.assign(Ed, { kind: 'leg', open: d.id, d, isNew: true, derr: '' }); draw(true); openAnim('#app .edw'); $('elt')?.focus({ preventScroll: true }); return; }
+  if (a === 'dcancel') return closeForm('#app .edw', () => { if (Ed.d) delete PS['stay-' + Ed.d.id]; Object.assign(Ed, { kind: '', open: '', d: null, isNew: false, derr: '' }); });
   if (a === 'dsave') return saveDraft();
   if (a === 'ncancel') { Object.assign(Ed, { name: T.info.name, from: T.info.from || '', to: T.info.to || '', err: '' }); return draw(true); }
   if (a === 'nsave') return saveNameDates();
@@ -1339,8 +1347,27 @@ $('app').addEventListener('click', async e => {
 });
 $('back').addEventListener('click', () => { if (view.n === 'new' && Wz.step > 0 && Wz.step < WSTEPS.length - 1) { Wz.step--; if (WSTEPS[Wz.step] === 'stay' && !Wz.stops.length) Wz.step--; Wz.err = ''; draw(true); return; }
   if (['people', 'profile', 'mood', 'edit'].includes(view.n)) return go('#/r/' + T.id + (view.n === 'mood' && Ed ? '/reise' : '')); Wz = null; go('#/'); });
-function openAnim(el) { if (!el || calm()) return; const h = el.offsetHeight; el.style.overflow = 'hidden';
-  el.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: Math.min(560, 300 + h * .4), easing: 'cubic-bezier(.45,0,.15,1)' }).onfinish = () => { el.style.overflow = ''; }; }
+/* ---------- Bewegung: Gleichartiges bewegt sich gleich (DESIGN.md Abschnitt 5) ----------
+   Aufklappen: Höhe + Deckkraft, Dauer wächst mit der Höhe (0,32–0,56 s), Kurve (.45,0,.15,1); Zuklappen ¾ der Zeit, Kurve (.4,0,.2,1).
+   Pfeil dreht sich im selben Takt. Umschalter: Perle gleitet 0,42 s (Feder), neuer Inhalt blendet ein. Während einer Bewegung warten Live-Daten (slides). */
+const MO = { dur: h => Math.min(560, 320 + h * .25), on: 'cubic-bezier(.45,0,.15,1)', off: 'cubic-bezier(.4,0,.2,1)' };
+let slides = 0;
+const slideDone = () => { slides = Math.max(0, slides - 1); if (!slides && pending && !inField()) draw(); };
+const q = sel => typeof sel === 'string' ? document.querySelector(sel) : sel;
+function openAnim(el, chev) { el = q(el); turn(chev, true); if (!el || calm()) return; const h = el.offsetHeight; el.style.overflow = 'hidden'; slides++;
+  const a = el.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: MO.dur(h), easing: MO.on }); a.onfinish = a.oncancel = () => { el.style.overflow = ''; slideDone(); }; }
+function shut(el, chev, then) { el = q(el); turn(chev, false); if (!el || calm()) return then(); const h = el.offsetHeight; el.style.overflow = 'hidden'; slides++;
+  const a = el.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: MO.dur(h) * .75, easing: MO.off, fill: 'forwards' }); a.onfinish = a.oncancel = () => { slides = Math.max(0, slides - 1); then(); }; }
+function turn(chev, open) { const c = q(chev); if (!c || calm()) return; c.animate([{ rotate: open ? '0deg' : '180deg' }, { rotate: open ? '180deg' : '0deg' }], { duration: 340, easing: open ? MO.on : MO.off, fill: open ? 'none' : 'forwards' }); }
+// Aufklapp-Zeile: offen → zu gleiten und dann neu zeichnen; zu → zeichnen und auf gleiten
+function foldRow(isOpen, set, body, chev) { if (isOpen) shut(body, chev, () => { set(false); draw(true); }); else { set(true); draw(true); openAnim(body, chev); } }
+// Formular schließen: erst gleiten, dann den Zustand leeren
+function closeForm(el, clear) { shut(el, null, () => { clear(); draw(true); }); }
+// Umschalter: Perle gleitet von der alten Stelle, Inhalt darunter blendet ein
+function segSwitch(btn, apply) { const s = btn.closest('.seg2'), key = s.dataset.seg, ind = s.querySelector('.ind2'), old = { w: ind.style.width, x: ind.style.translate };
+  apply(); draw(true); const s2 = document.querySelector(`#app .seg2[data-seg="${key}"]`); if (!s2 || calm()) return; const i2 = s2.querySelector('.ind2'), fin = { w: i2.style.width, x: i2.style.translate };
+  i2.style.transition = 'none'; i2.style.width = old.w; i2.style.translate = old.x; void i2.offsetWidth; i2.style.transition = ''; i2.style.width = fin.w; i2.style.translate = fin.x;
+  let n = s2.nextElementSibling; while (n) { n.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: MO.on }); n = n.nextElementSibling; } }
 // Umschalter: Perle gleitet zum gewählten Knopf (Position per translate, wie in der Vorlage)
 function segPos() { document.querySelectorAll('#app .seg2').forEach(s => { const on = s.querySelector('button.on'), ind = s.querySelector('.ind2'); if (!on || !ind) return; ind.style.transition = 'none'; ind.style.width = on.offsetWidth + 'px'; ind.style.translate = (on.offsetLeft - 4) + 'px 0'; void ind.offsetWidth; ind.style.transition = ''; }); }
 function segMove(btn) { const s = btn.closest('.seg2'), ind = s.querySelector('.ind2'); s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === btn)); ind.style.width = btn.offsetWidth + 'px'; ind.style.translate = (btn.offsetLeft - 4) + 'px 0'; }
@@ -1349,7 +1376,7 @@ function segMove(btn) { const s = btn.closest('.seg2'), ind = s.querySelector('.
 const alive = id => T && T.acts && T.acts.some(a => a.id === id);
 async function saveAct() { const f = F; if (!f) return; const title = f.title.trim(); if (!title) { toast('Bitte gib einen Titel ein'); $('ft')?.focus(); return; }
   const pl = f.place && f.place.name ? { name: f.place.name.slice(0, 80), ...(typeof f.place.lat === 'number' ? { lat: f.place.lat, lng: f.place.lng } : {}), ...(f.place.addr ? { addr: f.place.addr.slice(0, 120) } : {}) } : null;
-  const t = T, data = { title, desc: f.desc.trim(), day: f.day, time: f.time, stop: f.stop || '' }; F = null; delete PS.fplace; draw(true);   // sofort schließen: kein Doppelspeichern bei schlechtem Netz
+  const t = T, data = { title, desc: f.desc.trim(), day: f.day, time: f.time, stop: f.stop || '' }; F = null; delete PS.fplace; shut('#form', null, () => draw(true));   // sofort schließen: kein Doppelspeichern bei schlechtem Netz
   try {
     if (f.id === 'new') { const id = rid(16), b = writeBatch(db); flash = id;
       b.set(tdoc(t.id, 'acts', id), { ...data, ...(pl ? { place: pl } : {}), cat: f.cat, kind: f.cat === 'food' ? f.kind : '', by: t.me, ts: Date.now() });
@@ -1374,7 +1401,7 @@ async function setDone(id, on) { const a = T.acts.find(x => x.id === id); if (!a
   try { await updateDoc(tdoc(T.id, 'acts', id), on ? { done: Date.now(), dby: T.me } : { done: deleteField(), dby: deleteField() }); toast(on ? 'Erledigt' : 'Wieder offen'); if (!on) setTimeout(() => goToCard(id), 60); } catch (e) { console.error(e); toast(FAIL); } }
 async function saveRes() { const r = Rv; if (!r) return; const p = parseInt(r.p, 10);
   if (!r.t && !(p > 0)) { toast('Bitte Uhrzeit oder Personen eintragen'); return; } if (r.p && !(p > 0 && p < 100)) { toast('Bitte eine Zahl bei Personen'); return; }
-  Rv = null; draw(true); if (!alive(r.id)) return;
+  Rv = null; shut(`#app [data-id="${r.id}"] .rvw`, null, () => draw(true)); if (!alive(r.id)) return;
   try { await updateDoc(tdoc(T.id, 'acts', r.id), { res: { t: r.t || '', p: p > 0 ? p : 0 } }); } catch (e) { console.error(e); toast(FAIL); } }
 async function saveProfile() { const name = Pf.name.trim(); if (!name) { Pf.err = 'Bitte gib deinen Namen ein.'; return draw(true); }
   if (Object.entries(T.people).some(([id, p]) => id !== T.me && norm(p.name) === norm(name))) { Pf.err = 'Den Namen gibt es in dieser Reise schon.'; return draw(true); }
@@ -1408,7 +1435,7 @@ async function saveCost() { const f = Cf; if (!f) return; const amt = parseAmt(f
   if (f.pay) { if (!f.to || f.to === f.by) { toast('Bitte wähle, wer an wen überwiesen hat'); return; } data = { title: 'Ausgleich', kind: 'pay', amt, by: f.by, for: [f.to] }; }
   else { const t = f.t.trim(); if (!t) { toast('Bitte schreib, wofür'); $('ct')?.focus(); return; } if (!f.for.length) { toast('Bitte wähle, für wen'); return; }
     data = { title: t.slice(0, 80), amt, by: f.by, for: [...f.for] }; if (DAY_OK(f.dt) && f.dt !== today()) data.dt = f.dt; }
-  const t = T; Cf = null; draw(true);
+  const t = T; Cf = null; shut('#cform', null, () => draw(true));
   try { if (f.id) { const old = t.costs.find(c => c.id === f.id); if (!old) return toast('Die Ausgabe gibt es nicht mehr');
       await setDoc(tdoc(t.id, 'costs', f.id), { ...data, dt: data.dt || (DAY_OK(f.dt) ? f.dt : ''), ts: old.ts, cby: old.cby, ets: Date.now(), eby: t.me }); toast('Gespeichert'); }
     else { const id = rid(16); flash = id; await setDoc(tdoc(t.id, 'costs', id), { ...data, ts: Date.now(), cby: t.me }); toast('Eingetragen'); } }
@@ -1470,8 +1497,8 @@ function menuFor(btn) { const k = btn.dataset.menu;
     g.push(isAdmin() ? [[MP.gear, 'Reise bearbeiten', () => go('#/r/' + T.id + '/reise')], [MP.mood, 'Stimmung ändern', () => go('#/r/' + T.id + '/stimmung')]] : [[MP.remove, 'Reise auf diesem Gerät entfernen', leaveTrip]]);
     return g; }
   if (k === 'act') { const id = btn.closest('[data-id]').dataset.id, a = T.acts.find(x => x.id === id); if (!a) return null; const g = [[], []];
-    if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: a.stop || '' }; draw(true); $('form')?.scrollIntoView({ block: 'nearest', behavior: calm() ? 'auto' : 'smooth' }); }]);
-    if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); document.querySelector('#rvt')?.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); }]);
+    if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: a.stop || '' }; draw(true); openAnim('#form'); $('form')?.scrollIntoView({ block: 'nearest', behavior: calm() ? 'auto' : 'smooth' }); }]);
+    if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); openAnim(`#app [data-id="${id}"] .rvw`); document.querySelector('#rvt')?.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); }]);
     g[0].push([MP.cm, 'Kommentar', () => { cmOpen.add(id); readCm(id); draw(true); const el = document.querySelector(`#app [data-k="cm-${id}"]`); if (el) { el.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); el.focus({ preventScroll: true }); } }]);
     if (a.cat === 'food' && a.kind === 'cook' && !a.done) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); document.querySelector(`#app [data-shi="${id}"]`)?.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); }]);
     if (areas().cost) g[0].push([MP.euro, 'Ausgabe eintragen', () => { tab = 'cost'; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); Cf = { t: a.title, amt: '', dt: today(), by: T.me, for: (sigBy()[id] || []).length > 1 ? [...sigBy()[id]] : Object.keys(T.people) }; draw(true); scrollTo(0, 0); $('ca')?.focus({ preventScroll: true }); }]);
