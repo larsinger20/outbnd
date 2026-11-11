@@ -862,10 +862,13 @@ async function startJoin(t, tok) {
   [8100, 20100].forEach(ms => setTimeout(() => { if (J === j && j.st === 'load') draw(); }, ms));
   if (!db) return;
   try { await ready;
-    const s = await getDoc(tdoc(t)); if (J !== j) return; if (!s.exists()) { j.st = 'bad'; return draw(); }
-    j.info = s.data(); if (j.info.del) { j.st = 'bad'; return draw(); }
     const mref = tdoc(t, 'members', uid); let m = await getDoc(mref);
     if (!m.exists()) { await setDoc(mref, { inv: tok }); m = null; }   // scheitert, wenn der Link nicht (mehr) gilt
+    const rd = () => getDoc(tdoc(t)).catch(e => { if (denied(e)) return null; throw e; });
+    let s = await rd();
+    if (!s && m) { await deleteDoc(mref); await setDoc(mref, { inv: tok }); m = null; s = await rd(); }   // altes Gerät (entfernt oder alter Link): mit dem neuen Link neu anfangen
+    if (J !== j) return; if (!s || !s.exists()) { j.st = 'bad'; return draw(); }
+    j.info = s.data(); if (j.info.del) { j.st = 'bad'; return draw(); }
     const ps = await getDocs(tcol(t, 'people')); if (J !== j) return; ps.forEach(d => j.people[d.id] = d.data());
     if (m && m.data().pid && j.people[m.data().pid]) { LS.add({ id: t, name: j.info.name, from: j.info.from, to: j.info.to, mood: moodOf(j.info.mood), tok }); J = null; return go('#/r/' + t); }   // schon dabei
     j.col = freeCol(j.people); j.st = 'form'; draw();
@@ -922,10 +925,10 @@ function showLink(url) { ask({ t: 'Einladungs-Link', m: url, ok: 'Fertig', one: 
 /* ---------- Ortssuche (OpenStreetMap über Photon, ohne Schlüssel) ---------- */
 let psT = 0, psCtl = null;
 function placeHTML(key, val, ph) { const r = PS[key];
-  return `<div class="pf"><input class="fi" data-pk="${key}" data-k="pk-${key}" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="${esc(ph)}" value="${esc(val)}"><div class="psug" data-ps="${key}">${r ? psList(key) : ''}</div></div>`; }
+  return `<div class="pf"><input class="fi" data-pk="${esc(key)}" data-k="pk-${esc(key)}" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="${esc(ph)}" value="${esc(val)}"><div class="psug" data-ps="${esc(key)}">${r ? psList(key) : ''}</div></div>`; }
 function psList(key) { const r = PS[key]; if (!r) return ''; if (r.busy && !r.res.length) return '<div class="pz">Suche …</div>'; if (r.err) return '<div class="pz">Ortssuche gerade nicht erreichbar. Der Name wird trotzdem gespeichert.</div>';
   if (!r.res.length) return r.q.length >= 3 ? '<div class="pz">Nichts gefunden. Der Name wird so gespeichert.</div>' : '';
-  return r.res.map((x, i) => `<button type="button" data-pick="${key}" data-i="${i}">${SY.pin}<span>${esc(x.name)}<small>${esc(x.sub)}</small></span></button>`).join(''); }
+  return r.res.map((x, i) => `<button type="button" data-pick="${esc(key)}" data-i="${i}">${SY.pin}<span>${esc(x.name)}<small>${esc(x.sub)}</small></span></button>`).join(''); }
 function near() { const s = (T && stops().find(x => typeof x.lat === 'number')) || (Wz && Wz.stops.find(x => typeof x.lat === 'number')); return s ? `&lat=${s.lat}&lon=${s.lng}` : ''; }
 function placeSearch(key, q) { clearTimeout(psT); const r = PS[key] = PS[key] || { res: [] }; r.q = q.trim(); r.err = false;
   if (r.q.length < 3) { r.res = []; r.busy = false; return paintPs(key); }
@@ -937,7 +940,7 @@ function placeSearch(key, q) { clearTimeout(psT); const r = PS[key] = PS[key] ||
         return { name: p.name || p.street || p.city || r.q, sub, lat: c[1], lng: c[0], addr: [p.street && (p.street + (p.housenumber ? ' ' + p.housenumber : '')), p.postcode, p.city || p.town || p.village].filter(Boolean).join(', ') }; }).filter(x => typeof x.lat === 'number');
       r.busy = false; paintPs(key); }
     catch (e) { if (e.name === 'AbortError') return; r.busy = false; r.err = true; r.res = []; paintPs(key); } }, 320); }
-function paintPs(key) { const el = document.querySelector(`#app [data-ps="${key}"]`); if (el) el.innerHTML = psList(key); }
+function paintPs(key) { const el = document.querySelector(`#app [data-ps="${CSS.escape(key)}"]`); if (el) el.innerHTML = psList(key); }
 // Auswahl übernehmen: je Feld ein Ziel
 function pickPlace(key, x) { delete PS[key];
   if (key === 'wstop') { Wz.stops.push({ id: rid(8), name: x.name, lat: x.lat, lng: x.lng }); Wz.q = ''; }
@@ -1085,9 +1088,9 @@ function infoPageHTML() { const { st, geo, stays, tr } = infoParts(), segs = [ge
   if (segs.length > 1) h += `<div class="seg2" data-seg="info"><span class="ind2"></span>${segs.map(([k, n]) => `<button type="button" data-iseg="${k}" class="${k === infoSeg ? 'on' : ''}" aria-pressed="${k === infoSeg}">${n}</button>`).join('')}</div>`;
   h += '<div>';
   if (infoSeg === 'wx') h += geo.map(s => wxHTML(s, geo.length > 1)).join('');
-  if (infoSeg === 'stay') h += stays.map(s => { const y = s.stay, ll = typeof y.lat === 'number' ? [y.lat, y.lng] : typeof s.lat === 'number' && !y.addr ? null : null;
+  if (infoSeg === 'stay') h += stays.map(s => { const y = s.stay, ll = typeof y.lat === 'number' ? [+y.lat, +y.lng] : null;
     return `<p class="sec">${esc(s.name)}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}</p><div class="glist"><div class="gl2"><span class="ic">${SY.house}</span><span class="gr"><b>${esc(y.name || 'Unterkunft')}</b>${y.addr ? `<p>${esc(y.addr)}</p>` : ''}${y.note ? `<p style="white-space:pre-wrap">${linkify(y.note)}</p>` : ''}</span></div>
-      ${y.link ? `<a class="gl2" href="${esc(y.link)}" target="_blank" rel="noopener"><span class="ic">${SY.out}</span><span>Zur Unterkunft</span>${CHR}</a>` : ''}${y.addr || ll ? `<a class="gl2" href="https://maps.apple.com/?daddr=${ll ? ll.join(',') : encodeURIComponent(y.addr)}" target="_blank" rel="noopener"><span class="ic">${SY.pin}</span><span>Route dorthin</span>${CHR}</a>` : ''}</div>`; }).join('');
+      ${y.link && normLink(y.link) ? `<a class="gl2" href="${esc(normLink(y.link))}" target="_blank" rel="noopener"><span class="ic">${SY.out}</span><span>Zur Unterkunft</span>${CHR}</a>` : ''}${y.addr || ll ? `<a class="gl2" href="https://maps.apple.com/?daddr=${ll ? ll.join(',') : encodeURIComponent(y.addr)}" target="_blank" rel="noopener"><span class="ic">${SY.pin}</span><span>Route dorthin</span>${CHR}</a>` : ''}</div>`; }).join('');
   if (infoSeg === 'tr') h += `<div class="glist">` + tr.map(x => { const k = KIND[x.kind] || KIND.auto, who = (x.who || []).filter(id => T.people[id]);
       return `<div class="gl2"><span class="ic"><svg viewBox="0 0 24 24">${k[1]}</svg></span><span class="gr"><b>${esc(x.title || k[0])}</b><p>${esc([x.from && x.to ? x.from + ' → ' + x.to : x.from || x.to, x.date ? dayName(x.date) : '', x.time ? x.time + ' Uhr' : ''].filter(Boolean).join(' · ') || k[0])}</p>${x.note ? `<p style="white-space:pre-wrap">${linkify(x.note)}</p>` : ''}${who.length ? `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">${avs(who, 6)}<p style="margin:0">${esc(names(who))}</p></div>` : ''}</span></div>`; }).join('') + `</div>`;
   h += '</div>';
@@ -1120,12 +1123,12 @@ function formHTML() { const f = F, food = f.cat === 'food', days = tripDays(T.in
     <div class="f2"><div><label class="fl" for="fy">Tag</label><select class="fi" id="fy" data-k="fy" data-f="day"><option value="">Flexibel</option>${days.map(d => `<option value="${d}"${f.day === d ? ' selected' : ''}>${esc(dayName(d))}</option>`).join('')}${f.day && !days.includes(f.day) ? `<option value="${esc(f.day)}" selected>${esc(dayName(f.day))}</option>` : ''}</select></div>
     <div><label class="fl" for="fz">Tageszeit</label><select class="fi" id="fz" data-k="fz" data-f="time"><option value="">Flexibel</option>${TIMES.map(t => `<option${f.time === t ? ' selected' : ''}>${t}</option>`).join('')}</select></div></div>
     ${f.err ? `<p class="err">${esc(f.err)}</p>` : ''}<div class="btns two"><button class="btn g" type="button" data-a="fx">Abbrechen</button><button class="btn" type="button" data-a="fsave">${f.id === 'new' ? 'Vorschlagen' : 'Speichern'}</button></div></div>`; }
-const mapsUrl = p => typeof p.lat === 'number' ? `https://maps.apple.com/?q=${encodeURIComponent(p.name)}&ll=${p.lat},${p.lng}` : `https://maps.apple.com/?q=${encodeURIComponent(p.name)}`;
+const mapsUrl = p => typeof p.lat === 'number' ? `https://maps.apple.com/?q=${encodeURIComponent(p.name)}&ll=${+p.lat},${+p.lng}` : `https://maps.apple.com/?q=${encodeURIComponent(p.name)}`;
 function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], mine = ids.includes(T.me), st = stops(), sname = a.stop && st.length > 1 ? (st.find(s => s.id === a.stop) || {}).name : '';
   const inf = [food && a.kind === 'cook' ? 'Kochen' : food && a.kind === 'rest' ? 'Restaurant' : '', sname, a.day ? dayName(a.day) : '', a.time || (a.day ? '' : 'Flexibel'), 'von ' + (a.by === T.me ? 'dir' : P(a.by).name)].filter(Boolean).join(' · ');
   const cms = Object.entries(a.cm || {}).filter(([, c]) => c && c.t).sort((x, y) => (x[1].ts || 0) - (y[1].ts || 0)), open = cmOpen.has(a.id), nCm = cmNew(a);
   const sorted = [...ids].sort((x, y) => (y === T.me) - (x === T.me)), nw = shownNew.has(a.id) || isNewAct(a);
-  let h = `<article class="card${a.done ? ' done' : ''}" data-id="${a.id}"${isNewAct(a) ? ' data-seen="1"' : ''}><div class="c">
+  let h = `<article class="card${a.done ? ' done' : ''}" data-id="${esc(a.id)}"${isNewAct(a) ? ' data-seen="1"' : ''}><div class="c">
     <div class="th"><h3>${esc(a.title)}${nw ? '<span class="nw">Neu</span>' : ''}</h3><button class="dots lq" type="button" aria-label="Mehr zu ${esc(a.title)}" data-menu="act">${DOTS}<span class="gl"></span></button></div>
     <p class="inf">${esc(inf)}</p>${a.desc ? `<p class="desc">${linkify(a.desc)}</p>` : ''}
     ${a.place && a.place.name ? `<a class="pl" href="${esc(mapsUrl(a.place))}" target="_blank" rel="noopener">${SY.pin}<span>${esc(a.place.name)}</span></a>` : ''}
@@ -1133,7 +1136,7 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div>${Rv.err ? `<p class="err">${esc(Rv.err)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div></div>` : ''}
     ${food && a.kind === 'cook' && !a.done ? shopBox(a) : ''}`;
   if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length + ' Kommentare'}${nCm && !open ? ` · <span style="color:#ff9f0a">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
-      <div class="cma"><input data-k="cm-${a.id}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben" value="${esc(cmDraft[a.id] || '')}"><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
+      <div class="cma"><input data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben" value="${esc(cmDraft[a.id] || '')}"><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
   h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ' waren dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
     ${a.done ? `<span class="dn">${SY.check}Erledigt</span>` : `<button class="go lq${mine ? ' in' : ''}" type="button" data-a="go" aria-pressed="${mine}">${food ? `${SY.thumb}<span>${ids.length}</span>` : mine ? `${SY.check}<span>Du bist dabei</span>` : `${SY.join}<span>Ich bin dabei</span>`}<span class="gl"></span></button>`}</div></div></article>`;
   return h; }
@@ -1688,8 +1691,8 @@ function menuFor(btn) { const k = btn.dataset.menu;
 /* ---------- Karte (OpenStreetMap über Leaflet, ohne Schlüssel) ---------- */
 let MAP = null, mapF = 'all', mapLayer = null, mapBtn = null, leafletP = null;
 function loadLeaflet() { if (window.L) return Promise.resolve(); if (leafletP) return leafletP;
-  leafletP = new Promise((res, rej) => { const c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.append(c);
-    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; s.onload = res; s.onerror = () => { leafletP = null; rej(); }; document.head.append(s); });
+  leafletP = new Promise((res, rej) => { const c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; c.integrity = 'sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw=='; c.crossOrigin = 'anonymous'; document.head.append(c);
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; s.integrity = 'sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g=='; s.crossOrigin = 'anonymous'; s.onload = res; s.onerror = () => { leafletP = null; rej(); }; document.head.append(s); });
   return leafletP; }
 async function openMap(btn) { mapBtn = btn; mapF = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'all';
   const v = $('mapv'), r = btn.getBoundingClientRect(); v.style.setProperty('--mx', (r.left + r.width / 2) + 'px'); v.style.setProperty('--my', (r.top + r.height / 2) + 'px');
@@ -1711,11 +1714,11 @@ function paintMapBar() { $('mseg').innerHTML = [['all', 'Alle'], ['act', 'Aktivi
 function paintMap(fit) { if (!MAP || !T) return; if (mapLayer) mapLayer.remove(); mapLayer = L.layerGroup().addTo(MAP); const by = sigBy(), pts = [];
   const icon = (svg, cls, col) => L.divIcon({ className: '', html: `<div class="mpin ${cls}" style="${col ? '--c:' + col : ''}">${svg}</div>`, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14] });
   stops().forEach(s => { const y = s.stay || {}, lat = typeof y.lat === 'number' ? y.lat : s.lat, lng = typeof y.lat === 'number' ? y.lng : s.lng; if (typeof lat !== 'number') return; pts.push([lat, lng]);
-    L.marker([lat, lng], { icon: icon(SY.house, 'home'), zIndexOffset: -1000 }).addTo(mapLayer).bindPopup(`<b>${esc(y.name || s.name)}</b>${esc(y.name ? s.name : 'Ziel')}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}<div class="mpb"><a href="https://maps.apple.com/?daddr=${lat},${lng}" target="_blank" rel="noopener">Route ↗</a></div>`); });
+    L.marker([lat, lng], { icon: icon(SY.house, 'home'), zIndexOffset: -1000 }).addTo(mapLayer).bindPopup(`<b>${esc(y.name || s.name)}</b>${esc(y.name ? s.name : 'Ziel')}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}<div class="mpb"><a href="https://maps.apple.com/?daddr=${+lat},${+lng}" target="_blank" rel="noopener">Route ↗</a></div>`); });
   const list = T.acts.filter(a => a.title && a.place && typeof a.place.lat === 'number' && (mapF === 'all' ? areas().food || a.cat !== 'food' : mapF === 'mine' ? (by[a.id] || []).includes(T.me) : tabOf(a) === mapF));
   list.forEach(a => { pts.push([a.place.lat, a.place.lng]); const n = (by[a.id] || []).length;
     L.marker([a.place.lat, a.place.lng], { icon: icon(a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin, a.done ? 'done' : '', a.cat === 'food' ? '#c44d03' : '') }).addTo(mapLayer)
-      .bindPopup(`<b>${esc(a.title)}</b>${esc([a.place.name, a.day ? dayName(a.day) : '', a.done ? 'erledigt' : n ? n + (a.cat === 'food' ? ' Stimmen' : ' dabei') : ''].filter(Boolean).join(' · '))}<div class="mpb"><button type="button" data-mgo="${esc(a.id)}">Zum Vorschlag</button><a href="https://maps.apple.com/?daddr=${a.place.lat},${a.place.lng}" target="_blank" rel="noopener">Route ↗</a></div>`); });
+      .bindPopup(`<b>${esc(a.title)}</b>${esc([a.place.name, a.day ? dayName(a.day) : '', a.done ? 'erledigt' : n ? n + (a.cat === 'food' ? ' Stimmen' : ' dabei') : ''].filter(Boolean).join(' · '))}<div class="mpb"><button type="button" data-mgo="${esc(a.id)}">Zum Vorschlag</button><a href="https://maps.apple.com/?daddr=${+a.place.lat},${+a.place.lng}" target="_blank" rel="noopener">Route ↗</a></div>`); });
   const none = T.acts.filter(a => a.title && !a.done && a.place && a.place.name && typeof a.place.lat !== 'number').length;
   $('mnote').hidden = pts.length && !none; $('mnote').textContent = !pts.length ? 'Noch keine Orte. Beim Vorschlagen einen Ort aus der Suche wählen, dann erscheint er hier.' : none === 1 ? '1 Ort ohne Kartenpunkt (frei getippt)' : none + ' Orte ohne Kartenpunkt (frei getippt)';
   if (fit) { if (pts.length > 1) MAP.fitBounds(pts, { padding: [60, 60], maxZoom: 15 }); else if (pts.length) MAP.setView(pts[0], 13); else MAP.setView([48, 11], 4); } }
