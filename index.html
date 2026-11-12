@@ -238,7 +238,8 @@ html.noglow .lq>.gl{transition:none!important;opacity:0!important}.navrow>.gl,.r
 .ls .lens{filter:drop-shadow(1.2px 0 0 rgba(255,80,130,.4)) drop-shadow(-1.2px 0 0 rgba(60,200,255,.4))}
 
 /* Lichtbrechung: Kopie des Inhalts in schmalen Randstreifen, gestaucht (DESIGN.md Abschnitt 2, Variante A) */
-.refr{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.refr{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;transition:opacity .34s ease}
+.refr.rgo{opacity:0;transition-duration:.12s}   /* Seite wechselt: Ränder blenden aus und mit dem neuen Inhalt wieder ein (sonst zeigten sie kurz die alte Seite und sprangen dann um) */
 .rb{position:absolute;overflow:hidden}
 .rb::after{content:'';position:absolute;inset:0;background:var(--tbg);-webkit-backdrop-filter:blur(2px) saturate(150%);backdrop-filter:blur(2px) saturate(150%)}
 .rs{position:absolute;inset:0}
@@ -1044,6 +1045,7 @@ function draw(force) {
   document.documentElement.dataset.m = moodOf(view.n === 'new' ? Wz.mood : view.n === 'join' ? (J && J.info && J.info.mood) : T && T.info ? T.info.mood : T ? (LS.one(T.id) || {}).mood : '');
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
+  if (fresh && inTrip) refrHide();
   if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
   A.querySelectorAll('textarea[data-cmi]').forEach(t => { if (t.value) growCm(t); });
   topTitle(); document.documentElement.classList.toggle('fo', !!(view.n === 'trip' && (F || Cf || Rv)));   // Formular offen: Reiter-Leiste weg (verdeckt sonst die Knöpfe)
@@ -1657,7 +1659,7 @@ function flipPlay(m) { const L = document.querySelector('#app .list'); if (!L ||
     Object.assign(g.style, { position: 'absolute', left: o.x + 'px', top: o.y + 'px', width: o.w + 'px', margin: 0, pointerEvents: 'none', zIndex: 0 }); L.append(g);
     g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.97)' }], { duration: D * .7, easing: MO.on, fill: 'forwards' }).finished.then(() => g.remove(), () => g.remove()); } }
 function segSwitch(btn, apply, flip) { const s = btn.closest('.seg2'), key = s.dataset.seg, ind = s.querySelector('.ind2'), old = { w: ind.style.width, x: ind.style.translate }, sn = flip ? flipSnap() : null;
-  apply(); draw(true); const s2 = document.querySelector(`#app .seg2[data-seg="${key}"]`); if (!s2 || calm()) return; const i2 = s2.querySelector('.ind2'), fin = { w: i2.style.width, x: i2.style.translate };
+  refrHide(); apply(); draw(true); const s2 = document.querySelector(`#app .seg2[data-seg="${key}"]`); if (!s2 || calm()) return; const i2 = s2.querySelector('.ind2'), fin = { w: i2.style.width, x: i2.style.translate };
   i2.style.transition = 'none'; i2.style.width = old.w; i2.style.translate = old.x; void i2.offsetWidth; i2.style.transition = ''; i2.style.width = fin.w; i2.style.translate = fin.x;
   if (flip) return flipPlay(sn);
   let n = s2.nextElementSibling; while (n) { n.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease' }); n = n.nextElementSibling; } }
@@ -2018,14 +2020,15 @@ $('more').addEventListener('click', e => { if (e.detail === 0) openMenu($('more'
 let refrEls = [], refrT = 0;
 const SDA = CSS.supports('animation-timeline', 'scroll()');
 // Kopien für die Lichtbrechung erst neu bauen, wenn nichts mehr gleitet (sonst fehlen mitten in der Bewegung Bilder)
-function refrSoon() { clearTimeout(refrT); refrT = setTimeout(() => { if (slides || navBusy) return refrSoon(); (window.requestIdleCallback || (f => setTimeout(f, 1)))(refrBuild, { timeout: 600 }); }, 160); }
+function refrHide() { const b = $('refr'); if (b && refrEls.length) b.classList.add('rgo'); }
+function refrSoon() { clearTimeout(refrT); refrT = setTimeout(() => { if (slides || navBusy || raf) return refrSoon(); ($('refr').classList.contains('rgo') ? requestAnimationFrame : window.requestIdleCallback || (f => setTimeout(f, 1)))(refrBuild, { timeout: 600 }); }, $('refr').classList.contains('rgo') ? 40 : 160); }   // nach einem Seitenwechsel nicht auf Leerlauf warten, die Ränder sollen mit dem Inhalt einblenden
 function refrBuild() { const box = $('refr'); box.innerHTML = ''; refrEls = []; if (bar.hidden) return;
   const src = $('app'), H = 64;
   for (const [k, x, y, w, h] of [['t', 0, 0, W, 9], ['b', 0, H - 9, W, 9], ['l', 0, 0, 14, H], ['r', W - 14, 0, 14, H]]) { const b = document.createElement('div'), sc = document.createElement('div'), c = src.cloneNode(true);
     b.className = 'rb ' + k; sc.className = 'rs'; Object.assign(b.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
     c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); c.querySelectorAll('[data-k]').forEach(e => e.removeAttribute('data-k')); c.classList.remove('fade'); c.classList.add('rcl'); c.setAttribute('aria-hidden', 'true'); c.inert = true; c.style.width = src.offsetWidth + 'px';
     sc.append(c); b.append(sc); box.append(b); refrEls.push({ c, x, y }); }
-  refrPos(); }
+  refrPos(); box.classList.remove('rgo'); }
 function refrPos() { if (!refrEls.length) return; const src = $('app'), r = src.getBoundingClientRect(), bl = bar.offsetLeft, bt = bar.offsetTop;
   document.documentElement.style.setProperty('--smax', Math.max(0, document.documentElement.scrollHeight - innerHeight) + 'px');
   for (const e of refrEls) { e.c.style.left = (r.left - bl - e.x) + 'px'; e.c.style.top = (r.top + scrollY - bt - e.y) + 'px'; if (!SDA) e.c.style.translate = `0 ${-scrollY}px`; } }
