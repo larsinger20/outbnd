@@ -208,8 +208,10 @@ html.noglow .lq>.gl{transition:none!important;opacity:0!important}.navrow>.gl,.r
 .tbar.down{transform:none}
 .tbar.held{transform:scale(.99);transition-duration:.24s}
 .tbar .gb{position:absolute;inset:0;border-radius:inherit;background:var(--tbg);-webkit-backdrop-filter:blur(7px) saturate(170%);backdrop-filter:blur(7px) saturate(170%);
-  box-shadow:inset 0 0 14px var(--shn),var(--tsh);overflow:hidden}
-.tbar .gb::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+  box-shadow:var(--tsh);overflow:hidden}
+/* Rand und Schimmer als eigene Ebene ohne Weichzeichner: im Glas selbst ließ Safari sie oben manchmal weg (Bildschirmfotos Lars 12.11.2026, Essen vs. Kosten) */
+.tbar .grim{position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 14px var(--shn)}
+.tbar .grim::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
   background:linear-gradient(180deg,var(--rim),var(--rim2) 26%,var(--rim2) 74%,var(--rim));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .tbar .glow{position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .6s;background:radial-gradient(90px circle at var(--gx,50%) var(--gy,50%),var(--glow),transparent 70%)}
@@ -600,7 +602,7 @@ html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar
 <button class="nb r dots lq" id="more" type="button" aria-label="Mehr" hidden><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg><span class="gl"></span></button>
 <div class="sedge" id="sedge" aria-hidden="true"></div><div class="ntitle" id="ntitle" aria-hidden="true"><span></span></div>
 <nav class="tbar" id="tbar" aria-label="Reiter" hidden>
-  <div class="gb"><div class="glow"></div></div>
+  <div class="gb"><div class="glow"></div></div><div class="grim"></div>
   <div class="clip"><div class="trow" id="trow"></div></div>
   <div class="rowc"><div class="trow" id="prow" style="pointer-events:none"><div class="pill" id="pill"><div class="pf"></div><div class="pg"></div><div class="lw"><div class="lm" id="lm"><div class="lens" id="lens"></div></div><div class="ls l" id="lsl"><div class="st"><div class="lens" id="lensL"></div></div></div><div class="ls r" id="lsr"><div class="st"><div class="lens" id="lensR"></div></div></div></div></div></div></div>
 </nav>
