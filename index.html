@@ -989,7 +989,7 @@ const WICON = { sun: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 1
 const wxIcon = (c, cls = 'wxi') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${WICON[WCODE(c)[1]]}</svg>`;
 function wxFor(s) { const k = s.lat.toFixed(2) + ',' + s.lng.toFixed(2); let w = WX[k];
   if (!w) { const c = store.get('outbndr.wx.' + k, null); w = WX[k] = c && Date.now() - c.at < 864e5 ? { ...c, st: 'ok' } : { st: 'load' }; }
-  if (!w.busy && (w.st === 'load' || w.st === 'err' && Date.now() - (w.tried || 0) > 6e4 || Date.now() - (w.at || 0) > 18e5)) { w.busy = true; w.tried = Date.now();
+  if (!w.busy && (w.st === 'load' || Date.now() - (w.tried || 0) > 6e4 && (w.st === 'err' || Date.now() - (w.at || 0) > 18e5))) { w.busy = true; w.tried = Date.now();   // nach einem Fehlschlag höchstens einmal pro Minute neu (vorher endlos, wenn das Wetter nicht erreichbar war)
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 10000);
     fetch(`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lng}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=16`, { signal: ctl.signal })
       .then(r => r.json()).then(j => { if (!j.daily) throw 0; const d = j.daily; Object.assign(w, { st: 'ok', at: Date.now(), cur: j.current ? { t: Math.round(j.current.temperature_2m), c: j.current.weather_code } : null,
