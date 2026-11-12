@@ -703,7 +703,7 @@ const D = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, 
 const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const today = () => iso(new Date());
 const DAY_OK = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
-const fmt = (d, o) => new Intl.DateTimeFormat('de-DE', o).format(d);
+const fmt = (d, o) => isNaN(d) ? '' : new Intl.DateTimeFormat('de-DE', o).format(d);   // kaputtes Datum aus der Datenbank: leer statt Absturz der ganzen Seite
 function range(a, b) { if (!a) return 'Zeitraum noch offen'; const x = D(a), y = D(b || a);
   if (a === (b || a)) return fmt(x, { day: 'numeric', month: 'long', year: 'numeric' });
   if (x.getFullYear() !== y.getFullYear()) return fmt(x, { day: 'numeric', month: 'short', year: 'numeric' }) + ' – ' + fmt(y, { day: 'numeric', month: 'short', year: 'numeric' });
@@ -828,6 +828,7 @@ let lastHash = null, navBusy = false, stack = [], keepY = null; const scrollMem 
 function navTo(dir, fn) { const R = document.documentElement;
   if (!dir || dir === 'tab' || calm() || !document.startViewTransition || document.hidden) { fn(); return; }   // Reiter wechseln in iOS ohne Bewegung
   R.dataset.nav = dir; navBusy = true; const vt = document.startViewTransition(() => { fn(); });
+  const skip = e => { if (!e || e.name !== 'AbortError') console.error(e); }; vt.ready.catch(() => {}); vt.updateCallbackDone.catch(skip);   // schnelles Weitertippen bricht den Übergang ab: kein Fehler in der Konsole
   vt.finished.catch(() => {}).finally(() => { if (R.dataset.nav === dir) delete R.dataset.nav; navBusy = false; }); }
 function route() { noGlow(); const h = location.hash, d0 = lastHash == null ? null : depth(lastHash), d1 = depth(h); let dir;
   if (d0 == null) { dir = ''; stack = [h]; }
@@ -1723,7 +1724,9 @@ async function archShop() { const ids = [GEN, ...T.acts.filter(a => a.cat === 'f
 /* ---------- Kosten speichern ---------- */
 async function saveCost() { const f = Cf; if (!f) return; const amt = parseAmt(f.amt);
   f.err = ''; const bad = m => { f.err = m; draw(true); };
-  if (!(amt > 0 && amt < 10000000)) return bad('Bitte den Betrag so eingeben: 12,50 oder 1.234,56');
+  if (amt >= 10000000) return bad('Höchstens 99.999,99 € pro Ausgabe.');
+  if (amt === 0) return bad('Der Betrag muss größer als 0 sein.');
+  if (!(amt > 0)) return bad('Bitte den Betrag so eingeben: 12,50 oder 1.234,56');
   let data;
   if (f.pay) { if (!f.to || f.to === f.by) return bad('Bitte wähle, wer an wen überwiesen hat.'); data = { title: 'Ausgleich', kind: 'pay', amt, by: f.by, for: [f.to] }; }
   else { const t = f.t.trim(); if (!t) return bad('Bitte schreib, wofür.'); if (!f.for.length) return bad('Bitte wähle, für wen.');
@@ -1756,6 +1759,7 @@ async function saveDraft() { const e = Ed, d = e.d; if (!d) return; e.derr = '';
     const l = clone(T.info.stops || []), c = cleanStop(d), i = l.findIndex(z => z.id === d.id); i >= 0 ? (l[i] = c) : l.push(c);
     try { await updateDoc(tdoc(T.id), { stops: l }); delete PS['stay-' + d.id]; toast(e.isNew ? 'Hinzugefügt' : 'Gespeichert'); Object.assign(e, { kind: '', open: '', d: null, isNew: false }); draw(true); } catch (err) { console.error(err); e.derr = FAIL; draw(true); } return; }
   const x = { id: d.id, kind: KIND[d.kind] ? d.kind : 'auto', title: String(d.title || '').trim().slice(0, 60), from: String(d.from || '').trim().slice(0, 40), to: String(d.to || '').trim().slice(0, 40), date: DAY_OK(d.date) ? d.date : '', time: /^\d\d:\d\d$/.test(d.time || '') ? d.time : '', note: String(d.note || '').trim().slice(0, 300), who: (d.who || []).filter(id => T.people[id]) };
+  if (!x.title && !x.from && !x.to && !x.date) { e.derr = 'Bitte trag mindestens Strecke, Datum oder Nummer ein.'; return draw(true); }
   const l = clone(T.info.travel || []), i = l.findIndex(z => z.id === d.id); i >= 0 ? (l[i] = x) : l.push(x);
   try { await updateDoc(tdoc(T.id), { travel: l }); toast(e.isNew ? 'Hinzugefügt' : 'Gespeichert'); Object.assign(e, { kind: '', open: '', d: null, isNew: false }); draw(true); } catch (err) { console.error(err); e.derr = FAIL; draw(true); } }
 async function renewLink(sure) { if (!sure && !await ask({ t: 'Neuen Einladungs-Link erstellen?', m: 'Der bisherige Link funktioniert dann nicht mehr. Wer schon dabei ist, bleibt dabei.', ok: 'Neuer Link' })) return;
@@ -1791,7 +1795,7 @@ function menuFor(btn) { const k = btn.dataset.menu;
     g.push(isAdmin() ? [[MP.gear, 'Reise bearbeiten', () => go('#/r/' + T.id + '/reise')], [MP.mood, 'Stimmung ändern', () => go('#/r/' + T.id + '/stimmung')]] : [[MP.remove, 'Reise auf diesem Gerät entfernen', leaveTrip]]);
     return g; }
   if (k === 'act') { const id = btn.closest('[data-id]').dataset.id, a = T.acts.find(x => x.id === id); if (!a) return null; const g = [[], []];
-    if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: a.stop || '' }; draw(true); openForm('#form'); }]);
+    if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: (T.info.stops || []).some(z => z.id === a.stop) ? a.stop : '' }; if (F.day && T.info.from && !tripDays(T.info).includes(F.day)) F.day = ''; draw(true); openForm('#form'); }]);   // gelöschtes Ziel / Tag außerhalb der Reise: Formular zeigt „Egal wo“/„Flexibel“, also auch so speichern
     if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); openForm(`#app [data-id="${CSS.escape(id)}"] .rvw`); }]);
     g[0].push([MP.cm, 'Kommentar', () => { cmOpen.add(id); readCm(id); draw(true); const el = document.querySelector(`#app [data-k="cm-${CSS.escape(id)}"]`); if (el) { glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); el.focus({ preventScroll: true }); } }]);
     if (a.cat === 'food' && a.kind === 'cook' && !a.done) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); const el = document.querySelector(`#app [data-shi="${CSS.escape(id)}"]`); if (el) glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); }]);
