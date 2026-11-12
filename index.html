@@ -43,7 +43,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 html{background:var(--bg)}
-body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.29 var(--font);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overflow-wrap:break-word}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.29 var(--font);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overflow-wrap:anywhere}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
 button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 main{background:var(--bg);padding-left:max(16px,env(safe-area-inset-left,0px),calc((100vw - 528px) / 2));padding-right:max(16px,env(safe-area-inset-right,0px),calc((100vw - 528px) / 2));padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px));min-height:100vh;min-height:100dvh}
@@ -129,7 +129,8 @@ a.txl::after{content:'';position:absolute;inset:-8px -4px}
 .btn.s{min-height:44px;font-size:15px}
 .btn[disabled]{opacity:.45;cursor:default}
 .btns{display:grid;gap:10px;margin-top:18px}
-.btns.two{grid-template-columns:1fr 1fr}
+.btns.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.btns.two .btn{padding-left:8px;padding-right:8px;white-space:nowrap}
+@media (max-width:350px){.btns.two .btn{font-size:16px}}
 .add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:17px;font-weight:600;margin-bottom:14px}
 
 /* Formulare */
@@ -144,7 +145,8 @@ input[type=date].fi::-webkit-date-and-time-value{text-align:left}
 select.fi{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.5 6 6l4.5-4.5' fill='none' stroke='%23889' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px}
 .fi:focus{box-shadow:0 0 0 2px var(--ac)}
 .fi::placeholder{color:var(--mu);opacity:.75}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.f2>div{min-width:0}
+@media (max-width:350px){.f2 .fi[type=date],.f2 .fi[type=time]{padding-left:10px;padding-right:6px;font-size:16px}}
 .f2>*{min-width:0}
 .cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
 .col{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;justify-self:center}
@@ -193,7 +195,7 @@ select.fi{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xml
 .lq.pr{transform:scale(1.07);transition-duration:.18s;transition-timing-function:cubic-bezier(.3,.7,.4,1)}
 .lq>.gl{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(70px circle at var(--gx,50%) var(--gy,50%),var(--glow),transparent 70%)}
 .lq.pr>.gl{opacity:1;transition-duration:.12s}
-html.noglow .lq>.gl{transition:none!important;opacity:0!important}html.noglow .lq{transition:none!important;transform:none!important}
+html.noglow .lq>.gl{transition:none!important;opacity:0!important}.navrow>.gl,.rowb>.gl,#back>.gl{display:none}.navrow.lq,.rowb.lq{transition:none}.navrow.lq.pr,.rowb.lq.pr{transform:none;filter:brightness(.94)}html.noglow .lq{transition:none!important;transform:none!important}
 .dots.lq.pr{transform:scale(1.14);transition-duration:.12s}
 .btn.lq.pr,.add.lq.pr,.row.lq.pr{transform:scale(.98)}
 .nb.dots{width:44px;height:44px;margin:0;background:var(--gb)}
