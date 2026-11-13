@@ -73,7 +73,24 @@ main.wash .add{background:var(--card)}
 .mood svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4));opacity:0}
 .mood.on{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px var(--ac)}.mood.on svg{opacity:1}
 .mood.lq.pr{transform:scale(.97)}
-.mchip{width:36px;height:36px;border-radius:12px;flex:none}
+.mchip{width:36px;height:36px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center}
+.mchip svg,.hmi svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+/* Startseite: Begrüßung, die nächste Reise groß im Verlauf ihrer Stimmung, darunter die übrigen */
+main.home::before{opacity:.45;height:400px}
+.greet{font-size:22px;font-weight:600;line-height:1.25;margin:6px 0 0;font-family:var(--rnd)}
+.hsec{font-size:20px;font-weight:600;margin:24px 4px 8px;font-family:var(--rnd)}
+.hd+.hsec,.appc+.hsec{margin-top:4px}
+.hero+.btns,.rows+.btns{margin-top:22px}
+.hero{position:relative;border-radius:26px;background:var(--hg);overflow:hidden;box-shadow:0 12px 30px -14px rgba(0,0,0,.5)}
+.rowb.heroB{display:block;width:100%;min-height:178px;padding:16px 20px 20px;border-radius:inherit;color:#fff;text-align:left}
+.heroB .cd{margin:0 0 30px}
+.hmi{position:absolute;right:-16px;bottom:-22px;width:136px;height:136px;opacity:.2;pointer-events:none}
+.hmi svg{width:100%;height:100%;stroke-width:1.3}
+.hn{display:block;font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15;text-shadow:0 1px 12px rgba(0,0,0,.28);padding-right:8px}
+.hs{display:block;font-size:15px;line-height:1.33;margin-top:4px;opacity:.96;text-shadow:0 1px 8px rgba(0,0,0,.32)}
+.hero .av{margin-top:12px}.hero .av i{border-color:rgba(255,255,255,.85)}
+.hero .dots{position:absolute;top:12px;right:12px;width:36px;height:36px;margin:0;background:rgba(0,0,0,.2)}
+.hero .dots svg{fill:#fff}
 .hint{font-size:13px;line-height:1.38;color:var(--mu);margin:10px 4px 0}
 .hint.c{text-align:center;margin-top:18px}
 .err{font-size:13px;line-height:1.38;color:var(--rd);margin:8px 4px 0}
@@ -676,6 +693,17 @@ const MP = {
 const MOODS = [['meer', 'Meer', 'radial-gradient(120% 100% at 15% 0,#12a086 0,#0c807d 42%,#0d5f7a 100%)'], ['insel', 'Insel', 'radial-gradient(120% 110% at 80% 0,#45a204 0,#188169 42%,#0b8a80 100%)'], ['sonne', 'Sonne', 'radial-gradient(120% 110% at 85% 0,#c08100 0,#c44d03 45%,#b4436c 100%)'], ['wueste', 'Wüste', 'radial-gradient(120% 110% at 20% 0,#be8200 0,#a46413 45%,#9a5b34 100%)'], ['natur', 'Natur', 'radial-gradient(120% 110% at 25% 0,#779a13 0,#4c7f3c 45%,#2f6648 100%)'], ['berge', 'Berge', 'radial-gradient(120% 110% at 70% 0,#5a88ff 0,#4165f4 45%,#3f3a94 100%)'], ['winter', 'Winter', 'radial-gradient(120% 110% at 30% 0,#0092f1 0,#1479b2 45%,#2f6f9f 100%)'], ['stadt', 'Stadt', 'radial-gradient(120% 110% at 80% 0,#f45d00 0,#a94fad 42%,#3a2f6b 100%)'], ['fruehling', 'Frühling', 'radial-gradient(120% 110% at 20% 0,#ff428b 0,#e3044d 45%,#b83b74 100%)'], ['nacht', 'Nacht', 'radial-gradient(120% 110% at 75% 0,#5b6ee0 0,#27307a 45%,#0c1030 100%)']];
 const moodOf = m => MOODS.some(x => x[0] === m) ? m : 'meer';   // alte Reisen ohne Stimmung: Meer
 const moodG = m => MOODS.find(x => x[0] === moodOf(m))[2];
+// Symbol je Stimmung (Startseite), damit Reisen auch bei gleicher Farbe unterscheidbar sind
+const MICON = { meer: '<path d="M3 8c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0M3 13c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0M3 18c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0"/>',
+  insel: '<path d="M11 21c0-4 .7-8 2.5-11M13.5 10c-1.2-3-4-4.2-7-3.2M13.5 10c1-3 4-4.2 7-2.7M13.5 10c-2.6-.4-5 1.2-6 3.8M13.5 10c2.5-.2 4.6 1.6 5 4.2M4 21h16"/>',
+  sonne: MP.mood, wueste: '<path d="M10 21V6a2 2 0 0 1 4 0v15M14 13h2a2 2 0 0 0 2-2V8.5M10 15H8a2 2 0 0 1-2-2v-2.5M5 21h14"/>',
+  natur: '<path d="M12 21v-6M12 17l-3-3M12 15l3-3M12 3c4 0 7 3.5 7 7.5S16 18 12 18s-7-3.5-7-7.5S8 3 12 3z"/>',
+  berge: '<path d="M2.5 19.5 9 8l4 7 2.5-4 6 8.5zM6.8 12l2.2 1.5 2.2-1.5"/>',
+  winter: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 6l2.5-1.5M9.5 19.5 12 18l2.5 1.5"/>',
+  stadt: '<path d="M3 21h18M5 21V9h5v12M10 21V4h6v17M16 21v-9h3v9M7 12h1M7 15h1M12.5 7h1M12.5 10h1M12.5 13h1"/>',
+  fruehling: '<path d="M12 21v-8M12 13c-3.5 0-5.5-2.5-5.5-6.5 2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 0 4-2 6.5-5.5 6.5zM12 18.5c-2 0-4-1.5-5-3.5M12 18.5c2 0 4-1.5 5-3.5"/>',
+  nacht: '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>' };
+const micon = m => SV(MICON[moodOf(m)]);
 const ALLTABS = [['act', 'Aktivitäten'], ['food', 'Essen'], ['cost', 'Kosten'], ['plan', 'Mein Plan']];
 let TABS = ALLTABS.slice(0, 2);
 const ICF = {
@@ -867,8 +895,8 @@ async function openTrip(id) {
     if (!m.exists() || !m.data().pid) return needJoin(t);
     t.me = m.data().pid;
     const fail = e => { if (T !== t) return; if (denied(e)) { if (t.st === 'ok') { t.st = 'gone'; t.off.forEach(f => f()); t.off = []; draw(); } else needJoin(t); } else { console.error(e); if (t.st === 'load') { t.st = 'err'; draw(); } else toast('Verbindung unterbrochen. Bitte die Seite neu laden.'); } };
-    t.off.push(onSnapshot(tdoc(id), s => { if (!s.exists() || s.data().del) { t.st = 'gone'; LS.del(id); t.off.forEach(f => f()); t.off = []; return draw(); } t.info = s.data(); LS.add({ id, name: t.info.name, from: t.info.from, to: t.info.to, mood: moodOf(t.info.mood) }); setTabs(); live(t); }, fail));
-    t.off.push(onSnapshot(tcol(id, 'people'), s => { t.people = {}; s.forEach(d => t.people[d.id] = d.data()); if (!t.people[t.me]) return needJoin(t); live(t); }, fail));
+    t.off.push(onSnapshot(tdoc(id), s => { if (!s.exists() || s.data().del) { t.st = 'gone'; LS.del(id); t.off.forEach(f => f()); t.off = []; return draw(); } t.info = s.data(); LS.add({ id, name: t.info.name, from: t.info.from, to: t.info.to, mood: moodOf(t.info.mood), dest: (t.info.stops || []).map(z => z && z.name).filter(Boolean).slice(0, 4).map(n => String(n).slice(0, 40)) }); setTabs(); live(t); }, fail));
+    t.off.push(onSnapshot(tcol(id, 'people'), s => { t.people = {}; s.forEach(d => t.people[d.id] = d.data()); if (!t.people[t.me]) return needJoin(t); keepPeople(id, t); live(t); }, fail));
     t.off.push(onSnapshot(tcol(id, 'acts'), s => { t.acts = []; s.forEach(d => t.acts.push({ id: d.id, ...d.data() })); live(t); }, fail));
     t.off.push(onSnapshot(tcol(id, 'signups'), s => { t.sig = []; s.forEach(d => t.sig.push(d.data())); live(t); }, fail));
     t.off.push(onSnapshot(tcol(id, 'costs'), s => { t.costs = []; s.forEach(d => t.costs.push({ id: d.id, ...d.data() })); live(t); }, e => { if (T === t) { t.costs = []; live(t); } }));
@@ -876,6 +904,9 @@ async function openTrip(id) {
     t.off.push(onSnapshot(tcol(id, 'invites'), s => { t.toks = []; s.forEach(d => t.toks.push({ id: d.id, ts: d.data().ts || 0 })); t.toks.sort((a, b) => b.ts - a.ts); t.tok = t.toks[0] && t.toks[0].id; if (t.tok) LS.add({ id, tok: t.tok }); }, () => {}));
   } catch (e) { if (T !== t) return; if (denied(e)) needJoin(t); else { console.error(e); t.st = 'err'; draw(); } }
 }
+// Für die Startseite merkt sich das Gerät Farben und Anfangsbuchstaben der Mitreisenden und den eigenen Namen (nur zum Anzeigen)
+function keepPeople(id, t) { const pp = Object.entries(t.people).sort((a, b) => (a[0] === t.me ? -1 : b[0] === t.me ? 1 : (a[1].ts || 0) - (b[1].ts || 0)));
+  LS.add({ id, me: String(t.people[t.me].name || '').slice(0, 24), pp: pp.slice(0, 6).map(([, p]) => [String(p.col || '#888').slice(0, 9), String(p.name || '?').trim().charAt(0).toUpperCase()]), pn: pp.length }); }
 function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); maybeTour(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
 // Gerät gehört (noch) nicht dazu: mit gemerktem Link zum Beitritt, sonst um den Link bitten
 function needJoin(t) { t.off.forEach(f => f()); t.off = []; const l = LS.one(t.id); if (l && l.tok) { T = null; go('#/e/' + t.id + '/' + l.tok); } else { t.st = 'nolink'; draw(); } }
@@ -1044,9 +1075,9 @@ function draw(force) {
   else if (view.n === 'edit') { h = editHTML(); back = 1; }
   else if (view.n === 'info') { h = infoPageHTML(); back = 1; }
   else { h = tripHTML(); back = 1; more = true; }
-  A.className = (back ? 'nav' : '') + (inTrip ? ' tabs wash' : view.n !== 'home' && view.n !== 'new' && view.n !== 'join' && T && T.st === 'load' ? ' wash' : '');
+  A.className = (back ? 'nav' : '') + (view.n === 'home' && homeHero() ? ' wash home' : '') + (inTrip ? ' tabs wash' : view.n !== 'home' && view.n !== 'new' && view.n !== 'join' && T && T.st === 'load' ? ' wash' : '');
   // Akzentfarbe folgt der Stimmung der Reise (Startseite: Meer)
-  document.documentElement.dataset.m = moodOf(view.n === 'new' ? Wz.mood : view.n === 'join' ? (J && J.info && J.info.mood) : T && T.info ? T.info.mood : T ? (LS.one(T.id) || {}).mood : '');
+  document.documentElement.dataset.m = moodOf(view.n === 'home' ? (homeHero() || {}).mood : view.n === 'new' ? Wz.mood : view.n === 'join' ? (J && J.info && J.info.mood) : T && T.info ? T.info.mood : T ? (LS.one(T.id) || {}).mood : '');
   A.innerHTML = h;
   $('back').hidden = !back; $('more').hidden = !more; $('tbar').hidden = !inTrip;
   if (fresh && !calm() && !navBusy) { A.classList.remove('fade'); void A.offsetWidth; A.classList.add('fade'); }
@@ -1059,17 +1090,38 @@ function draw(force) {
 }
 document.addEventListener('focusout', () => setTimeout(() => { if (pending && !inField()) draw(); }, 60));
 
+// Stand einer Reise für die Startseite: 'now' unterwegs, 'soon' noch vor ihr, 'past' vorbei, 'open' ohne Zeitraum
+function tripWhen(t) { if (!DAY_OK(t.from)) return { k: 'open', d: Infinity, txt: '' };
+  const n = D(today()), a = D(t.from), b = D(DAY_OK(t.to) ? t.to : t.from), d = Math.round((a - n) / 864e5), len = Math.round((b - a) / 864e5) + 1;
+  if (d > 0) return { k: 'soon', d, txt: d === 1 ? 'morgen' : 'in\u00a0' + d + '\u00a0Tagen' };
+  if (n <= b) return { k: 'now', d, txt: len > 1 ? 'unterwegs · Tag ' + (1 - d) + ' von ' + len : 'heute' };
+  return { k: 'past', d: -Math.round((n - b) / 864e5), txt: '' }; }
+const homeHero = () => CFG ? heroOf(LS.get()) : null;   // Startseite nimmt Schimmer und Akzent der nächsten Reise
+function heroOf(l) { const w = l.map(t => [t, tripWhen(t)]), now = w.filter(x => x[1].k === 'now'), soon = w.filter(x => x[1].k === 'soon').sort((a, b) => a[1].d - b[1].d);
+  return (now[0] || soon[0] || [])[0] || null; }
+function greeting(l) { const h = new Date().getHours(), g = h >= 5 && h < 11 ? 'Guten Morgen' : h >= 11 && h < 17 ? 'Hallo' : 'Guten Abend';
+  const names = l.map(t => t.me).filter(Boolean), me = names.length && names.every(n => n === names[0]) ? names[0] : '';   // nur, wenn der Name überall gleich ist
+  return g + (me ? ', ' + me : ''); }
+function homeRow(t) { const w = tripWhen(t), sub = [w.k === 'open' ? '' : range(t.from, t.to), w.txt].filter(Boolean).join(' · ') || 'Zeitraum noch offen';
+  return `<div class="row" data-id="${esc(t.id)}"><button class="rowb lq" type="button" data-a="open"><span class="mchip" style="background:${moodG(t.mood)}">${micon(t.mood)}</span><span class="gr">${esc(t.name || 'Reise')}<small>${esc(sub)}</small></span><span class="gl"></span></button><button class="dots lq" type="button" aria-label="Mehr zu ${esc(t.name || 'Reise')}" data-menu="home">${DOTS}<span class="gl"></span></button></div>`; }
+function heroHTML(t) { const cd = countdown({ from: t.from, to: DAY_OK(t.to) ? t.to : t.from }), dest = Array.isArray(t.dest) ? t.dest.filter(x => typeof x === 'string') : [], pp = Array.isArray(t.pp) ? t.pp.filter(x => Array.isArray(x)) : [];
+  const sub = range(t.from, t.to) + (t.pn > 1 ? ' · ' + t.pn + '\u00a0Mitreisende' : '');
+  return `<div class="hero" data-id="${esc(t.id)}" style="--hg:${moodG(t.mood)}"><button class="rowb lq heroB" type="button" data-a="open"><span class="hmi">${micon(t.mood)}</span>${cd ? `<span class="cd">${esc(cd)}</span>` : ''}<b class="hn">${esc(t.name || 'Reise')}</b><span class="hs">${esc(sub)}</span>${dest.length ? `<span class="hs">${esc(dest.join(' → '))}</span>` : ''}${pp.length > 1 ? `<span class="av">${pp.slice(0, 6).map(p => `<i style="background:${esc(p[0])}">${esc(String(p[1] || '?').charAt(0))}</i>`).join('')}</span>` : ''}</button><button class="dots lq" type="button" aria-label="Mehr zu ${esc(t.name || 'Reise')}" data-menu="home">${DOTS}<span class="gl"></span></button></div>`; }
 function homeHTML() { const l = LS.get();
-  let h = `<div class="hd"><div class="wm">outbndr<i>.</i></div><p class="sub">Meine Reisen</p></div>`;
+  let h = `<div class="hd"><div class="wm">outbndr<i>.</i></div>${l.length ? `<p class="greet">${esc(greeting(l))}</p>` : '<p class="sub">Meine Reisen</p>'}</div>`;
   if (!CFG) h += `<div class="card"><div class="empty"><b>Noch nicht eingerichtet</b>Die Datenbank von outbndr fehlt noch. Sobald sie verbunden ist, lassen sich hier Reisen planen.</div></div>`;
   else {
-    h += l.length ? '<div class="rows">' + l.map(t => `<div class="row" data-id="${esc(t.id)}"><button class="rowb lq" type="button" data-a="open"><span class="mchip" style="background:${moodG(t.mood)}"></span><span class="gr">${esc(t.name || 'Reise')}<small>${esc(range(t.from, t.to))}</small></span><span class="gl"></span></button><button class="dots lq" type="button" aria-label="Mehr zu ${esc(t.name || 'Reise')}" data-menu="home">${DOTS}<span class="gl"></span></button></div>`).join('') + '</div>'
-      : `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Plan eine neue Reise oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Plan eine neue Reise oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
+    if (l.length) { const hero = heroOf(l), rest = l.filter(t => t !== hero), w = t => tripWhen(t);
+      const up = rest.filter(t => w(t).k !== 'past').sort((a, b) => w(a).d - w(b).d), past = rest.filter(t => w(t).k === 'past').sort((a, b) => w(b).d - w(a).d);
+      if (hero) h += `<h2 class="hsec">${tripWhen(hero).k === 'now' ? 'Gerade unterwegs' : 'Als Nächstes'}</h2>` + heroHTML(hero);
+      if (up.length) h += `<h2 class="hsec">${hero ? 'Weitere Reisen' : 'Meine Reisen'}</h2><div class="rows">` + up.map(homeRow).join('') + '</div>';
+      if (past.length) h += `<h2 class="hsec">Schon erlebt</h2><div class="rows">` + past.map(homeRow).join('') + '</div>';
+    }
+    else h += `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Plan eine neue Reise oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Plan eine neue Reise oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
     if (IOSWEB && !store.get('outbndr.apphide', false)) { h = h.replace('</p></div>', '</p></div>' + appCardHTML('home')); if (l.length) setTimeout(prepCarry, 0); }
     h += `<div class="btns"><button class="btn lq" type="button" data-a="new">${SY.plus}<span>Reise planen</span><span class="gl"></span></button>`;
     h += pasteOpen ? `</div><div class="form" style="margin-top:14px"><label class="fl" for="pl">Einladungs-Link</label><input class="fi" id="pl" data-k="paste" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="Link hier einfügen" value="${esc(pasteVal)}">${pasteErr ? `<p class="err">${esc(pasteErr)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="pasteX">Abbrechen</button><button class="btn s" type="button" data-a="pasteGo">Öffnen</button></div></div>`
       : `<button class="btn g lq" type="button" data-a="paste">${SY.link}<span>${APP ? 'Link einfügen' : 'Einladungs-Link einfügen'}</span><span class="gl"></span></button></div>`;
-    h += `<p class="hint c">Hier stehen die Reisen, bei denen du auf diesem Gerät dabei bist.</p>`;
   }
   return h; }
 
