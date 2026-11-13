@@ -861,7 +861,7 @@ function closeTrip() { if (T) { T.off.forEach(f => f()); T = null; cmOpen.clear(
 async function openTrip(id) {
   if (T && T.id === id) return; closeTrip(); tab = 'act'; foodView = 'sug';   // jede Reise öffnet mit Aktivitäten
   const t = T = { id, t0: Date.now(), st: 'load', me: null, info: null, people: null, acts: null, sig: null, costs: null, gen: {}, tok: null, toks: [], off: [] };
-  [8100, 20100].forEach(ms => setTimeout(() => { if (T === t && t.st === 'load') draw(); }, ms));
+  [8100, 20100].forEach(ms => setTimeout(() => { if (T === t && t.st === 'load') draw(); }, ms)); setTimeout(() => { if (T === t) selfHeal(t); }, 6000);
   if (!db) return;
   try { t.stage = 'Anmeldung'; await ready; t.stage = 'Mitgliedschaft'; const m = await getDoc(tdoc(id, 'members', uid)); if (T !== t) return; t.stage = 'Daten';
     if (!m.exists() || !m.data().pid) return needJoin(t);
@@ -876,6 +876,10 @@ async function openTrip(id) {
     t.off.push(onSnapshot(tcol(id, 'invites'), s => { t.toks = []; s.forEach(d => t.toks.push({ id: d.id, ts: d.data().ts || 0 })); t.toks.sort((a, b) => b.ts - a.ts); t.tok = t.toks[0] && t.toks[0].id; if (t.tok) LS.add({ id, tok: t.tok }); }, () => {}));
   } catch (e) { if (T !== t) return; if (denied(e)) needJoin(t); else { console.error(e); t.st = 'err'; draw(); } }
 }
+// Hängt das Laden trotz Netz (iPhone: Verbindung zur Datenbank bleibt nach dem Aufwachen manchmal stehen, Neuladen hilft sofort; Lars 13.11.2026):
+// nach 6 s einmal selbst neu laden, höchstens alle 2 Minuten, damit nichts im Kreis lädt
+function selfHeal(o) { if (o.st !== 'load' || offline() || document.hidden) return; let last = 0; try { last = +sessionStorage.getItem('outbndr.rl') || 0; } catch (e) {}
+  if (Date.now() - last < 12e4) return; try { sessionStorage.setItem('outbndr.rl', String(Date.now())); } catch (e) { return; } location.reload(); }
 function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); maybeTour(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
 // Gerät gehört (noch) nicht dazu: mit gemerktem Link zum Beitritt, sonst um den Link bitten
 function needJoin(t) { t.off.forEach(f => f()); t.off = []; const l = LS.one(t.id); if (l && l.tok) { T = null; go('#/e/' + t.id + '/' + l.tok); } else { t.st = 'nolink'; draw(); } }
@@ -889,7 +893,7 @@ function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'ac
 async function startJoin(t, tok) {
   if (J && J.t === t && J.tok === tok && J.st !== 'bad' && J.st !== 'err') return;
   const j = J = { t, t0: Date.now(), tok, st: 'load', info: null, people: {}, name: '', pin: '', col: '', err: '', busy: false };
-  [8100, 20100].forEach(ms => setTimeout(() => { if (J === j && j.st === 'load') draw(); }, ms));
+  [8100, 20100].forEach(ms => setTimeout(() => { if (J === j && j.st === 'load') draw(); }, ms)); setTimeout(() => { if (J === j) selfHeal(j); }, 6000);
   if (!db) return;
   try { j.stage = 'Anmeldung'; await ready; j.stage = 'Einladung';
     const mref = tdoc(t, 'members', uid); let m = await getDoc(mref);
@@ -1198,7 +1202,7 @@ function tripSkel() { const l = T && LS.one(T.id), card = n => `<div class="skc 
     ${slowHTML(T)}<div class="skc shim" style="margin-bottom:14px;padding:16px 18px"><span class="skl" style="width:34%;height:17px"></span><span class="skl" style="width:62%"></span></div><div class="skc shim" style="height:50px;border-radius:999px;margin-bottom:14px;padding:0"></div><div class="list">${card(1)}${card(0)}${card(1)}</div>`; }
 // dauert es länger als 8 Sekunden: Hinweis mit „Nochmal“; nach 20 Sekunden deutlicher
 function slowHTML(o) { if (!o || !o.t0) return ''; const s = Date.now() - o.t0; if (s < 8000) return '';
-  return `<div class="slow" role="status"><span class="gr"><b>${s < 20000 ? 'Dauert etwas länger' : 'Keine Verbindung zur Datenbank'}</b>${navigator.onLine === false ? 'Das Gerät ist offline.' : s < 20000 ? 'Die Verbindung ist gerade langsam.' : 'Bitte Verbindung prüfen.'}${o.stage && s >= 20000 ? `<small style="display:block;font-size:12px;opacity:.7;margin-top:2px">Hängt bei: ${esc(o.stage)}</small>` : ''}</span><button class="btn g s lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button></div>`; }
+  return `<div class="slow" role="status"><span class="gr"><b>${s < 20000 ? 'Dauert etwas länger' : 'Keine Verbindung zur Datenbank'}</b>${navigator.onLine === false ? 'Das Gerät ist offline.' : s < 20000 ? 'Die Verbindung ist gerade langsam.' : 'Bitte Verbindung prüfen.'}${o.stage ? `<small style="display:block;font-size:12px;opacity:.7;margin-top:2px">Hängt bei: ${esc(o.stage)}</small>` : ''}</span><button class="btn g s lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button></div>`; }
 function headHTML() { const n = Object.keys(T.people).length, cd = countdown(T.info), pp = Object.entries(T.people).sort((a, b) => (b[0] === T.me) - (a[0] === T.me) || (a[1].ts || 0) - (b[1].ts || 0));
   return `<div class="hd w">${cd ? `<span class="cd">${esc(cd)}</span>` : ''}<h1>${esc(T.info.name)}</h1><p class="sub">${esc(range(T.info.from, T.info.to))} · ${n === 1 ? 'bisher nur du' : n + ' Mitreisende'}</p>${avs(pp.map(x => x[0]), 7)}</div>`; }
 /* ---------- Kurze Tour beim ersten Öffnen einer Reise auf diesem Gerät (outbndr.tour), später über ⋯ „Kurze Tour“ ---------- */
