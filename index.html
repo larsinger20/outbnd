@@ -607,7 +607,7 @@ a.gl2 .chv,button.gl2 .chv{margin-left:auto}
 .hinfo{display:flex;align-items:center;gap:10px;width:100%;margin-top:16px;padding:10px 12px 10px 14px;min-height:48px;border-radius:16px;color:#fff;text-align:left;font-size:15px;background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18)}
 .hinfo svg{width:22px;height:22px;flex:none;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .hinfo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hinfo em{font-style:normal;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85)}.hinfo span{font-weight:600}
+.hinfo em{display:flex;align-items:center;gap:5px;font-style:normal;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85)}.hinfo span{font-weight:600}.hinfo em svg{width:20px;height:20px;stroke:rgba(255,255,255,.85)}
 .hinfo .chv{width:8px;height:13px;stroke:rgba(255,255,255,.75);stroke-width:2.2}
 /* Variante C: Plus rund neben der Reiter-Leiste, Karte oben neben ⋯ (wie iOS 26) */
 .nb.r2{right:calc(max(16px,env(safe-area-inset-right,0px),calc((100vw - 560px) / 2 + 16px)) + 54px)}
@@ -1214,8 +1214,8 @@ function infoParts() { const st = stops(); return { st, geo: st.filter(s => type
 // Auf der Reiseseite: eine Zeile mit Pfeil (wie in den Einstellungen), die zur Reise-Info führt
 function infoHTML() { const { st, geo, stays, tr } = infoParts();
   if (LAY !== 'A') { if (!geo.length && !stays.length && !tr.length) return isAdmin() ? `<button class="hinfo lq" type="button" data-a="edit">${SY.pin}<span>Ziel, Unterkunft, Anreise ergänzen</span>${CHR}<span class="gl"></span></button>` : '';
-    let ic = SY.pin, tmp = ''; if (geo.length) { const w = wxFor(geo[0]); if (w.cur) { ic = wxIcon(w.cur.c, ''); tmp = `<em>${esc(w.cur.t)}°</em>`; } }   // nur Hinweis auf die Seite, Einzelheiten stehen dort (Lars 13.11.2026: lange Namen sahen unruhig aus)
-    return `<button class="hinfo lq" type="button" data-a="infopage">${ic}<span>Reise-Info</span>${tmp}${CHR}<span class="gl"></span></button>`; }
+    let tmp = ''; if (geo.length) { const w = wxFor(geo[0]); if (w.cur) tmp = `<em>${wxIcon(w.cur.c, '')}${esc(w.cur.t)}°</em>`; }   // Wetter rechts beisammen (Symbol + Temperatur)   // nur Hinweis auf die Seite, Einzelheiten stehen dort (Lars 13.11.2026: lange Namen sahen unruhig aus)
+    return `<button class="hinfo lq" type="button" data-a="infopage">${SY.pin}<span>Reise-Info</span>${tmp}${CHR}<span class="gl"></span></button>`; }
   if (!geo.length && !stays.length && !tr.length) return isAdmin() ? `<button class="navrow lq" type="button" data-a="edit"><span class="ic">${SY.pin}</span><span class="gr"><b>Reise-Info ergänzen</b><small style="white-space:normal">Ziel, Unterkunft, Anreise – daraus kommen Wetter und Karte</small></span>${CHR}<span class="gl"></span></button>` : '';
   let sum = [], ic = SY.pin; if (geo.length) { const w = wxFor(geo[0]); if (w.cur) { sum.push(w.cur.t + '° ' + geo[0].name); ic = wxIcon(w.cur.c, ''); } else sum.push(geo[0].name); if (st.length > 1) sum[0] += ' + ' + (st.length - 1); }
   if (stays.length) sum.push(stays[0].stay.name || 'Unterkunft'); if (tr.length) sum.push(KIND[tr[0].kind] ? KIND[tr[0].kind][0] : tr[0].title);
