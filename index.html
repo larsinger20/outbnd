@@ -391,11 +391,7 @@ main.rcl.mst{animation:none}
 /* Auswahlchips (Personen, Filter) */
 .ch.pp button{display:inline-flex;align-items:center;gap:6px;padding:6px 14px 6px 6px}
 .ch.pp button i{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:600;color:#fff}
-.filt{display:flex;gap:8px;overflow-x:auto;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px))) 14px;padding:0 max(16px,env(safe-area-inset-left,0px));scrollbar-width:none}
-.filt::-webkit-scrollbar{display:none}
-.stopseg button{min-width:0}.stopseg button span{display:block;overflow:hidden;text-overflow:ellipsis}
-.filt button{flex:none;padding:8px 16px;min-height:40px;border-radius:999px;background:var(--card);color:var(--ac);font-size:15px;font-weight:600}
-.filt button.on{background:var(--acb);color:#fff}
+
 /* Neu, Erledigt */
 .nw{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;background:var(--acb);color:#fff;font-size:12px;font-weight:600;vertical-align:3px;font-family:var(--font)}
 .card.done .c>*:not(.th):not(.ft){opacity:.62}
@@ -460,6 +456,12 @@ main.rcl.mst{animation:none}
 .card.hl{animation:hl 1.6s ease-out}
 @keyframes hl{0%,30%{box-shadow:0 0 0 3px var(--ac)}100%{box-shadow:0 0 0 3px transparent}}
 /* Zeile mit Vorschlagen + Karte */
+.zrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-2px 0 12px}
+.zrow small{font-size:15px;color:var(--mu);min-width:0}
+.zsel{display:inline-flex;align-items:center;gap:6px;min-height:36px;max-width:65%;margin-left:auto;padding:0 14px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:15px;font-weight:600}
+main.wash .zsel{background:var(--card)}
+.zsel span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zsel svg{width:11px;height:7px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .addrow{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}
 .addrow .add{margin:0}
 .mapb{display:flex;align-items:center;justify-content:center;gap:6px;min-height:50px;padding:0 18px;border-radius:999px;background:var(--btn);color:var(--ac);font-size:17px;font-weight:600}
@@ -1184,9 +1186,10 @@ function listHTML(food) { const by = sigBy(), st = stops();
   const open = l.filter(a => !a.done), done = l.filter(a => a.done);
   open.sort(food ? (a, b) => ((by[b.id] || []).length - (by[a.id] || []).length) || (b.ts || 0) - (a.ts || 0) : (a, b) => (b.ts || 0) - (a.ts || 0));
   done.sort((a, b) => (b.done || 0) - (a.done || 0));
-  const fl = [['', 'Alle'], ...st.map(s => [s.id, s.name])], flb = fl.map(([k, n]) => `<button type="button" data-stopf="${esc(k)}" class="${stopF === k ? 'on' : ''}" aria-pressed="${stopF === k}"><span>${esc(n)}</span></button>`).join('');
-  let h = st.length < 2 ? '' : fl.length <= 4 ? `<div class="seg2 stopseg" data-seg="stop" role="group" aria-label="Ziel"><span class="ind2"></span>${flb}</div>` : `<div class="filt" role="group" aria-label="Ziel">${flb}</div>`;
-  h += F && F.id === 'new' ? formHTML() : `<div class="${areas().map ? 'addrow' : ''}"><button class="add lq" type="button" data-a="add">${SY.plus}<span>${food ? 'Essen vorschlagen' : 'Aktivität vorschlagen'}</span><span class="gl"></span></button>${areas().map ? `<button class="mapb lq" type="button" data-a="map" aria-label="Karte">${SY.map}<span class="gl"></span></button>` : ''}</div>`;
+  // Ziel-Filter als Auswahl-Knopf wie bei Apple (Wunsch Lars 13.11.2026: zwei Umschalter übereinander sahen seltsam aus)
+  const cur = stopF && st.find(s => s.id === stopF), zrow = st.length < 2 ? '' : `<div class="zrow">${open.length ? `<small>${open.length === 1 ? '1 Vorschlag' : open.length + ' Vorschläge'}</small>` : ''}<button class="zsel lq" type="button" data-menu="stop" aria-label="Ziel wählen: ${esc(cur ? cur.name : 'Alle Ziele')}"><span>${esc(cur ? cur.name : 'Alle Ziele')}</span>${CHEV}<span class="gl"></span></button></div>`;
+  let h = F && F.id === 'new' ? formHTML() : `<div class="${areas().map ? 'addrow' : ''}"><button class="add lq" type="button" data-a="add">${SY.plus}<span>${food ? 'Essen vorschlagen' : 'Aktivität vorschlagen'}</span><span class="gl"></span></button>${areas().map ? `<button class="mapb lq" type="button" data-a="map" aria-label="Karte">${SY.map}<span class="gl"></span></button>` : ''}</div>`;
+  h += zrow;
   // Favorit: beim Essen nur bei alleiniger Führung
   const v0 = open[0] && (by[open[0].id] || []).length, fav = food && open.length > 1 && v0 > 0 && v0 > ((by[open[1].id] || []).length) ? open[0].id : null;
   h += '<div class="list">' + (open.length ? open.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by).replace(fav === a.id ? '<p class="inf">' : '\u0000', '<p class="inf"><span style="color:var(--ac);font-weight:600">Favorit</span> · ')).join('')
@@ -1214,7 +1217,7 @@ function tourSteps() { const a = areas(), names = TABS.map(x => x[1]), list = na
     ['#app [data-a=add]', SY.plus, 'Selbst vorschlagen', 'Hier schlägst du eine Aktivität vor. Unter Essen geht das genauso mit Koch- und Restaurant-Ideen.'],
     ['#app .card[data-id]:not(.done) [data-a=go]', SY.join, 'Mitmachen', 'Mit „Ich bin dabei“ trägst du dich ein, beim Essen stimmst du mit dem Daumen ab. Nochmal tippen nimmt es zurück.'],
     ['#app .card[data-id] .dots', `<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></svg>`, 'Mehr zu jedem Vorschlag', 'Über ⋯ schreibst du Kommentare, trägst eine Reservierung oder eine Ausgabe ein und hakst Erledigtes ab.'],
-    ['#app .filt, #app .stopseg', SY.pin, 'Nach Ziel filtern', 'Bei mehreren Zielen zeigt die Liste hier nur, was zu einem Ziel passt.'],
+    ['#app .zsel', SY.pin, 'Nach Ziel filtern', 'Bei mehreren Zielen zeigt die Liste hier nur, was zu einem Ziel passt.'],
     ['#app [data-a=map]', SY.map, 'Alles auf der Karte', 'Hier siehst du alle Vorschläge mit Ort, die Unterkünfte und den Weg dorthin.'],
     ['#more', `<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></svg>`, 'Einladen und mehr', 'Oben rechts teilst du den Einladungs-Link, siehst die Mitreisenden und änderst dein Profil. Viel Spaß beim Planen!']]; }
 let tourOn = false, tourStep = 0, tourTimer = null, tourAnim = null, tourHole = null, tourBub = null, TS = [];
@@ -1538,8 +1541,7 @@ $('app').addEventListener('click', async e => {
   const cf = e.target.closest('[data-cfor]'); if (cf && Cf) { const i = Cf.for.indexOf(cf.dataset.cfor); i >= 0 ? Cf.for.splice(i, 1) : Cf.for.push(cf.dataset.cfor); draw(true); return; }
   const is = e.target.closest('[data-iseg]'); if (is) { if (infoSeg !== is.dataset.iseg) segSwitch(is, () => { infoSeg = is.dataset.iseg; }); return; }
   const fs = e.target.closest('[data-fseg]'); if (fs) { if (foodView !== fs.dataset.fseg) segSwitch(fs, () => { foodView = fs.dataset.fseg; F = null; }); return; }
-  const sf = e.target.closest('[data-stopf]'); if (sf) { if (stopF === sf.dataset.stopf) return; const ap = () => { stopF = sf.dataset.stopf; }; if (sf.closest('.seg2')) segSwitch(sf, ap, true); else { const sn = flipSnap(); ap(); draw(true); flipPlay(sn); } return; }
-  const d = e.target.closest('.dots'); if (d) { if (e.detail === 0) openMenu(d); return; }   // Tastatur; Finger/Maus siehe unten
+  const d = e.target.closest('.dots, .zsel'); if (d) { if (e.detail === 0) openMenu(d); return; }   // Tastatur; Finger/Maus siehe unten
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, card = b.closest('[data-id]'), id = card && card.dataset.id;
   if (a === 'home') return go('#/');
   if (a === 'open') return go('#/r/' + id);
@@ -1831,6 +1833,8 @@ function menuFor(btn) { const k = btn.dataset.menu;
     g[1].push(a.done ? [MP.back, 'Wieder offen', () => setDone(id, false)] : [MP.done, 'Als erledigt markieren', () => setDone(id, true)]);
     if (canEdit(a)) g.push([[MP.del, 'Löschen', () => delAct(id), 'dg']]);
     return g; }
+  if (k === 'stop') { const pick = v => () => { if (stopF === v) return; const sn = flipSnap(); stopF = v; draw(true); flipPlay(sn); }, ck = v => stopF === v ? '<path d="M5 12.5l4.2 4.2L19 7"/>' : '';
+    return [[[ck(''), 'Alle Ziele', pick('')]], stops().map(s => [ck(s.id), s.name, pick(s.id)])]; }
   if (k === 'person') { const pid = btn.closest('[data-pid]').dataset.pid, p = T.people[pid]; if (!p) return null;
     return [[[MP.star, p.admin ? 'Admin-Recht entziehen' : 'Zum Admin machen', async () => { if (!await ask({ t: p.admin ? `${p.name} das Admin-Recht entziehen?` : `${p.name} zum Admin machen?`, m: p.admin ? 'Danach kann die Person die Reise nicht mehr bearbeiten.' : 'Admins dürfen alle Vorschläge ändern, die Reise bearbeiten und weitere Admins bestimmen.', ok: p.admin ? 'Entziehen' : 'Zum Admin machen' })) return;
       try { await updateDoc(tdoc(T.id, 'people', pid), { admin: !p.admin }); toast(p.admin ? `${p.name} ist kein Admin mehr` : `${p.name} ist jetzt Admin`); } catch (e) { console.error(e); toast(FAIL); } }]],
@@ -2037,7 +2041,7 @@ function hl(b) { const M = menu; if (!M) return; if (M.hl && M.hl !== b) M.hl.cl
 function hlAt(x, y) { const el = document.elementFromPoint(x, y), b = el && el.closest && el.closest('.mn [data-mi]'); hl(b); }
 function pick(b) { const M = menu; if (!M || M.closing) return; b.classList.add('hl'); const x = M.flat[+b.dataset.mi]; setTimeout(() => { closeMenu(); if (x) x[2](); }, 110); }
 // ⋯ antippen öffnet; gedrückt halten öffnet auch, dann Finger auf einen Eintrag ziehen und loslassen = auswählen
-document.addEventListener('pointerdown', e => { const d = e.target.closest && e.target.closest('.dots'); if (!d || (menu && !menu.closing)) return;
+document.addEventListener('pointerdown', e => { const d = e.target.closest && e.target.closest('.dots, .zsel'); if (!d || (menu && !menu.closing)) return;
   hold = { d, x: e.clientX, y: e.clientY, open: false, t: setTimeout(() => { if (hold) { hold.open = true; openMenu(d); } }, 320) }; });
 document.addEventListener('pointermove', e => { if (!hold) return;
   if (!hold.open) { if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 10) { clearTimeout(hold.t); hold = null; } return; }
