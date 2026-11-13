@@ -1894,11 +1894,11 @@ function buildBar() { NT = TABS.length; trow.innerHTML = TABS.map(([k, n]) => `<
 let W = 347, tw = 84;
 // Uhr-App nachgemessen: Die vordere Kante der Lupe springt sofort zum neuen Reiter, die hintere schnappt ca. 45 ms später nach. Deshalb zwei Federn.
 const XL = new Spring(0, 1750, .86, .3), XR = new Spring(0, 1750, .86, .3), Lf = new Spring(0, 600, .72, .004);
-let trailT = 0;
-function aim(l, stretch) { clearTimeout(trailT); const r = l + tw, cur = (XL.x + XR.x) / 2, dir = l + tw / 2 > cur ? 1 : -1;
+let trailT = 0, aimL = 0;
+function aim(l, stretch) { clearTimeout(trailT); aimL = l; const r = l + tw, cur = (XL.x + XR.x) / 2, dir = l + tw / 2 > cur ? 1 : -1;
   if (stretch && Math.abs(l + tw / 2 - cur) > tw * .5 && !calm()) { const lead = dir > 0 ? XR : XL, trail = dir > 0 ? XL : XR;
-    lead.set(2600, .9); lead.t = dir > 0 ? r : l;
-    trailT = setTimeout(() => { trail.set(700, .74); trail.t = dir > 0 ? l : r; kick(); }, 45);
+    lead.set(3000, .9); lead.t = dir > 0 ? r : l;
+    trailT = setTimeout(() => { trail.set(8000, .95); trail.t = dir > 0 ? l : r; kick(); }, 70);   // Uhr-App (Video 13.11.2026): hintere Kante wartet ~70 ms, schnappt dann in 1–2 Bildern nach
   } else { XL.set(1750, .86); XR.set(1750, .86); XL.t = l; XR.t = r; }
   kick(); }
 // Breite: wie bei Apple richtet sie sich nach der Zahl der Reiter (bei 4 Reitern volle Breite wie in der Vorlage)
@@ -1932,7 +1932,7 @@ const glowAt = e => { const r = bar.getBoundingClientRect(); bar.style.setProper
 bar.addEventListener('pointerdown', e => {
   bar.setPointerCapture(e.pointerId); glowAt(e); bar.classList.add('down');
   const r = bar.getBoundingClientRect(); drag = { id: e.pointerId, x0: e.clientX, moved: false, left: r.left };
-  Lf.set(900, .95); Lf.t = .55; drag.l = follow(e.clientX); aim(drag.l, true); holdSoon();
+  Lf.set(3000, 1); Lf.t = 1; drag.l = follow(e.clientX); aim(drag.l, true); holdSoon();   // sofort klares Glas wie in der Uhr-App
 });
 let holdT = 0;
 function holdSoon() { clearTimeout(holdT); bar.classList.remove('held');
@@ -1942,8 +1942,8 @@ bar.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id)
   if (Math.abs(e.clientX - drag.x0) > 6) drag.moved = true; if (drag.moved) { const l = follow(e.clientX); if (Math.abs(l - drag.l) > 1.5) holdSoon(); drag.l = l; if (Lf.t < 1) { Lf.set(500, .9); Lf.t = 1; } aim(drag.l, false); } });
 function up(e) { if (!drag || e.pointerId !== drag.id) return; clearTimeout(holdT); bar.classList.remove('down', 'held');
   const i = Math.max(0, Math.min(NT - 1, Math.round(drag.l / tw))), moved = drag.moved;
-  drag = null; Lf.set(420, .95); if (moved || Math.abs((XL.t + XR.t) / 2 - (i * tw + tw / 2)) > 1) aim(i * tw, !moved); select(TABS[i][0]);
-  setTimeout(() => { if (!drag) { Lf.t = 0; kick(); } }, 90); }
+  drag = null; if (moved || Math.abs(aimL - i * tw) > 1) aim(i * tw, !moved); const k = TABS[i][0]; requestAnimationFrame(() => select(k));   // Seite erst nach dem nächsten Bild neu aufbauen, damit die Lupe ohne Stocken losgleitet
+  setTimeout(() => { if (!drag) { Lf.set(1400, 1); Lf.t = 0; kick(); } }, 150); }   // Glas bleibt kurz stehen, dann zurück zur Pille (Uhr-App ~0,13 s + 0,1 s)
 bar.addEventListener('pointerup', up); bar.addEventListener('pointercancel', up);
 trow.addEventListener('click', e => { if (e.detail !== 0) return; const b = e.target.closest('.tab'); if (!b) return; select(b.dataset.t); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); });   // Tastatur
 
