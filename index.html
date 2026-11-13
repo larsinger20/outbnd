@@ -597,7 +597,7 @@ html.kb #tbar,html.fo #tbar{opacity:0;pointer-events:none;translate:0 24px}#tbar
 </style>
 </head>
 <body>
-<main id="app"><div class="boot" role="status" aria-label="outbndr. lädt"><div class="wm">outbndr<i>.</i></div><p>Einen Moment, wir packen noch.</p><p>Die Verbindung ist gerade langsam.</p><button class="btn g s" type="button" onclick="location.reload()" style="width:auto">Neu laden</button></div></main>
+<main id="app"><div class="boot" role="status" aria-label="outbndr. lädt"><div class="wm">outbndr<i>.</i></div><p>Einen Moment, gleich geht’s los.</p><p>Die Verbindung ist gerade langsam.</p><button class="btn g s" type="button" onclick="location.reload()" style="width:auto">Neu laden</button></div></main>
 <button class="nb l lq" id="back" type="button" aria-label="Zurück" hidden><svg viewBox="0 0 24 24"><path d="M14.5 5 7.5 12l7 7"/></svg><span class="gl"></span></button>
 <button class="nb r dots lq" id="more" type="button" aria-label="Mehr" hidden><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg><span class="gl"></span></button>
 <div class="sedge" id="sedge" aria-hidden="true"></div><div class="ntitle" id="ntitle" aria-hidden="true"><span></span></div>
@@ -813,7 +813,7 @@ const SHAREIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5
 // Hinweis-Kachel in Safari: „Am besten als App“
 function appCardHTML(kind) { const n = LS.get().filter(t => t.tok).length;
   const step3 = kind === 'join' ? '<b>outbndr.</b> vom Home-Bildschirm öffnen und „Link einfügen“ tippen' : n ? '<b>outbndr.</b> vom Home-Bildschirm öffnen und „Link einfügen“ tippen' : '<b>outbndr.</b> ab jetzt vom Home-Bildschirm starten';
-  const first = kind === 'join' ? `<li><span class="n">1</span><span>Einladung kopieren</span></li>` : n ? `<li><span class="n">1</span><span>Unsere ${n === 1 ? 'Reise' : n + ' Reisen'} kopieren</span></li>` : '';
+  const first = kind === 'join' ? `<li><span class="n">1</span><span>Einladung kopieren</span></li>` : n ? `<li><span class="n">1</span><span>${n === 1 ? 'Reise' : n + ' Reisen'} kopieren</span></li>` : '';
   const k = first ? 1 : 0;
   return `<div class="card appc"><div class="c"><div class="appt"><b>Am besten als App</b>${kind === 'home' ? `<button class="x" type="button" data-a="apphide" aria-label="Hinweis ausblenden">${XS}</button>` : ''}</div>
     <p>Auf dem iPhone läuft outbndr vom Home-Bildschirm wie eine App. Die App hat einen eigenen Speicher, darum am besten gleich dort starten.</p>
@@ -1032,7 +1032,7 @@ function draw(force) {
   else if (view.n === 'new') { h = wizHTML(); back = Wz.step === WSTEPS.length - 1 ? null : 1; }
   else if (view.n === 'join') { h = joinHTML(); back = 1; }
   else if (!T || T.st === 'load') { h = tripSkel(); back = 1; }
-  else if (T.st !== 'ok') { h = `<div class="q"><h1>${T.st === 'gone' ? 'Diese Reise gibt es nicht mehr' : T.st === 'err' ? 'Keine Verbindung' : 'Einladungs-Link nötig'}</h1><p class="sub">${T.st === 'err' ? 'Wir erreichen die Datenbank gerade nicht. Bitte später nochmal versuchen.' : T.st === 'gone' ? 'Sie wurde gelöscht, oder wir gehören nicht mehr dazu.' : 'Auf diesem Gerät sind wir bei dieser Reise noch nicht dabei. Öffne den Einladungs-Link der Reise, dann geht es mit deinem Namen und deiner PIN weiter.'}</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`; back = 1; }
+  else if (T.st !== 'ok') { h = `<div class="q"><h1>${T.st === 'gone' ? 'Diese Reise gibt es nicht mehr' : T.st === 'err' ? 'Keine Verbindung' : 'Einladungs-Link nötig'}</h1><p class="sub">${T.st === 'err' ? 'Die Datenbank ist gerade nicht erreichbar. Bitte später nochmal versuchen.' : T.st === 'gone' ? 'Sie wurde gelöscht, oder du gehörst nicht mehr dazu.' : 'Auf diesem Gerät bist du bei dieser Reise noch nicht dabei. Öffne den Einladungs-Link der Reise, dann geht es mit deinem Namen und deiner PIN weiter.'}</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu meinen Reisen<span class="gl"></span></button></div></div>`; back = 1; }
   else if (view.n === 'people') { h = peopleHTML(); back = 1; }
   else if (view.n === 'profile') { h = profileHTML(); back = 1; }
   else if (view.n === 'mood') { h = moodHTML(); back = 1; }
@@ -1055,16 +1055,16 @@ function draw(force) {
 document.addEventListener('focusout', () => setTimeout(() => { if (pending && !inField()) draw(); }, 60));
 
 function homeHTML() { const l = LS.get();
-  let h = `<div class="hd"><div class="wm">outbndr<i>.</i></div><p class="sub">Unsere Reisen</p></div>`;
-  if (!CFG) h += `<div class="card"><div class="empty"><b>Noch nicht eingerichtet</b>Die Datenbank von outbndr fehlt noch. Sobald sie verbunden ist, können wir hier Reisen planen.</div></div>`;
+  let h = `<div class="hd"><div class="wm">outbndr<i>.</i></div><p class="sub">Meine Reisen</p></div>`;
+  if (!CFG) h += `<div class="card"><div class="empty"><b>Noch nicht eingerichtet</b>Die Datenbank von outbndr fehlt noch. Sobald sie verbunden ist, lassen sich hier Reisen planen.</div></div>`;
   else {
     h += l.length ? '<div class="rows">' + l.map(t => `<div class="row" data-id="${esc(t.id)}"><button class="rowb lq" type="button" data-a="open"><span class="mchip" style="background:${moodG(t.mood)}"></span><span class="gr">${esc(t.name || 'Reise')}<small>${esc(range(t.from, t.to))}</small></span><span class="gl"></span></button><button class="dots lq" type="button" aria-label="Mehr zu ${esc(t.name || 'Reise')}" data-menu="home">${DOTS}<span class="gl"></span></button></div>`).join('') + '</div>'
-      : `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Planen wir eine neue Reise, oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Planen wir eine neue Reise, oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
+      : `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Plan eine neue Reise oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Plan eine neue Reise oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
     if (IOSWEB && !store.get('outbndr.apphide', false)) { h = h.replace('</p></div>', '</p></div>' + appCardHTML('home')); if (l.length) setTimeout(prepCarry, 0); }
     h += `<div class="btns"><button class="btn lq" type="button" data-a="new">${SY.plus}<span>Reise planen</span><span class="gl"></span></button>`;
     h += pasteOpen ? `</div><div class="form" style="margin-top:14px"><label class="fl" for="pl">Einladungs-Link</label><input class="fi" id="pl" data-k="paste" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="Link hier einfügen" value="${esc(pasteVal)}"><div class="btns two"><button class="btn g s" type="button" data-a="pasteX">Abbrechen</button><button class="btn s" type="button" data-a="pasteGo">Öffnen</button></div></div>`
       : `<button class="btn g lq" type="button" data-a="paste">${SY.link}<span>${APP ? 'Link einfügen' : 'Einladungs-Link einfügen'}</span><span class="gl"></span></button></div>`;
-    h += `<p class="hint c">Hier stehen die Reisen, bei denen wir auf diesem Gerät dabei sind.</p>`;
+    h += `<p class="hint c">Hier stehen die Reisen, bei denen du auf diesem Gerät dabei bist.</p>`;
   }
   return h; }
 
@@ -1079,20 +1079,20 @@ const AREAS = [['food', 'Essen und Einkaufsliste', 'Kochen, Restaurants, gemeins
 const areasHTML = a => '<div class="rows form">' + AREAS.map(([k, t, s]) => `<button class="swr" type="button" data-area="${k}" role="switch" aria-checked="${!!a[k]}"><span class="gr">${t}<small>${s}</small></span><span class="sw${a[k] ? ' on' : ''}"></span></button>`).join('') + '</div>';
 const kindChips = (cur, attr) => '<div class="ch">' + Object.entries(KIND).map(([k, v]) => `<button type="button" ${attr}="${k}" class="${cur === k ? 'on' : ''}" aria-pressed="${cur === k}">${v[0]}</button>`).join('') + '</div>';
 function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="err">${esc(w.err)}</p>` : '', nx = (t = 'Weiter') => `<button class="btn lq" type="button" data-a="wnext">${t}<span class="gl"></span></button>`, sk = t => `<button class="btn g lq" type="button" data-a="wskip">${t}<span class="gl"></span></button>`, head = (t, sub) => `<div class="q">${stepsHTML(w.step)}<h1>${t}</h1><p class="sub">${sub}</p>`;
-  if (s === 'name') return head('Wie heißt unsere Reise?', 'Ein Name, an dem alle sie erkennen.') + `<input class="fi" data-k="wn" data-f="name" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="z. B. Kroatien 2027" value="${esc(w.name)}">${err}<div class="btns">${nx()}</div></div>`;
-  if (s === 'when') return head('Wann sind wir unterwegs?', 'Der Zeitraum lässt sich später ändern.') + `<div class="f2"><div><label class="fl" for="wf">Von</label><input class="fi" id="wf" data-k="wf" data-f="from" type="date" value="${esc(w.from)}"></div><div><label class="fl" for="wt">Bis</label><input class="fi" id="wt" data-k="wt" data-f="to" type="date" min="${esc(w.from)}" value="${esc(w.to)}"></div></div>${err}<div class="btns">${nx()}${sk('Steht noch nicht fest')}</div></div>`;
+  if (s === 'name') return head('Wie heißt die Reise?', 'Ein Name, an dem alle sie erkennen.') + `<input class="fi" data-k="wn" data-f="name" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="z. B. Kroatien 2027" value="${esc(w.name)}">${err}<div class="btns">${nx()}</div></div>`;
+  if (s === 'when') return head('Wann ist die Reise?', 'Der Zeitraum lässt sich später ändern.') + `<div class="f2"><div><label class="fl" for="wf">Von</label><input class="fi" id="wf" data-k="wf" data-f="from" type="date" value="${esc(w.from)}"></div><div><label class="fl" for="wt">Bis</label><input class="fi" id="wt" data-k="wt" data-f="to" type="date" min="${esc(w.from)}" value="${esc(w.to)}"></div></div>${err}<div class="btns">${nx()}${sk('Steht noch nicht fest')}</div></div>`;
   if (s === 'where') return head('Wohin geht es?', 'Ein Ziel oder mehrere Stopps, zum Beispiel für einen Roadtrip. Daraus kommen Wetter und Karte.') + `${placeHTML('wstop', w.q || '', w.stops.length ? 'Weiteren Stopp suchen' : 'Ort suchen, z. B. Split')}<div class="chipl">${w.stops.map(x => `<span class="chipx">${esc(x.name)}<button type="button" data-a="wstopx" data-sid="${esc(x.id)}" aria-label="${esc(x.name)} entfernen">${XS}</button></span>`).join('')}</div>${err}<div class="btns">${w.stops.length ? nx() : ''}${sk(w.stops.length ? 'Ohne weitere Stopps' : 'Später ergänzen')}</div></div>`;
-  if (s === 'stay') return head('Wo schlafen wir?', 'Unterkunft mit Link (z. B. Airbnb). Lässt sich später ergänzen.') + w.stops.map(x => `<div class="form" style="margin-bottom:10px">${w.stops.length > 1 ? `<h3>${esc(x.name)}</h3>` : ''}<label class="fl">Unterkunft</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="name" data-k="wsn-${esc(x.id)}" maxlength="80" placeholder="z. B. Villa Sole" value="${esc((x.stay || {}).name || '')}"><label class="fl">Link (wenn du magst)</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="link" data-k="wsl-${esc(x.id)}" inputmode="url" autocapitalize="off" placeholder="airbnb.de/…" value="${esc((x.stay || {}).link || '')}"></div>`).join('') + `${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
-  if (s === 'travel') return head('Wie reisen wir an?', 'Details wie Flugnummern lassen sich später ergänzen.') + kindChips(w.travel, 'data-wkind') + `<label class="fl" for="wtn">Notiz (wenn du magst)</label><input class="fi" id="wtn" data-k="wtn" data-f="tnote" maxlength="200" placeholder="z. B. Flug LH 1234 am 10.7." value="${esc(w.tnote)}">${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
-  if (s === 'areas') return head('Was brauchen wir?', 'Aktivitäten sind immer dabei. Der Rest lässt sich später umstellen.') + areasHTML(w.areas) + `<div class="btns">${nx()}</div></div>`;
-  if (s === 'mood') return head('Welche Stimmung passt?', 'Sie färbt unsere Reise ein und lässt sich später ändern.') + moodsHTML(w.mood) + `<div class="btns">${nx()}</div></div>`;
+  if (s === 'stay') return head('Wo ist die Unterkunft?', 'Unterkunft mit Link (z. B. Airbnb). Lässt sich später ergänzen.') + w.stops.map(x => `<div class="form" style="margin-bottom:10px">${w.stops.length > 1 ? `<h3>${esc(x.name)}</h3>` : ''}<label class="fl">Unterkunft</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="name" data-k="wsn-${esc(x.id)}" maxlength="80" placeholder="z. B. Villa Sole" value="${esc((x.stay || {}).name || '')}"><label class="fl">Link (wenn du magst)</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="link" data-k="wsl-${esc(x.id)}" inputmode="url" autocapitalize="off" placeholder="airbnb.de/…" value="${esc((x.stay || {}).link || '')}"></div>`).join('') + `${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
+  if (s === 'travel') return head('Wie ist die Anreise?', 'Details wie Flugnummern lassen sich später ergänzen.') + kindChips(w.travel, 'data-wkind') + `<label class="fl" for="wtn">Notiz (wenn du magst)</label><input class="fi" id="wtn" data-k="wtn" data-f="tnote" maxlength="200" placeholder="z. B. Flug LH 1234 am 10.7." value="${esc(w.tnote)}">${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
+  if (s === 'areas') return head('Was soll dabei sein?', 'Aktivitäten sind immer dabei. Der Rest lässt sich später umstellen.') + areasHTML(w.areas) + `<div class="btns">${nx()}</div></div>`;
+  if (s === 'mood') return head('Welche Stimmung passt?', 'Sie färbt die Reise ein und lässt sich später ändern.') + moodsHTML(w.mood) + `<div class="btns">${nx()}</div></div>`;
   if (s === 'who') return head('Wer bist du?', 'Mit Name und PIN kommst du auch auf einem anderen Gerät wieder in die Reise.') + whoHTML(w, {}, 'w') + `${err}<div class="btns"><button class="btn lq" type="button" data-a="wcreate"${w.busy ? ' disabled' : ''}>${w.busy ? 'Einen Moment …' : 'Reise anlegen'}<span class="gl"></span></button></div></div>`;
   return `<div class="q">${stepsHTML(WSTEPS.length)}<h1>Lade die anderen ein</h1><p class="sub">Wer diesen Link öffnet, kann bei „${esc(w.name.trim())}“ mitplanen. Schick ihn nur an Leute, die mitkommen.</p><div class="linkbox">${esc(inviteUrl(w.t, w.tok))}</div><div class="btns"><button class="btn lq" type="button" data-a="wshare">${SY.share}<span>Einladungs-Link teilen</span><span class="gl"></span></button><button class="btn g lq" type="button" data-a="wdone">Zur Reise<span class="gl"></span></button></div></div>`; }
 
 function joinHTML() { const j = J;
   if (!CFG) return `<div class="q"><h1>Noch nicht eingerichtet</h1><p class="sub">Die Datenbank von outbndr fehlt noch.</p></div>`;
   if (!j || j.st === 'load') return `<div class="q">${slowHTML(j)}<div class="shim" style="border-radius:12px"><span class="skl" style="width:40%"></span><span class="skl t" style="margin-top:14px;height:34px;width:80%"></span><span class="skl" style="width:55%;margin-top:12px"></span></div><div class="skc shim" style="margin-top:22px"><span class="skl" style="width:30%"></span><span class="skl" style="height:46px;border-radius:14px"></span><span class="skl" style="width:30%;margin-top:16px"></span><span class="skl" style="height:46px;border-radius:14px"></span></div></div>`;
-  if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu unseren Reisen<span class="gl"></span></button></div></div>`;
+  if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu meinen Reisen<span class="gl"></span></button></div></div>`;
   const n = Object.keys(j.people).length;
   const known = !!(LS.one(j.t) || {}).re;
   return `<div class="q"><p class="sub" style="margin:0 0 4px">${known ? 'Auf diesem Gerät anmelden' : 'Einladung zur Reise'}</p><h1>${esc(j.info.name)}</h1><p class="sub">${esc(range(j.info.from, j.info.to))} · ${n === 1 ? '1 Person ist' : n + ' Leute sind'} schon dabei</p>
@@ -1130,20 +1130,20 @@ const TCOL = [[-10, '#5e5ce6'], [0, '#0a84ff'], [8, '#40c8e0'], [14, '#34c759'],
 function tempCol(t) { if (t <= TCOL[0][0]) return TCOL[0][1]; for (let i = 1; i < TCOL.length; i++) if (t <= TCOL[i][0]) return TCOL[i][1]; return TCOL[TCOL.length - 1][1]; }
 function wxHTML(s, multi) { const w = wxFor(s), a = s.from || T.info.from || '', b = s.to || (s.from ? s.from : T.info.to) || a;
   let h = `<p class="sec">${esc(s.name)}${s.from ? ' · ' + esc(shortRange(s.from, s.to)) : ''}</p><div class="card wxc"><div class="c">`;
-  if (w.st !== 'ok') return h + (w.st === 'err' ? '<p class="muted" style="padding-bottom:14px">Wetter gerade nicht erreichbar. Wir versuchen es gleich nochmal.</p>' : '<div class="shim" aria-label="Wetter lädt" style="padding-bottom:12px"><span class="skl t" style="width:40%;height:44px"></span><span class="skl" style="margin-top:16px"></span><span class="skl" style="margin-top:22px"></span><span class="skl" style="margin-top:22px"></span></div>') + '</div></div>';
+  if (w.st !== 'ok') return h + (w.st === 'err' ? '<p class="muted" style="padding-bottom:14px">Wetter gerade nicht erreichbar. Neuer Versuch gleich.</p>' : '<div class="shim" aria-label="Wetter lädt" style="padding-bottom:12px"><span class="skl t" style="width:40%;height:44px"></span><span class="skl" style="margin-top:16px"></span><span class="skl" style="margin-top:22px"></span><span class="skl" style="margin-top:22px"></span></div>') + '</div></div>';
   const last = w.days.length ? w.days[w.days.length - 1].d : '', ours = a ? w.days.filter(d => d.d >= a && d.d <= b && d.d >= today()) : [], over = a && b < today();
   const show = ours.length ? ours : over ? [] : w.days.slice(0, 7), td = w.days.find(d => d.d === today());
   if (w.cur) h += `<div class="wxn">${wxIcon(w.cur.c)}<b>${w.cur.t}°</b><div class="gr"><span>${esc(WCODE(w.cur.c)[0])}</span>${td ? `H: ${td.hi}° · T: ${td.lo}°` : 'jetzt'}</div></div>`;
   if (show.length) { const mn = Math.min(...show.map(d => d.lo)), mx = Math.max(...show.map(d => d.hi)), sp = Math.max(1, mx - mn);
     h += show.map(d => { const l = (d.lo - mn) / sp * 100, r = (d.hi - mn) / sp * 100, now = d.d === today() && w.cur ? Math.min(100, Math.max(0, (w.cur.t - mn) / sp * 100)) : null;
       return `<div class="wxr"><span class="wd"><b>${d.d === today() ? 'Heute' : esc(fmt(D(d.d), { weekday: 'short' }).replace('.', ''))}</b><small>${D(d.d).getDate()}.${D(d.d).getMonth() + 1}.</small></span><span class="wic">${wxIcon(d.c)}${d.p != null && d.p >= 30 ? `<small>${d.p}%</small>` : ''}</span><span class="wlo">${d.lo}°</span><span class="wbar"><i style="left:${l.toFixed(1)}%;width:${Math.max(4, r - l).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(d.lo)},${tempCol(d.hi)})"></i>${now != null ? `<b style="left:${now.toFixed(1)}%"></b>` : ''}</span><span class="whi">${d.hi}°</span></div>`; }).join('');
-    h += `<p class="wxh">${ours.length ? (today() >= a && today() <= b ? 'Unsere restlichen Tage dort' : 'Unsere Tage dort') : 'Die nächsten Tage'}${a && !ours.length && !over && last && a > last ? ` · für unsere Tage ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}` : ''}</p>`; }
+    h += `<p class="wxh">${ours.length ? (today() >= a && today() <= b ? 'Restliche Tage dort' : 'Reisetage dort') : 'Die nächsten Tage'}${a && !ours.length && !over && last && a > last ? ` · für die Reisetage ab ${esc(dayLong(iso(new Date(D(a).getTime() - 15 * 864e5))))}` : ''}</p>`; }
   return h + '</div></div>'; }
 
 /* ---------- Vorschläge ---------- */
 function formHTML() { const f = F, food = f.cat === 'food', days = tripDays(T.info), st = stops();
   return `<div class="form" id="form"><h3>${f.id === 'new' ? (food ? 'Neues Essen' : 'Neue Aktivität') : 'Vorschlag bearbeiten'}</h3>
-    <label class="fl" for="ft">${food ? 'Was essen wir?' : 'Was machen wir?'}</label><input class="fi" id="ft" data-k="ft" data-f="title" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="${food ? 'z. B. Grillabend' : 'z. B. Bootstour'}" value="${esc(f.title)}">
+    <label class="fl" for="ft">${food ? 'Was gibt’s zu essen?' : 'Was steht an?'}</label><input class="fi" id="ft" data-k="ft" data-f="title" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="${food ? 'z. B. Grillabend' : 'z. B. Bootstour'}" value="${esc(f.title)}">
     <label class="fl" for="fd">Beschreibung (wenn du magst)</label><textarea class="fi" id="fd" data-k="fd" data-f="desc" maxlength="2000" placeholder="Infos, Preis, Link …">${esc(f.desc)}</textarea>
     ${food ? `<span class="fl">Art</span><div class="ch">${[['cook', 'Kochen'], ['rest', 'Restaurant']].map(k => `<button type="button" data-kind="${k[0]}" class="${f.kind === k[0] ? 'on' : ''}" aria-pressed="${f.kind === k[0]}">${k[1]}</button>`).join('')}</div>` : ''}
     <label class="fl">Ort (wenn du magst)</label>${placeHTML('fplace', f.pq ?? (f.place ? f.place.name : ''), food ? 'z. B. Restaurant suchen' : 'Ort suchen')}${f.place && f.place.lat != null ? `<p class="hint" style="margin-top:6px">${SY.pin.replace('<svg', '<svg style="width:13px;height:13px;vertical-align:-2px;fill:none;stroke:var(--ac);stroke-width:2"')} Auf der Karte: ${esc(f.place.name)}${f.place.addr ? ', ' + esc(f.place.addr) : ''}</p>` : ''}
@@ -1180,7 +1180,7 @@ function listHTML(food) { const by = sigBy(), st = stops();
   // Favorit: beim Essen nur bei alleiniger Führung
   const v0 = open[0] && (by[open[0].id] || []).length, fav = food && open.length > 1 && v0 > 0 && v0 > ((by[open[1].id] || []).length) ? open[0].id : null;
   h += '<div class="list">' + (open.length ? open.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by).replace(fav === a.id ? '<p class="inf">' : '\u0000', '<p class="inf"><span style="color:var(--ac);font-weight:600">Favorit</span> · ')).join('')
-    : `<div class="card"><div class="empty"><b>${done.length ? 'Alles erledigt' : food ? 'Noch kein Essen' : 'Noch keine Aktivität'}</b>${done.length ? 'Neue Ideen? Einfach vorschlagen.' : food ? (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Kochen oder essen gehen: Was schlagen wir vor?') : (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Was wollen wir unternehmen? Der erste Vorschlag kommt von dir.')}</div></div>`) + '</div>';
+    : `<div class="card"><div class="empty"><b>${done.length ? 'Alles erledigt' : food ? 'Noch kein Essen' : 'Noch keine Aktivität'}</b>${done.length ? 'Neue Ideen? Einfach vorschlagen.' : food ? (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Kochen oder essen gehen: Was soll es geben?') : (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Was steht an? Der erste Vorschlag kommt von dir.')}</div></div>`) + '</div>';
   if (done.length) { const k = food ? 'food' : 'act', o = dOpen[k];
     h += `<button class="fold${o ? ' open' : ''}" type="button" data-a="dfold" aria-expanded="${o}"><span>Erledigt<small>${done.length}</small></span>${CHEV}</button>`;
     if (o) h += '<div class="list dl" style="margin-top:14px">' + done.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by)).join('') + '</div>'; }
@@ -1199,13 +1199,13 @@ function headHTML() { const n = Object.keys(T.people).length, cd = countdown(T.i
 const tabSvg = k => { const t = document.querySelector(`#trow .tab[data-t="${k}"] svg`); return t ? t.outerHTML : ''; };
 function tourSteps() { const a = areas(), names = TABS.map(x => x[1]), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' und ' + names[names.length - 1] : names[0];
   return [
-    ['#app [data-a=infopage], #app .navrow', SY.pin, 'Unsere Reise-Info', 'Hier stehen das Wetter an unseren Zielen, die Unterkünfte und die Anreise.'],
-    ['#tbar', tabSvg('act'), TABS.length > 1 ? TABS.length + ' Bereiche' : 'Aktivitäten', `Unten wechseln wir zwischen ${esc(list)}.${a.plan ? ' „Mein Plan“ zeigt deine Reise nach Tagen.' : ''}`],
+    ['#app [data-a=infopage], #app .navrow', SY.pin, 'Reise-Info', 'Hier stehen das Wetter an den Zielen, die Unterkünfte und die Anreise.'],
+    ['#tbar', tabSvg('act'), TABS.length > 1 ? TABS.length + ' Bereiche' : 'Aktivitäten', `Unten wechselst du zwischen ${esc(list)}.${a.plan ? ' „Mein Plan“ zeigt deine Reise nach Tagen.' : ''}`],
     ['#app [data-a=add]', SY.plus, 'Selbst vorschlagen', 'Hier schlägst du eine Aktivität vor. Unter Essen geht das genauso mit Koch- und Restaurant-Ideen.'],
     ['#app .card[data-id]:not(.done) [data-a=go]', SY.join, 'Mitmachen', 'Mit „Ich bin dabei“ trägst du dich ein, beim Essen stimmst du mit dem Daumen ab. Nochmal tippen nimmt es zurück.'],
     ['#app .card[data-id] .dots', `<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></svg>`, 'Mehr zu jedem Vorschlag', 'Über ⋯ schreibst du Kommentare, trägst eine Reservierung oder eine Ausgabe ein und hakst Erledigtes ab.'],
-    ['#app .filt, #app .stopseg', SY.pin, 'Nach Ziel filtern', 'Bei mehreren Zielen zeigen wir hier nur, was zu einem Ziel passt.'],
-    ['#app [data-a=map]', SY.map, 'Alles auf der Karte', 'Hier siehst du alle Vorschläge mit Ort, unsere Unterkünfte und den Weg dorthin.'],
+    ['#app .filt, #app .stopseg', SY.pin, 'Nach Ziel filtern', 'Bei mehreren Zielen zeigt die Liste hier nur, was zu einem Ziel passt.'],
+    ['#app [data-a=map]', SY.map, 'Alles auf der Karte', 'Hier siehst du alle Vorschläge mit Ort, die Unterkünfte und den Weg dorthin.'],
     ['#more', `<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></svg>`, 'Einladen und mehr', 'Oben rechts teilst du den Einladungs-Link, siehst die Mitreisenden und änderst dein Profil. Viel Spaß beim Planen!']]; }
 let tourOn = false, tourStep = 0, tourTimer = null, tourAnim = null, tourHole = null, tourBub = null, TS = [];
 const tq = sel => [...document.querySelectorAll(sel)].find(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
@@ -1374,7 +1374,7 @@ function costHTML() { const list = COSTS(), b = balances(), tr = settle(b), mine
   if (!list.length) return h + `<div class="card"><div class="empty"><b>Noch keine Ausgaben</b>Trag ein, was du für die Gruppe bezahlt hast. outbndr rechnet aus, wer wem wie viel überweist.</div></div>`;
   h += `<div class="card" style="margin-bottom:14px"><div class="c"><div class="kst"><small>Dein Stand</small><b class="${mine > 0 ? 'pos' : mine < 0 ? 'neg' : ''}">${mine > 0 ? '+' : mine < 0 ? '−' : ''}${eur(Math.abs(mine))}</b><p>${mine > 0 ? 'Du bekommst noch Geld' : mine < 0 ? 'Du schuldest noch Geld' : 'Du bist ausgeglichen'} · gesamt ${eur(total)}</p></div></div></div>`;
   const myTr = tr.filter(t => t.from === T.me || t.to === T.me), other = tr.filter(t => !myTr.includes(t));
-  if (tr.length) { h += `<p class="sec">So gleichen wir aus</p><div class="rows">`;
+  if (tr.length) { h += `<p class="sec">So wird ausgeglichen</p><div class="rows">`;
     const row = t => `<div class="krow" data-tf="${esc(t.from)}" data-tt="${esc(t.to)}" data-amt="${t.amt}">${ava(P(t.from))}<span class="gr"><b>${esc(payText(t))}</b><small>Abhaken, sobald das Geld da ist</small></span><span class="amt">${eur(t.amt)}</span><button class="tick" type="button" data-a="ctick" aria-label="Überweisung abhaken">${SY.check}</button></div>`;
     h += myTr.map(row).join('') || `<div class="krow"><span class="gr"><b>Du bist ausgeglichen</b></span></div>`;
     if (other.length) { const o = kOpen.has('other'); h += `<button class="krow" type="button" data-a="kfold" data-k2="other" aria-expanded="${o}"><span class="gr"><b style="color:var(--ac);font-weight:600">Weitere Überweisungen (${other.length})</b></span>${CHEV.replace('<svg', `<svg style="width:13px;height:8px;fill:none;stroke:var(--mu);stroke-width:2.2;flex:none;${o ? 'rotate:180deg' : ''}"`)}</button>${o ? `<div data-kg="other">${other.map(row).join('')}</div>` : ''}`; }
@@ -1406,7 +1406,7 @@ function planHTML() { const by = sigBy(), days = tripDays(T.info), mineAct = a =
   const groups = {}; items.forEach(a => { const k = a.day || ''; (groups[k] = groups[k] || []).push(a); });
   const keys = Object.keys(groups).sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
   const ti = a => a.time ? TIMES.indexOf(a.time) : 9;
-  let h = `<div class="card c2" style="margin-bottom:22px;font-size:15px;color:var(--mu)">Du bist bei ${open === 1 ? 'einem Vorschlag' : open + ' Vorschlägen'} dabei${done ? ' · ' + done + ' schon erledigt' : ''}. Tipp auf einen Eintrag, dann springen wir hin.</div>`;
+  let h = `<div class="card c2" style="margin-bottom:22px;font-size:15px;color:var(--mu)">Du bist bei ${open === 1 ? 'einem Vorschlag' : open + ' Vorschlägen'} dabei${done ? ' · ' + done + ' schon erledigt' : ''}. Ein Tipp auf einen Eintrag springt dorthin.</div>`;
   for (const k of keys) { const l = groups[k].sort((a, b) => ti(a) - ti(b) || (a.title > b.title ? 1 : -1));
     h += `<h2 class="pday">${k ? esc(dayLong(k)) + (k === today() ? ' · Heute' : '') : 'Flexibel'}</h2><div class="rows">` + l.map(a => `<button class="prow${a.done ? ' dn2' : ''}" type="button" data-a="goto" data-aid="${esc(a.id)}"><span class="pic">${a.done ? SY.check : a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin}</span><span class="gr">${esc(a.title)}<small>${esc([a.time || (k ? 'Tageszeit offen' : ''), a.cat === 'food' ? (a.kind === 'cook' ? 'Kochen' : a.kind === 'rest' ? 'Restaurant' : 'Essen') : '', a.place && a.place.name, a.done ? 'erledigt' : ''].filter(Boolean).join(' · '))}</small></span>${CHR}</button>`).join('') + '</div>'; }
   return h; }
@@ -1753,14 +1753,14 @@ async function saveNameDates() { const e = Ed, name = e.name.trim(); e.err = '';
   if (nf && (nf !== (T.info.from || '') || nt !== (T.info.to || ''))) {
     const n = [(T.info.stops || []).filter(z => outD(z.from) || outD(z.to)).length, (T.acts || []).filter(a => !a.done && outD(a.day)).length, (T.info.travel || []).filter(z => outD(z.date)).length];
     const w = [['Ziel', 'Ziele'], ['Vorschlag', 'Vorschläge'], ['Fahrt', 'Fahrten']], parts = n.map((k, i) => k ? k + ' ' + w[i][k > 1 ? 1 : 0] : '').filter(Boolean);
-    if (parts.length && !await ask({ t: `${parts.length > 1 ? parts.slice(0, -1).join(', ') + ' und ' + parts.at(-1) : parts[0]} ${parts.length > 1 || n.find(Boolean) > 1 ? 'liegen' : 'liegt'} danach außerhalb. Trotzdem speichern?`, m: 'Die Einträge bleiben erhalten. Ihre Daten können wir danach anpassen.', ok: 'Speichern' })) return;
+    if (parts.length && !await ask({ t: `${parts.length > 1 ? parts.slice(0, -1).join(', ') + ' und ' + parts.at(-1) : parts[0]} ${parts.length > 1 || n.find(Boolean) > 1 ? 'liegen' : 'liegt'} danach außerhalb. Trotzdem speichern?`, m: 'Die Einträge bleiben erhalten. Ihre Daten lassen sich danach anpassen.', ok: 'Speichern' })) return;
   }
   try { await updateDoc(tdoc(T.id), { name: name.slice(0, 60), from: e.from, to: e.from ? (e.to || e.from) : '' }); Object.assign(e, { name: name.slice(0, 60), to: e.from ? (e.to || e.from) : '' }); toast('Gespeichert'); draw(true); }
   catch (err) { console.error(err); e.err = FAIL; draw(true); } }
 async function saveDraft() { const e = Ed, d = e.d; if (!d) return; e.derr = ''; const tf = T.info.from || '', tt = T.info.to || '';
   if (e.kind === 'stop') { const y = d.stay || {};
     if (d.from && d.to && d.to < d.from) e.derr = 'Die Abreise liegt vor der Ankunft.';
-    else if (tf && d.from && d.from < tf || tt && d.to && d.to > tt || tt && d.from && d.from > tt || tf && d.to && d.to < tf) e.derr = `Bitte innerhalb unseres Reisezeitraums bleiben (${shortRange(tf, tt || tf)}).`;
+    else if (tf && d.from && d.from < tf || tt && d.to && d.to > tt || tt && d.from && d.from > tt || tf && d.to && d.to < tf) e.derr = `Bitte innerhalb des Reisezeitraums bleiben (${shortRange(tf, tt || tf)}).`;
     else if (y.link && normLink(y.link) === false) e.derr = 'Der Link sieht nicht wie eine Internetadresse aus.';
     if (e.derr) return draw(true);
     const l = clone(T.info.stops || []), c = cleanStop(d), i = l.findIndex(z => z.id === d.id); i >= 0 ? (l[i] = c) : l.push(c);
@@ -1870,7 +1870,7 @@ addEventListener('focusin', e => document.documentElement.classList.toggle('kb',
 addEventListener('focusout', () => setTimeout(() => document.documentElement.classList.toggle('kb', typing(document.activeElement)), 60));
 
 /* ---------- Ohne Netz: Hinweis oben; Firestore schickt Änderungen, sobald wieder Netz da ist ---------- */
-function netState() { const off = navigator.onLine === false; let el = document.querySelector('.net'); if (off && !el) document.body.insertAdjacentHTML('beforeend', '<div class="net" role="status">Offline · wir speichern, sobald wieder Netz da ist</div>'); else if (!off && el) { el.remove(); if (T && T.st === 'load') draw(); } }
+function netState() { const off = navigator.onLine === false; let el = document.querySelector('.net'); if (off && !el) document.body.insertAdjacentHTML('beforeend', '<div class="net" role="status">Offline · gespeichert wird, sobald wieder Netz da ist</div>'); else if (!off && el) { el.remove(); if (T && T.st === 'load') draw(); } }
 addEventListener('online', netState); addEventListener('offline', netState); netState();
 
 /* ---------- Neue Version: prüft beim Zurückkommen und alle 15 Min., ob es eine neuere Seite gibt ---------- */

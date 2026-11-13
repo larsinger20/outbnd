@@ -1,7 +1,7 @@
 {
   "name": "outbndr.",
   "short_name": "outbndr.",
-  "description": "Gemeinsam Reisen planen",
+  "description": "Reisen planen",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
