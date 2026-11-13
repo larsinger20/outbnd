@@ -633,6 +633,9 @@ const normLink = v => { v = String(v || '').trim(); if (!v) return ''; if (!/^ht
 const PALETTE = ['#1d7a6b', '#0e7490', '#2563eb', '#4f46e5', '#7c3aed', '#c026d3', '#db2777', '#dc2626', '#ea580c', '#b45309', '#4d7c0f', '#15803d', '#475569'];
 const FAIL = 'Das hat nicht geklappt. Bitte nochmal versuchen.';
 const denied = e => e && (e.code === 'permission-denied' || /permission/i.test(e.message || ''));
+// ohne Netz warten Schreibvorgänge still, bis wieder Netz da ist; was sofort den Server braucht (anlegen, beitreten, löschen, Link), sagt es gleich
+const OFFLINE = 'Ohne Internet geht das gerade nicht. Bitte Verbindung prüfen.';
+const offline = () => navigator.onLine === false;
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
 /* ---------- Symbole (Linien; Reiter gefüllt wie in Apples Leisten) ---------- */
@@ -686,10 +689,10 @@ const ICF = {
 let toastT = 0;
 function toast(t) { document.querySelector('.toast')?.remove(); const d = document.createElement('div'); d.className = 'toast'; d.setAttribute('role', 'status'); d.textContent = t; document.body.append(d);
   clearTimeout(toastT); toastT = setTimeout(() => d.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).onfinish = () => d.remove(), 2200); }
-function ask({ t, m = '', ok = 'OK', danger = false, one = false }) {
+function ask({ t, m = '', ok = 'OK', no = 'Abbrechen', danger = false, one = false }) {
   if (document.querySelector('.dlg:not(.out)')) return Promise.resolve(false);   // nie zwei Nachfragen übereinander
   return new Promise(res => {
-    document.body.insertAdjacentHTML('beforeend', `<div class="dlg"><div class="dlgb" role="alertdialog" aria-modal="true"><b>${esc(t)}</b>${m ? `<p>${esc(m)}</p>` : ''}<div class="dlgf${one ? ' one' : ''}">${one ? '' : '<button type="button" data-no>Abbrechen</button>'}<button type="button" class="y${danger ? ' dz' : ''}" data-yes>${esc(ok)}</button></div></div></div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="dlg"><div class="dlgb" role="alertdialog" aria-modal="true"><b>${esc(t)}</b>${m ? `<p>${esc(m)}</p>` : ''}<div class="dlgf${one ? ' one' : ''}">${one ? '' : `<button type="button" data-no>${esc(no)}</button>`}<button type="button" class="y${danger ? ' dz' : ''}" data-yes>${esc(ok)}</button></div></div></div>`);
     const d = document.body.lastElementChild, done = v => { document.removeEventListener('keydown', key); d.classList.add('out'); setTimeout(() => d.remove(), 190); res(v); };
     const key = e => { if (e.key === 'Escape') done(false); };
     document.addEventListener('keydown', key);
@@ -754,7 +757,7 @@ let Cf = null;         // Kosten-Formular
 let Ed = null;         // „Reise bearbeiten“ (Kopie von Name, Zeitraum, Zielen, Anreise, Bereichen)
 let Rv = null;         // Reservierung: { id, t, p }
 let infoOpen = false, infoSeg = 'wx';
-let pasteOpen = false, pasteVal = '';
+let pasteOpen = false, pasteVal = '', pasteErr = '';
 const cmOpen = new Set(), cmDraft = {}, shopOpen = new Set(), shopDraft = {}, sugOpen = new Set(), kOpen = new Set();
 const dOpen = { act: false, food: false }; let archOpen = false;
 let pending = false, flash = null, shownNew = new Set();
@@ -791,7 +794,7 @@ async function carryUrl() { const l = LS.get().filter(t => t.id && t.tok), out =
     out.push([t.id, t.tok, t.name || '', t.from || '', t.to || '', t.mood || '', pid, ph]); }
   return location.origin + location.pathname + '#/mit/' + b64u(JSON.stringify(out)); }
 function prepCarry() { const k = JSON.stringify(LS.get().map(t => t.id + t.tok)); if (carryC && carryC.k === k) return carryC.p; const p = carryUrl(); carryC = { k, p, v: null }; p.then(v => { if (carryC && carryC.p === p) carryC.v = v; }); return p; }
-async function copyCarry() { const c = carryC, msg = 'Kopiert. Jetzt outbndr. vom Home-Bildschirm öffnen.';
+async function copyCarry() { const c = carryC, msg = 'Kopiert. Jetzt outbndr vom Home-Bildschirm öffnen.';
   if (c && c.v) return copy(c.v, msg);
   const p = prepCarry();
   try { if (window.ClipboardItem && navigator.clipboard.write) { await navigator.clipboard.write([new ClipboardItem({ 'text/plain': p.then(v => new Blob([v], { type: 'text/plain' })) })]); return toast(msg); } } catch (e) {}
@@ -808,7 +811,7 @@ async function takeCarry(l) { l.slice().reverse().forEach(x => { const o = LS.on
       if (m.exists()) await updateDoc(ref, { pid, ph }); else await setDoc(ref, { inv: (LS.one(x[0]) || {}).tok || x[1], pid, ph });
       ok++; } catch (e) { if (!denied(e)) console.error(e); miss++; LS.add({ id: x[0], re: 1 }); } }
   const n = l.length; toast((n === 1 ? '1 Reise übernommen' : n + ' Reisen übernommen') + (miss ? (ok ? ` · bei ${miss} bitte Name und PIN eingeben` : ' · bitte jeweils Name und PIN eingeben') : ' · du bist angemeldet')); }
-async function copy(txt, msg) { try { await navigator.clipboard.writeText(txt); toast(msg); } catch (e) { toast('Kopieren hat nicht geklappt, bitte nochmal tippen'); } }
+async function copy(txt, msg) { try { await navigator.clipboard.writeText(txt); toast(msg); } catch (e) { toast('Kopieren hat nicht geklappt. Bitte nochmal tippen.'); } }
 const SHAREIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M6 12H5v8.5h14V12h-1"/></svg>', ADDIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>';
 // Hinweis-Kachel in Safari: „Am besten als App“
 function appCardHTML(kind) { const n = LS.get().filter(t => t.tok).length;
@@ -863,7 +866,7 @@ async function openTrip(id) {
   try { t.stage = 'Anmeldung'; await ready; t.stage = 'Mitgliedschaft'; const m = await getDoc(tdoc(id, 'members', uid)); if (T !== t) return; t.stage = 'Daten';
     if (!m.exists() || !m.data().pid) return needJoin(t);
     t.me = m.data().pid;
-    const fail = e => { if (T !== t) return; if (denied(e)) { if (t.st === 'ok') { t.st = 'gone'; t.off.forEach(f => f()); t.off = []; draw(); } else needJoin(t); } else console.error(e); };
+    const fail = e => { if (T !== t) return; if (denied(e)) { if (t.st === 'ok') { t.st = 'gone'; t.off.forEach(f => f()); t.off = []; draw(); } else needJoin(t); } else { console.error(e); if (t.st === 'load') { t.st = 'err'; draw(); } else toast('Verbindung unterbrochen. Bitte die Seite neu laden.'); } };
     t.off.push(onSnapshot(tdoc(id), s => { if (!s.exists() || s.data().del) { t.st = 'gone'; LS.del(id); t.off.forEach(f => f()); t.off = []; return draw(); } t.info = s.data(); LS.add({ id, name: t.info.name, from: t.info.from, to: t.info.to, mood: moodOf(t.info.mood) }); setTabs(); live(t); }, fail));
     t.off.push(onSnapshot(tcol(id, 'people'), s => { t.people = {}; s.forEach(d => t.people[d.id] = d.data()); if (!t.people[t.me]) return needJoin(t); live(t); }, fail));
     t.off.push(onSnapshot(tcol(id, 'acts'), s => { t.acts = []; s.forEach(d => t.acts.push({ id: d.id, ...d.data() })); live(t); }, fail));
@@ -884,7 +887,7 @@ function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'ac
 
 /* ---------- Beitritt über den Einladungs-Link ---------- */
 async function startJoin(t, tok) {
-  if (J && J.t === t && J.tok === tok && J.st !== 'bad') return;
+  if (J && J.t === t && J.tok === tok && J.st !== 'bad' && J.st !== 'err') return;
   const j = J = { t, t0: Date.now(), tok, st: 'load', info: null, people: {}, name: '', pin: '', col: '', err: '', busy: false };
   [8100, 20100].forEach(ms => setTimeout(() => { if (J === j && j.st === 'load') draw(); }, ms));
   if (!db) return;
@@ -899,12 +902,13 @@ async function startJoin(t, tok) {
     const ps = await getDocs(tcol(t, 'people')); if (J !== j) return; ps.forEach(d => j.people[d.id] = d.data());
     if (m && m.data().pid && j.people[m.data().pid]) { LS.add({ id: t, name: j.info.name, from: j.info.from, to: j.info.to, mood: moodOf(j.info.mood), tok }); J = null; return go('#/r/' + t); }   // schon dabei
     j.col = freeCol(j.people); j.st = 'form'; draw();
-  } catch (e) { if (J !== j) return; if (!denied(e)) console.error(e); j.st = 'bad'; draw(); }
+  } catch (e) { if (J !== j) return; if (denied(e)) j.st = 'bad'; else { console.error(e); j.st = 'err'; } draw(); }
 }
 const freeCol = (people, mine) => PALETTE.find(c => !Object.entries(people).some(([id, p]) => p.col === c && id !== mine)) || PALETTE[0];
 const colTaken = (people, c, mine) => Object.keys(people).length < PALETTE.length && Object.entries(people).some(([id, p]) => p.col === c && id !== mine);
 async function submitJoin() { const j = J; if (!j || j.busy) return; const name = j.name.trim();
   if (!name) return jerr('Bitte gib deinen Namen ein.'); if (!PIN_OK(j.pin)) return jerr('Die PIN braucht 4 bis 8 Ziffern.');
+  if (offline()) return jerr(OFFLINE);
   j.busy = true; j.err = ''; draw(true);
   const mref = tdoc(j.t, 'members', uid), ex = Object.entries(j.people).find(([, p]) => norm(p.name) === norm(name));
   try {
@@ -924,6 +928,7 @@ const newWizard = () => ({ step: 0, name: '', from: '', to: '', stops: [], trave
 async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.trim();
   if (!me) { w.err = 'Bitte gib deinen Namen ein.'; return draw(true); } if (!PIN_OK(w.pin)) { w.err = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); }
   if (!db) { w.err = 'outbndr ist noch nicht eingerichtet.'; return draw(true); }
+  if (offline()) { w.err = OFFLINE; return draw(true); }
   w.busy = true; w.err = ''; draw(true);
   try { await ready; const t = rid(20), tok = rid(24), pid = rid(12), ph = await hash(t, pid, w.pin), b = writeBatch(db), now = Date.now();
     const st = w.stops.map(s => cleanStop(s)), tr = w.travel ? [{ id: rid(8), kind: w.travel, title: 'Anreise', note: w.tnote.trim(), who: [] }] : [];
@@ -1032,7 +1037,7 @@ function draw(force) {
   else if (view.n === 'new') { h = wizHTML(); back = Wz.step === WSTEPS.length - 1 ? null : 1; }
   else if (view.n === 'join') { h = joinHTML(); back = 1; }
   else if (!T || T.st === 'load') { h = tripSkel(); back = 1; }
-  else if (T.st !== 'ok') { h = `<div class="q"><h1>${T.st === 'gone' ? 'Diese Reise gibt es nicht mehr' : T.st === 'err' ? 'Keine Verbindung' : 'Einladungs-Link nötig'}</h1><p class="sub">${T.st === 'err' ? 'Die Datenbank ist gerade nicht erreichbar. Bitte später nochmal versuchen.' : T.st === 'gone' ? 'Sie wurde gelöscht, oder du gehörst nicht mehr dazu.' : 'Auf diesem Gerät bist du bei dieser Reise noch nicht dabei. Öffne den Einladungs-Link der Reise, dann geht es mit deinem Namen und deiner PIN weiter.'}</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu meinen Reisen<span class="gl"></span></button></div></div>`; back = 1; }
+  else if (T.st !== 'ok') { h = `<div class="q"><h1>${T.st === 'gone' ? 'Diese Reise gibt es nicht mehr' : T.st === 'err' ? 'Keine Verbindung' : 'Einladungs-Link nötig'}</h1><p class="sub">${T.st === 'err' ? 'Die Datenbank ist gerade nicht erreichbar. Bitte später nochmal versuchen.' : T.st === 'gone' ? 'Sie wurde gelöscht, oder du gehörst nicht mehr dazu.' : 'Auf diesem Gerät bist du bei dieser Reise noch nicht dabei. Öffne den Einladungs-Link der Reise, dann geht es mit deinem Namen und deiner PIN weiter.'}</p><div class="btns">${T.st === 'err' ? '<button class="btn lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button>' : ''}<button class="btn g lq" type="button" data-a="home">Zu meinen Reisen<span class="gl"></span></button></div></div>`; back = 1; }
   else if (view.n === 'people') { h = peopleHTML(); back = 1; }
   else if (view.n === 'profile') { h = profileHTML(); back = 1; }
   else if (view.n === 'mood') { h = moodHTML(); back = 1; }
@@ -1062,7 +1067,7 @@ function homeHTML() { const l = LS.get();
       : `<div class="card"><div class="empty"><b>Noch keine Reise</b>${APP && IOS ? 'Plan eine neue Reise oder füg den Einladungs-Link ein, den du bekommen hast. Schon Reisen in Safari? Dort auf der Startseite „Reisen kopieren“ tippen und hier einfügen.' : 'Plan eine neue Reise oder öffne den Einladungs-Link, den du bekommen hast.'}</div></div>`;
     if (IOSWEB && !store.get('outbndr.apphide', false)) { h = h.replace('</p></div>', '</p></div>' + appCardHTML('home')); if (l.length) setTimeout(prepCarry, 0); }
     h += `<div class="btns"><button class="btn lq" type="button" data-a="new">${SY.plus}<span>Reise planen</span><span class="gl"></span></button>`;
-    h += pasteOpen ? `</div><div class="form" style="margin-top:14px"><label class="fl" for="pl">Einladungs-Link</label><input class="fi" id="pl" data-k="paste" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="Link hier einfügen" value="${esc(pasteVal)}"><div class="btns two"><button class="btn g s" type="button" data-a="pasteX">Abbrechen</button><button class="btn s" type="button" data-a="pasteGo">Öffnen</button></div></div>`
+    h += pasteOpen ? `</div><div class="form" style="margin-top:14px"><label class="fl" for="pl">Einladungs-Link</label><input class="fi" id="pl" data-k="paste" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="Link hier einfügen" value="${esc(pasteVal)}">${pasteErr ? `<p class="err">${esc(pasteErr)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="pasteX">Abbrechen</button><button class="btn s" type="button" data-a="pasteGo">Öffnen</button></div></div>`
       : `<button class="btn g lq" type="button" data-a="paste">${SY.link}<span>${APP ? 'Link einfügen' : 'Einladungs-Link einfügen'}</span><span class="gl"></span></button></div>`;
     h += `<p class="hint c">Hier stehen die Reisen, bei denen du auf diesem Gerät dabei bist.</p>`;
   }
@@ -1081,7 +1086,7 @@ const kindChips = (cur, attr) => '<div class="ch">' + Object.entries(KIND).map((
 function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="err">${esc(w.err)}</p>` : '', nx = (t = 'Weiter') => `<button class="btn lq" type="button" data-a="wnext">${t}<span class="gl"></span></button>`, sk = t => `<button class="btn g lq" type="button" data-a="wskip">${t}<span class="gl"></span></button>`, head = (t, sub) => `<div class="q">${stepsHTML(w.step)}<h1>${t}</h1><p class="sub">${sub}</p>`;
   if (s === 'name') return head('Wie heißt die Reise?', 'Ein Name, an dem alle sie erkennen.') + `<input class="fi" data-k="wn" data-f="name" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="z. B. Kroatien 2027" value="${esc(w.name)}">${err}<div class="btns">${nx()}</div></div>`;
   if (s === 'when') return head('Wann ist die Reise?', 'Der Zeitraum lässt sich später ändern.') + `<div class="f2"><div><label class="fl" for="wf">Von</label><input class="fi" id="wf" data-k="wf" data-f="from" type="date" value="${esc(w.from)}"></div><div><label class="fl" for="wt">Bis</label><input class="fi" id="wt" data-k="wt" data-f="to" type="date" min="${esc(w.from)}" value="${esc(w.to)}"></div></div>${err}<div class="btns">${nx()}${sk('Steht noch nicht fest')}</div></div>`;
-  if (s === 'where') return head('Wohin geht es?', 'Ein Ziel oder mehrere Stopps, zum Beispiel für einen Roadtrip. Daraus kommen Wetter und Karte.') + `${placeHTML('wstop', w.q || '', w.stops.length ? 'Weiteren Stopp suchen' : 'Ort suchen, z. B. Split')}<div class="chipl">${w.stops.map(x => `<span class="chipx">${esc(x.name)}<button type="button" data-a="wstopx" data-sid="${esc(x.id)}" aria-label="${esc(x.name)} entfernen">${XS}</button></span>`).join('')}</div>${err}<div class="btns">${w.stops.length ? nx() : ''}${sk(w.stops.length ? 'Ohne weitere Stopps' : 'Später ergänzen')}</div></div>`;
+  if (s === 'where') return head('Wohin geht es?', 'Ein Ziel oder mehrere, zum Beispiel für einen Roadtrip. Daraus kommen Wetter und Karte.') + `${placeHTML('wstop', w.q || '', w.stops.length ? 'Weiteres Ziel suchen' : 'Ort suchen, z. B. Split')}<div class="chipl">${w.stops.map(x => `<span class="chipx">${esc(x.name)}<button type="button" data-a="wstopx" data-sid="${esc(x.id)}" aria-label="${esc(x.name)} entfernen">${XS}</button></span>`).join('')}</div>${err}<div class="btns">${w.stops.length ? nx() : ''}${sk(w.stops.length ? 'Ohne weitere Ziele' : 'Später ergänzen')}</div></div>`;
   if (s === 'stay') return head('Wo ist die Unterkunft?', 'Unterkunft mit Link (z. B. Airbnb). Lässt sich später ergänzen.') + w.stops.map(x => `<div class="form" style="margin-bottom:10px">${w.stops.length > 1 ? `<h3>${esc(x.name)}</h3>` : ''}<label class="fl">Unterkunft</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="name" data-k="wsn-${esc(x.id)}" maxlength="80" placeholder="z. B. Villa Sole" value="${esc((x.stay || {}).name || '')}"><label class="fl">Link (wenn du magst)</label><input class="fi" data-o="wst" data-sid="${esc(x.id)}" data-f="link" data-k="wsl-${esc(x.id)}" inputmode="url" autocapitalize="off" placeholder="airbnb.de/…" value="${esc((x.stay || {}).link || '')}"></div>`).join('') + `${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
   if (s === 'travel') return head('Wie ist die Anreise?', 'Details wie Flugnummern lassen sich später ergänzen.') + kindChips(w.travel, 'data-wkind') + `<label class="fl" for="wtn">Notiz (wenn du magst)</label><input class="fi" id="wtn" data-k="wtn" data-f="tnote" maxlength="200" placeholder="z. B. Flug LH 1234 am 10.7." value="${esc(w.tnote)}">${err}<div class="btns">${nx()}${sk('Später ergänzen')}</div></div>`;
   if (s === 'areas') return head('Was soll dabei sein?', 'Aktivitäten sind immer dabei. Der Rest lässt sich später umstellen.') + areasHTML(w.areas) + `<div class="btns">${nx()}</div></div>`;
@@ -1092,6 +1097,7 @@ function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="
 function joinHTML() { const j = J;
   if (!CFG) return `<div class="q"><h1>Noch nicht eingerichtet</h1><p class="sub">Die Datenbank von outbndr fehlt noch.</p></div>`;
   if (!j || j.st === 'load') return `<div class="q">${slowHTML(j)}<div class="shim" style="border-radius:12px"><span class="skl" style="width:40%"></span><span class="skl t" style="margin-top:14px;height:34px;width:80%"></span><span class="skl" style="width:55%;margin-top:12px"></span></div><div class="skc shim" style="margin-top:22px"><span class="skl" style="width:30%"></span><span class="skl" style="height:46px;border-radius:14px"></span><span class="skl" style="width:30%;margin-top:16px"></span><span class="skl" style="height:46px;border-radius:14px"></span></div></div>`;
+  if (j.st === 'err') return `<div class="q"><h1>Keine Verbindung</h1><p class="sub">Die Einladung lässt sich gerade nicht öffnen. Bitte Verbindung prüfen und nochmal versuchen.</p><div class="btns"><button class="btn lq" type="button" onclick="location.reload()">Nochmal<span class="gl"></span></button><button class="btn g lq" type="button" data-a="home">Zu meinen Reisen<span class="gl"></span></button></div></div>`;
   if (j.st === 'bad') return `<div class="q"><h1>Dieser Link gilt nicht mehr</h1><p class="sub">Bitte frag in der Gruppe nach dem aktuellen Einladungs-Link.</p><div class="btns"><button class="btn g lq" type="button" data-a="home">Zu meinen Reisen<span class="gl"></span></button></div></div>`;
   const n = Object.keys(j.people).length;
   const known = !!(LS.one(j.t) || {}).re;
@@ -1147,7 +1153,7 @@ function formHTML() { const f = F, food = f.cat === 'food', days = tripDays(T.in
     <label class="fl" for="fd">Beschreibung (wenn du magst)</label><textarea class="fi" id="fd" data-k="fd" data-f="desc" maxlength="2000" placeholder="Infos, Preis, Link …">${esc(f.desc)}</textarea>
     ${food ? `<span class="fl">Art</span><div class="ch">${[['cook', 'Kochen'], ['rest', 'Restaurant']].map(k => `<button type="button" data-kind="${k[0]}" class="${f.kind === k[0] ? 'on' : ''}" aria-pressed="${f.kind === k[0]}">${k[1]}</button>`).join('')}</div>` : ''}
     <label class="fl">Ort (wenn du magst)</label>${placeHTML('fplace', f.pq ?? (f.place ? f.place.name : ''), food ? 'z. B. Restaurant suchen' : 'Ort suchen')}${f.place && f.place.lat != null ? `<p class="hint" style="margin-top:6px">${SY.pin.replace('<svg', '<svg style="width:13px;height:13px;vertical-align:-2px;fill:none;stroke:var(--ac);stroke-width:2"')} Auf der Karte: ${esc(f.place.name)}${f.place.addr ? ', ' + esc(f.place.addr) : ''}</p>` : ''}
-    ${st.length > 1 ? `<label class="fl" for="fs">Stopp</label><select class="fi" id="fs" data-k="fs" data-f="stop"><option value="">Egal wo</option>${st.map(s => `<option value="${esc(s.id)}"${f.stop === s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
+    ${st.length > 1 ? `<label class="fl" for="fs">Ziel</label><select class="fi" id="fs" data-k="fs" data-f="stop"><option value="">Egal wo</option>${st.map(s => `<option value="${esc(s.id)}"${f.stop === s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
     <div class="f2"><div><label class="fl" for="fy">Tag</label><select class="fi" id="fy" data-k="fy" data-f="day"><option value="">Flexibel</option>${days.map(d => `<option value="${d}"${f.day === d ? ' selected' : ''}>${esc(dayName(d))}</option>`).join('')}${f.day && !days.includes(f.day) ? `<option value="${esc(f.day)}" selected>${esc(dayName(f.day))}</option>` : ''}</select></div>
     <div><label class="fl" for="fz">Tageszeit</label><select class="fi" id="fz" data-k="fz" data-f="time"><option value="">Flexibel</option>${TIMES.map(t => `<option${f.time === t ? ' selected' : ''}>${t}</option>`).join('')}</select></div></div>
     ${f.err ? `<p class="err">${esc(f.err)}</p>` : ''}<div class="btns two"><button class="btn g" type="button" data-a="fx">Abbrechen</button><button class="btn" type="button" data-a="fsave">${f.id === 'new' ? 'Vorschlagen' : 'Speichern'}</button></div></div>`; }
@@ -1394,7 +1400,7 @@ function costForm() { const f = Cf, ppl = Object.entries(T.people).sort((a, b) =
   return `<div class="form" id="cform"><h3>${f.id ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}</h3><label class="fl" for="ct">Wofür?</label><input class="fi" id="ct" data-k="ct" data-o="cf" data-f="t" maxlength="80" autocapitalize="sentences" placeholder="z. B. Einkauf Grillabend" value="${esc(f.t)}">
     <div class="f2"><div><label class="fl" for="ca">Betrag in Euro</label><input class="fi" id="ca" data-k="ca" data-o="cf" data-f="amt" inputmode="decimal" placeholder="z. B. 42,50" value="${esc(f.amt)}"></div><div><label class="fl" for="cd">Datum</label><input class="fi" id="cd" type="date" data-k="cd" data-o="cf" data-f="dt" value="${esc(f.dt)}"></div></div>
     <label class="fl" for="cb">Wer hat bezahlt?</label><select class="fi" id="cb" data-k="cb" data-o="cf" data-f="by">${opts(f.by)}</select>
-    <span class="fl">Für wen? <button class="txb" type="button" data-a="call" style="min-height:0;margin-left:6px">${f.for.length === ppl.length ? 'Keiner' : 'Alle'}</button></span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-cfor="${esc(id)}" class="${f.for.includes(id) ? 'on' : ''}" aria-pressed="${f.for.includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(id === T.me ? 'Du' : p.name)}</button>`).join('')}</div>
+    <span class="fl">Für wen? <button class="txb" type="button" data-a="call" style="min-height:0;margin-left:6px">${f.for.length === ppl.length ? 'Niemand' : 'Alle'}</button></span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-cfor="${esc(id)}" class="${f.for.includes(id) ? 'on' : ''}" aria-pressed="${f.for.includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(id === T.me ? 'Du' : p.name)}</button>`).join('')}</div>
     <p class="hint">${f.for.length ? (parseAmt(f.amt) > 0 ? 'Je ' + eur(Math.round(parseAmt(f.amt) / f.for.length)) : f.for.length + (f.for.length === 1 ? ' Person' : ' Personen')) : 'Bitte wähle mindestens eine Person.'}</p>
     ${f.err ? `<p class="err">${esc(f.err)}</p>` : ''}<div class="btns two"><button class="btn g" type="button" data-a="cx">Abbrechen</button><button class="btn" type="button" data-a="csave">Speichern</button></div>${f.id && canDelCost(T.costs.find(c => c.id === f.id) || {}) ? `<button class="btn dz s" type="button" data-a="cdel" data-cid="${esc(f.id)}" style="margin-top:10px">Ausgabe löschen</button>` : ''}</div>`; }
 
@@ -1406,7 +1412,7 @@ function planHTML() { const by = sigBy(), days = tripDays(T.info), mineAct = a =
   const groups = {}; items.forEach(a => { const k = a.day || ''; (groups[k] = groups[k] || []).push(a); });
   const keys = Object.keys(groups).sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
   const ti = a => a.time ? TIMES.indexOf(a.time) : 9;
-  let h = `<div class="card c2" style="margin-bottom:22px;font-size:15px;color:var(--mu)">Du bist bei ${open === 1 ? 'einem Vorschlag' : open + ' Vorschlägen'} dabei${done ? ' · ' + done + ' schon erledigt' : ''}. Ein Tipp auf einen Eintrag springt dorthin.</div>`;
+  let h = `<div class="card c2" style="margin-bottom:22px;font-size:15px;color:var(--mu)">${open ? `Du bist bei ${open === 1 ? 'einem Vorschlag' : open + ' Vorschlägen'} dabei${done ? ', ' + done + ' schon erledigt' : ''}.` : `${done === 1 ? 'Ein Vorschlag' : done + ' Vorschläge'} erledigt.`} Ein Tipp auf einen Eintrag springt dorthin.</div>`;
   for (const k of keys) { const l = groups[k].sort((a, b) => ti(a) - ti(b) || (a.title > b.title ? 1 : -1));
     h += `<h2 class="pday">${k ? esc(dayLong(k)) + (k === today() ? ' · Heute' : '') : 'Flexibel'}</h2><div class="rows">` + l.map(a => `<button class="prow${a.done ? ' dn2' : ''}" type="button" data-a="goto" data-aid="${esc(a.id)}"><span class="pic">${a.done ? SY.check : a.cat === 'food' ? ICF.food.replace('class="f2"', '') : SY.pin}</span><span class="gr">${esc(a.title)}<small>${esc([a.time || (k ? 'Tageszeit offen' : ''), a.cat === 'food' ? (a.kind === 'cook' ? 'Kochen' : a.kind === 'rest' ? 'Restaurant' : 'Essen') : '', a.place && a.place.name, a.done ? 'erledigt' : ''].filter(Boolean).join(' · '))}</small></span>${CHR}</button>`).join('') + '</div>'; }
   return h; }
@@ -1419,9 +1425,10 @@ function goToCard(id) { const a = T.acts.find(x => x.id === id); if (!a) return;
 function peopleHTML() { const l = Object.entries(T.people).sort((a, b) => (b[0] === T.me) - (a[0] === T.me) || a[1].name.localeCompare(b[1].name, 'de'));
   return `<div class="hd"><h1>Mitreisende</h1><p class="sub">${esc(T.info.name)}</p></div><div class="rows">` + l.map(([id, p]) => `<div class="row" data-pid="${esc(id)}">${ava(p, 'big')}<span class="gr">${esc(p.name)}${p.admin ? '<span class="tag">Admin</span>' : ''}${id === T.me ? '<small>Das bist du</small>' : ''}</span>${isAdmin() && id !== T.me ? `<button class="dots lq" type="button" aria-label="Mehr zu ${esc(p.name)}" data-menu="person">${DOTS}<span class="gl"></span></button>` : ''}</div>`).join('')
     + `</div><div class="btns"><button class="btn lq" type="button" data-a="tshare">${SY.share}<span>Einladungs-Link teilen</span><span class="gl"></span></button></div><p class="hint c">Admins können weitere Admins bestimmen und Mitreisende entfernen.</p>`; }
-function profileHTML() { const me = ME(); if (!Pf) Pf = { name: me.name, col: me.col, pin: '', pin2: '', err: '' };
-  return `<div class="hd"><h1>Mein Profil</h1><p class="sub">Gilt nur für „${esc(T.info.name)}“</p></div><div class="form"><label class="fl" for="pn">Dein Name</label><input class="fi" id="pn" data-k="pn" data-o="pf" data-f="name" maxlength="24" autocomplete="off" autocapitalize="words" value="${esc(Pf.name)}"><span class="fl">Deine Farbe</span>${colsHTML(T.people, Pf.col, T.me)}${Pf.err ? `<p class="err">${esc(Pf.err)}</p>` : ''}<div class="btns"><button class="btn lq" type="button" data-a="psave">Speichern<span class="gl"></span></button></div></div>
-    <div class="form"><h3>PIN ändern</h3><label class="fl" for="pp1">Neue PIN (4 bis 8 Ziffern)</label><input class="fi" id="pp1" data-k="pp1" data-o="pf" data-f="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" value="${esc(Pf.pin)}"><label class="fl" for="pp2">Nochmal zur Sicherheit</label><input class="fi" id="pp2" data-k="pp2" data-o="pf" data-f="pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" value="${esc(Pf.pin2)}"><div class="btns"><button class="btn g lq" type="button" data-a="pinsave">PIN ändern<span class="gl"></span></button></div><p class="hint">Mit Name und PIN kommst du auf einem anderen Gerät wieder in die Reise.</p></div>`; }
+function profileHTML() { const me = ME(); if (!Pf) Pf = { name: me.name, col: me.col, pin: '', pin2: '', err: '', perr: '' };
+  return `<div class="hd"><h1>Mein Profil</h1><p class="sub">Gilt nur für „${esc(T.info.name)}“</p></div><div class="form"><label class="fl" for="pn">Dein Name</label><input class="fi" id="pn" data-k="pn" data-o="pf" data-f="name" maxlength="24" autocomplete="off" autocapitalize="words" value="${esc(Pf.name)}"><span class="fl">Deine Farbe</span>${colsHTML(T.people, Pf.col, T.me)}${Pf.err ? `<p class="err">${esc(Pf.err)}</p>` : ''}<div class="btns"><button class="btn lq" type="button" data-a="psave"${pdirty() ? '' : ' disabled'}>Speichern<span class="gl"></span></button></div></div>
+    <div class="form"><h3>PIN ändern</h3><label class="fl" for="pp1">Neue PIN (4 bis 8 Ziffern)</label><input class="fi" id="pp1" data-k="pp1" data-o="pf" data-f="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" value="${esc(Pf.pin)}"><label class="fl" for="pp2">Nochmal zur Sicherheit</label><input class="fi" id="pp2" data-k="pp2" data-o="pf" data-f="pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" value="${esc(Pf.pin2)}">${Pf.perr ? `<p class="err">${esc(Pf.perr)}</p>` : ''}<div class="btns"><button class="btn g lq" type="button" data-a="pinsave">PIN ändern<span class="gl"></span></button></div><p class="hint">Mit Name und PIN kommst du auf einem anderen Gerät wieder in die Reise.</p></div>`; }
+const pdirty = () => !!(Pf && T && T.people && (Pf.name.trim() !== ME().name || Pf.col !== ME().col));
 function startEdit() { const i = T.info; Ed = { name: i.name, from: i.from || '', to: i.to || '', q: '', open: '', kind: '', d: null, isNew: false, err: '', derr: '' }; }
 const clone = o => JSON.parse(JSON.stringify(o || {}));
 const dErr = () => Ed.derr ? `<p class="err">${esc(Ed.derr)}</p>` : '';
@@ -1440,20 +1447,20 @@ function legForm(x) { const ppl = Object.entries(T.people);
     <div class="f2"><div><label class="fl" for="eld">Datum</label><input class="fi" id="eld" type="date" data-o="ed2" data-f="date" data-k="eld" value="${esc(x.date || '')}"></div><div><label class="fl" for="elh">Uhrzeit</label><input class="fi" id="elh" type="time" data-o="ed2" data-f="time" data-k="elh" value="${esc(x.time || '')}"></div></div>
     <label class="fl" for="eln">Notiz (Flugnummer, Treffpunkt …)</label><input class="fi" id="eln" data-o="ed2" data-f="note" data-k="eln" maxlength="300" value="${esc(x.note || '')}">
     <span class="fl">Wer fährt mit?</span><div class="ch pp">${ppl.map(([id, p]) => `<button type="button" data-lwho="${esc(id)}" class="${(x.who || []).includes(id) ? 'on' : ''}" aria-pressed="${(x.who || []).includes(id)}"><i style="background:${esc(p.col)}">${ini(p)}</i>${esc(p.name)}</button>`).join('')}</div>${dErr()}${dBtns()}</div>`; }
-function editHTML() { if (!isAdmin()) return `<div class="hd"><h1>Reise</h1><p class="sub">${esc(T.info.name)}</p></div><div class="btns"><button class="btn dz lq" type="button" data-a="leave">Reise auf diesem Gerät entfernen<span class="gl"></span></button></div><p class="hint c">Nur Admins können die Reise bearbeiten.</p>`;
+function editHTML() { if (!isAdmin()) return `<div class="hd"><h1>Reise</h1><p class="sub">${esc(T.info.name)}</p></div><div class="btns"><button class="btn dz lq" type="button" data-a="leave">Von diesem Gerät entfernen<span class="gl"></span></button></div><p class="hint c">Nur Admins können die Reise bearbeiten.</p>`;
   if (!Ed) startEdit(); const e = Ed, st = T.info.stops || [], tr = T.info.travel || [], ed = (k, id) => e.kind === k && e.open === id;
   let h = `<div class="hd"><h1>Reise bearbeiten</h1><p class="sub">Was du speicherst, sehen alle sofort.</p></div>`;
   h += `<p class="sec">Name und Zeitraum</p><div class="form"><label class="fl" for="en">Name</label><input class="fi" id="en" data-k="en" data-o="ed" data-f="name" maxlength="60" value="${esc(e.name)}"><div class="f2"><div><label class="fl" for="ef">Von</label><input class="fi" id="ef" type="date" data-k="ef" data-o="ed" data-f="from" value="${esc(e.from)}"></div><div><label class="fl" for="et">Bis</label><input class="fi" id="et" type="date" data-k="et" data-o="ed" data-f="to" min="${esc(e.from)}" value="${esc(e.to)}"></div></div>${e.err ? `<p class="err">${esc(e.err)}</p>` : ''}<div class="btns two"><button class="btn g" type="button" data-a="ncancel"${ndirty() ? '' : ' disabled'}>Abbrechen</button><button class="btn" type="button" data-a="nsave"${ndirty() ? '' : ' disabled'}>Speichern</button></div></div>`;
   h += `<p class="sec">Ziele und Unterkünfte</p>` + st.map((s0, i) => { const o = ed('stop', s0.id), s = o ? e.d : s0, y = s0.stay || {};
-    return `<div class="form" data-stop="${esc(s0.id)}"><div class="shh"><h3>${esc(s0.name || 'Stopp')}</h3>${o ? '' : `<span style="display:flex;gap:4px">${i ? `<button class="cmx up" type="button" data-a="sup" aria-label="${esc(s0.name)} nach oben">${SV('<path d="M12 19V5M6 11l6-6 6 6"/>')}</button>` : ''}<button class="cmx" type="button" data-a="sdelst" aria-label="${esc(s0.name)} entfernen">${SY.x}</button></span>`}</div>
+    return `<div class="form" data-stop="${esc(s0.id)}"><div class="shh"><h3>${esc(s0.name || 'Ziel')}</h3>${o ? '' : `<span style="display:flex;gap:4px">${i ? `<button class="cmx up" type="button" data-a="sup" aria-label="${esc(s0.name)} nach oben">${SV('<path d="M12 19V5M6 11l6-6 6 6"/>')}</button>` : ''}<button class="cmx" type="button" data-a="sdelst" aria-label="${esc(s0.name)} entfernen">${SY.x}</button></span>`}</div>
       ${o ? stopForm(s) : `<p class="inf" style="margin:0">${esc([s0.from ? shortRange(s0.from, s0.to) : '', y.name].filter(Boolean).join(' · ') || 'Zeitraum und Unterkunft offen')}${typeof s0.lat === 'number' ? '' : ' · ohne Kartenpunkt'}</p><button class="txb" type="button" data-a="sopen">Bearbeiten</button>`}</div>`; }).join('')
-    + (e.kind === 'stop' && e.isNew ? `<div class="form" data-stop="${esc(e.d.id)}"><div class="shh"><h3>${esc(e.d.name)}</h3></div>${stopForm(e.d)}</div>` : `<div class="form">${placeHTML('estop', e.q || '', st.length ? 'Weiteren Stopp suchen' : 'Ziel suchen, z. B. Split')}</div>`);
+    + (e.kind === 'stop' && e.isNew ? `<div class="form" data-stop="${esc(e.d.id)}"><div class="shh"><h3>${esc(e.d.name)}</h3></div>${stopForm(e.d)}</div>` : `<div class="form">${placeHTML('estop', e.q || '', st.length ? 'Weiteres Ziel suchen' : 'Ziel suchen, z. B. Split')}</div>`);
   h += `<p class="sec">Anreise und Fahrten</p>` + tr.map(x0 => { const o = ed('leg', x0.id), k = KIND[x0.kind] || KIND.auto, who = (x0.who || []).filter(id => T.people[id]);
     return `<div class="form" data-leg="${esc(x0.id)}"><div class="shh"><h3>${esc(x0.title || k[0])}</h3>${o ? '' : `<button class="cmx" type="button" data-a="ldel" aria-label="${esc(x0.title || k[0])} entfernen">${SY.x}</button>`}</div>
       ${o ? legForm(e.d) : `<p class="inf" style="margin:0">${esc([k[0], x0.from && x0.to ? x0.from + ' → ' + x0.to : x0.from || x0.to, x0.date ? dayName(x0.date) : '', x0.time, who.length ? who.length + (who.length === 1 ? ' Person' : ' Personen') : ''].filter(Boolean).join(' · '))}</p><button class="txb" type="button" data-a="lopen">Bearbeiten</button>`}</div>`; }).join('')
     + (e.kind === 'leg' && e.isNew ? `<div class="form" data-leg="${esc(e.d.id)}"><div class="shh"><h3>Neue Fahrt</h3></div>${legForm(e.d)}</div>` : `<button class="btn g lq" type="button" data-a="ladd">${SY.plus}<span>Fahrt hinzufügen</span><span class="gl"></span></button>`);
   h += `<p class="sec">Bereiche</p>${areasHTML(areas())}<p class="hint">Schalter wirken sofort für alle.</p>`;
-  h += `<p class="sec">Mehr</p><div class="btns" style="margin-top:0"><button class="btn g lq" type="button" data-a="mood">Stimmung ändern<span class="gl"></span></button><button class="btn g lq" type="button" data-a="renew">Neuen Einladungs-Link erstellen<span class="gl"></span></button><button class="btn dz lq" type="button" data-a="leave">Reise auf diesem Gerät entfernen<span class="gl"></span></button><button class="btn dz lq" type="button" data-a="tdel">Reise für alle löschen<span class="gl"></span></button></div>`;
+  h += `<p class="sec">Mehr</p><div class="btns" style="margin-top:0"><button class="btn g lq" type="button" data-a="mood">Stimmung ändern<span class="gl"></span></button><button class="btn g lq" type="button" data-a="renew">Neuen Einladungs-Link erstellen<span class="gl"></span></button><button class="btn dz lq" type="button" data-a="leave">Von diesem Gerät entfernen<span class="gl"></span></button><button class="btn dz lq" type="button" data-a="tdel">Reise für alle löschen<span class="gl"></span></button></div>`;
   return h; }
 
 
@@ -1475,6 +1482,7 @@ $('app').addEventListener('input', e => { const el = e.target, f = el.dataset.f;
   o[f] = f === 'pin' || f === 'pin2' ? (el.value = el.value.replace(/\D/g, '')) : el.value;
   if (view.n === 'new' && f === 'from' && Wz.to && Wz.to < Wz.from) { Wz.to = Wz.from; draw(true); }
   if (o === Ed) $('app').querySelectorAll('[data-a=nsave],[data-a=ncancel]').forEach(x => x.disabled = !ndirty());
+  if (o === Pf && f === 'name') { const x = $('app').querySelector('[data-a=psave]'); if (x) x.disabled = !pdirty(); }
   if (el.type === 'date' && f === 'from' && (o === Ed || (Ed && o === Ed.d && Ed.kind === 'stop'))) { if (o.to && o.to < o.from) o.to = o.from; draw(true); }
   if (el.dataset.o === 'cf' && f === 'amt' && !Cf.pay) { const hn = el.closest('.form').querySelector('.hint'); if (hn) hn.textContent = Cf.for.length ? (parseAmt(Cf.amt) > 0 ? 'Je ' + eur(Math.round(parseAmt(Cf.amt) / Cf.for.length)) : Cf.for.length + (Cf.for.length === 1 ? ' Person' : ' Personen')) : 'Bitte wähle mindestens eine Person.'; } });
 $('app').addEventListener('change', e => { const el = e.target; if (el.tagName === 'SELECT' && el.dataset.f) { const o = objFor(el); if (o) o[el.dataset.f] = el.value; } });
@@ -1500,8 +1508,8 @@ function wizSkip() { const w = Wz, s = WSTEPS[w.step]; w.err = '';
   if (s === 'when') { w.from = w.to = ''; } if (s === 'stay') w.stops.forEach(x => delete x.stay); if (s === 'travel') { w.travel = ''; w.tnote = ''; }
   if (s === 'where' && (w.q || '').trim()) { w.stops.push({ id: rid(8), name: w.q.trim() }); w.q = ''; }
   navTo('push', () => { w.step++; if (WSTEPS[w.step] === 'stay' && !w.stops.length) w.step++; draw(true); scrollTo(0, 0); }); }
-function pasteGo() { const c = parseCarry(pasteVal); if (c && c.length) { pasteOpen = false; pasteVal = ''; takeCarry(c); return draw(true); }
-  const p = parseInvite(pasteVal); if (!p) return toast('Das ist kein Link von outbndr'); pasteOpen = false; pasteVal = ''; go('#/e/' + p.t + '/' + p.tok); }
+function pasteGo() { const c = parseCarry(pasteVal); if (c && c.length) { pasteOpen = false; pasteVal = ''; pasteErr = ''; takeCarry(c); return draw(true); }
+  const p = parseInvite(pasteVal); if (!p) { pasteOpen = true; pasteErr = pasteVal.trim() ? 'Das ist kein Einladungs-Link von outbndr.' : 'Bitte füg den Einladungs-Link ein.'; return draw(true); } pasteOpen = false; pasteVal = ''; pasteErr = ''; go('#/e/' + p.t + '/' + p.tok); }
 
 /* ---------- Tippen: ein Verteiler, jeder Knopf hat seinen eigenen Fall ---------- */
 // Ortsvorschlag: schon beim Berühren übernehmen (sonst schließt das Verlassen des Feldes die Liste vorher)
@@ -1536,8 +1544,8 @@ $('app').addEventListener('click', async e => {
     pasteOpen = true; draw(true); $('pl')?.focus(); return; }
   if (a === 'apphide') { store.set('outbndr.apphide', true); return draw(true); }
   if (a === 'carry') return copyCarry();
-  if (a === 'copyinv') return copy(location.href, 'Kopiert. Jetzt outbndr. zum Home-Bildschirm hinzufügen.');
-  if (a === 'pasteX') { pasteOpen = false; pasteVal = ''; return draw(true); }
+  if (a === 'copyinv') return copy(location.href, 'Kopiert. Jetzt outbndr zum Home-Bildschirm hinzufügen.');
+  if (a === 'pasteX') { pasteOpen = false; pasteVal = ''; pasteErr = ''; return draw(true); }
   if (a === 'pasteGo') return pasteGo();
   if (a === 'wnext') return wizNext();
   if (a === 'wskip') return wizSkip();
@@ -1562,8 +1570,8 @@ $('app').addEventListener('click', async e => {
   if (a === 'cm' && id) { const o = cmOpen.has(id); if (!o) readCm(id); return foldRow(o, v => { v ? cmOpen.add(id) : (cmOpen.delete(id), delete cmDraft[id]); }, `#app [data-id="${id}"] .cmts:not(.shop) .cmb`, `#app [data-id="${id}"] .cmts:not(.shop) .cmh svg`); }
   if (a === 'cmsend' && id) return sendCm(id);
   if (a === 'cmdel' && id) { if (!await ask({ t: 'Kommentar löschen?', ok: 'Löschen', danger: true })) return; if (!alive(id)) return;
-    try { await updateDoc(tdoc(T.id, 'acts', id), { ['cm.' + b.dataset.c]: deleteField() }); } catch (err) { console.error(err); toast(FAIL); } return; }
-  if (a === 'rvx') { const was = T.acts.find(x => x.id === id), del = was && was.res && b.textContent === 'Entfernen'; return closeForm(`#app [data-id="${id}"] .rvw`, () => { Rv = null; if (del) updateDoc(tdoc(T.id, 'acts', id), { res: deleteField() }).catch(err => { console.error(err); toast(FAIL); }); }); }
+    try { await updateDoc(tdoc(T.id, 'acts', id), { ['cm.' + b.dataset.c]: deleteField() }); toast('Gelöscht'); } catch (err) { console.error(err); toast(FAIL); } return; }
+  if (a === 'rvx') { const was = T.acts.find(x => x.id === id), del = was && was.res && b.textContent === 'Entfernen'; return closeForm(`#app [data-id="${id}"] .rvw`, () => { Rv = null; if (del) updateDoc(tdoc(T.id, 'acts', id), { res: deleteField() }).then(() => toast('Reservierung entfernt'), err => { console.error(err); toast(FAIL); }); }); }
   if (a === 'rvsave') return saveRes();
   // Einkaufsliste
   const sid = b.dataset.sid || (b.closest('[data-sid]') || {}).dataset?.sid, k2 = (b.closest('[data-k2]') || {}).dataset?.k2;
@@ -1571,7 +1579,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'sadd') return addShop(sid);
   if (a === 'stick') return tickShop(sid, k2);
   if (a === 'sdel') { const x = shopItems(sid).find(i => i.k === k2); if (!x || !await ask({ t: `„${x.t}“ löschen?`, ok: 'Löschen', danger: true })) return;
-    try { await updateDoc(shopRef(sid), { ['shop.' + k2]: deleteField() }); } catch (err) { console.error(err); toast(FAIL); } return; }
+    try { await updateDoc(shopRef(sid), { ['shop.' + k2]: deleteField() }); toast('Gelöscht'); } catch (err) { console.error(err); toast(FAIL); } return; }
   if (a === 'sugt') return foldRow(sugOpen.has(sid), v => { v ? sugOpen.add(sid) : sugOpen.delete(sid); }, `#app [data-sg="${sid}"]`, `#app [data-a=sugt][data-sid="${sid}"] svg`);
   if (a === 'sugadd') { shopDraft[sid] = b.dataset.t; return addShop(sid, true); }
   if (a === 'noshop') { const x = shopSrc(sid); if (!x || !await ask({ t: `„${x.title}“ aus der Einkaufsliste nehmen?`, m: 'Der Vorschlag bleibt. Sobald jemand eine Zutat einträgt, steht er wieder hier.', ok: 'Herausnehmen' })) return;
@@ -1601,7 +1609,7 @@ $('app').addEventListener('click', async e => {
   if (a === 'sdelst') { const id2 = b.closest('[data-stop]').dataset.stop, x = (T.info.stops || []).find(z => z.id === id2); if (!x || !await ask({ t: `„${x.name}“ entfernen?`, m: 'Das Ziel mit Unterkunft verschwindet für alle. Vorschläge bleiben.', ok: 'Entfernen', danger: true })) return;
     try { await updateDoc(tdoc(T.id), { stops: (T.info.stops || []).filter(z => z.id !== id2) }); toast('Entfernt'); } catch (err) { console.error(err); toast(FAIL); } return; }
   if (a === 'sup') { const id2 = b.closest('[data-stop]').dataset.stop, l = clone(T.info.stops || []), i2 = l.findIndex(z => z.id === id2); if (i2 > 0) { const [x] = l.splice(i2, 1); l.splice(i2 - 1, 0, x); try { await updateDoc(tdoc(T.id), { stops: l }); } catch (err) { console.error(err); toast(FAIL); } } return; }
-  if (a === 'ldel') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x || !await ask({ t: `„${x.title || (KIND[x.kind] || ['Fahrt'])[0]}“ entfernen?`, ok: 'Entfernen', danger: true })) return;
+  if (a === 'ldel') { const id2 = b.closest('[data-leg]').dataset.leg, x = (T.info.travel || []).find(z => z.id === id2); if (!x || !await ask({ t: `„${x.title || (KIND[x.kind] || ['Fahrt'])[0]}“ entfernen?`, m: 'Die Fahrt verschwindet für alle.', ok: 'Entfernen', danger: true })) return;
     try { await updateDoc(tdoc(T.id), { travel: (T.info.travel || []).filter(z => z.id !== id2) }); toast('Entfernt'); } catch (err) { console.error(err); toast(FAIL); } return; }
   if (a === 'renew') return renewLink();
   if (a === 'leave') return leaveTrip();
@@ -1667,15 +1675,15 @@ function segMove(btn) { const s = btn.closest('.seg2'), ind = s.querySelector('.
 
 /* ---------- Vorschläge speichern, mitmachen, kommentieren ---------- */
 const alive = id => T && T.acts && T.acts.some(a => a.id === id);
-async function saveAct() { const f = F; if (!f) return; const title = f.title.trim(); f.err = ''; if (!title) { f.err = 'Bitte gib einen Titel ein.'; draw(true); return; }
+async function saveAct() { const f = F; if (!f) return; const title = f.title.trim(); f.err = ''; if (!title) { f.err = f.cat === 'food' ? 'Bitte schreib, was es zu essen gibt.' : 'Bitte schreib, was ansteht.'; draw(true); return; }
   const pl = f.place && f.place.name ? { name: f.place.name.slice(0, 80), ...(typeof f.place.lat === 'number' ? { lat: f.place.lat, lng: f.place.lng } : {}), ...(f.place.addr ? { addr: f.place.addr.slice(0, 120) } : {}) } : null;
   const t = T, data = { title, desc: f.desc.trim(), day: f.day, time: f.time, stop: f.stop || '' }; F = null; delete PS.fplace; closeForm('#form');   // sofort schließen: kein Doppelspeichern bei schlechtem Netz
   try {
     if (f.id === 'new') { const id = rid(16), b = writeBatch(db); flash = id;
       b.set(tdoc(t.id, 'acts', id), { ...data, ...(pl ? { place: pl } : {}), cat: f.cat, kind: f.cat === 'food' ? f.kind : '', by: t.me, ts: Date.now() });
       b.set(tdoc(t.id, 'signups', id + '_' + t.me), { act: id, pid: t.me });   // wer vorschlägt, ist automatisch dabei
-      await b.commit(); }
-    else { if (!alive(f.id)) return toast('Den Vorschlag gibt es nicht mehr'); await updateDoc(tdoc(t.id, 'acts', f.id), { ...data, place: pl || deleteField(), ...(f.cat === 'food' ? { kind: f.kind } : {}) }); }
+      await b.commit(); toast('Vorgeschlagen'); }
+    else { if (!alive(f.id)) return toast('Den Vorschlag gibt es nicht mehr'); await updateDoc(tdoc(t.id, 'acts', f.id), { ...data, place: pl || deleteField(), ...(f.cat === 'food' ? { kind: f.kind } : {}) }); toast('Gespeichert'); }
   } catch (e) { console.error(e); toast(FAIL); if (T === t && !F) { F = f; draw(true); } }   // Getipptes kommt zurück
 }
 async function toggleGo(id) { const t = T, ref = tdoc(t.id, 'signups', id + '_' + t.me), on = t.sig.some(s => s.act === id && s.pid === t.me);
@@ -1690,18 +1698,18 @@ async function delAct(id) { const a = T.acts.find(x => x.id === id); if (!a) ret
   const t = T, sig = t.sig.filter(s => s.act === id);
   try { await deleteDoc(tdoc(t.id, 'acts', id)); cmOpen.delete(id); await Promise.all(sig.map(s => deleteDoc(tdoc(t.id, 'signups', id + '_' + s.pid)).catch(() => {}))); toast('Gelöscht'); } catch (e) { console.error(e); toast(FAIL); } }
 async function setDone(id, on) { const a = T.acts.find(x => x.id === id); if (!a) return;
-  if (on && !await ask({ t: `„${a.title}“ als erledigt markieren?`, m: 'Er wandert für alle nach unten zu „Erledigt“.', ok: 'Erledigt' })) return; if (!alive(id)) return;
+  if (on && !await ask({ t: `„${a.title}“ als erledigt markieren?`, m: 'Der Vorschlag wandert für alle nach unten zu „Erledigt“.', ok: 'Erledigt' })) return; if (!alive(id)) return;
   try { await updateDoc(tdoc(T.id, 'acts', id), on ? { done: Date.now(), dby: T.me } : { done: deleteField(), dby: deleteField() }); toast(on ? 'Erledigt' : 'Wieder offen'); if (!on) setTimeout(() => goToCard(id), 60); } catch (e) { console.error(e); toast(FAIL); } }
 async function saveRes() { const r = Rv; if (!r) return; const p = parseInt(r.p, 10);
-  r.err = ''; if (!r.t && !(p > 0)) { r.err = 'Bitte Uhrzeit oder Personen eintragen.'; return draw(true); } if (r.p && !(p > 0 && p < 100)) { r.err = 'Bitte eine Zahl bei Personen eintragen.'; return draw(true); }
+  r.err = ''; if (!r.t && !(p > 0)) { r.err = 'Bitte Uhrzeit oder Personen eintragen.'; return draw(true); } if (r.p && !(p > 0 && p < 100)) { r.err = 'Bei Personen bitte eine Zahl von 1 bis 99 eintragen.'; return draw(true); }
   Rv = null; shut(`#app [data-id="${r.id}"] .rvw`, null, () => draw(true)); if (!alive(r.id)) return;
-  try { await updateDoc(tdoc(T.id, 'acts', r.id), { res: { t: r.t || '', p: p > 0 ? p : 0 } }); } catch (e) { console.error(e); toast(FAIL); } }
-async function saveProfile() { const name = Pf.name.trim(); if (!name) { Pf.err = 'Bitte gib deinen Namen ein.'; return draw(true); }
+  const t = T; try { await updateDoc(tdoc(t.id, 'acts', r.id), { res: { t: r.t || '', p: p > 0 ? p : 0 } }); toast('Gespeichert'); } catch (e) { console.error(e); toast(FAIL); if (T === t && !Rv) { Rv = r; draw(true); } } }   // Getipptes kommt zurück
+async function saveProfile() { const name = Pf.name.trim(); Pf.err = ''; if (!name) { Pf.err = 'Bitte gib deinen Namen ein.'; return draw(true); }
   if (Object.entries(T.people).some(([id, p]) => id !== T.me && norm(p.name) === norm(name))) { Pf.err = 'Den Namen gibt es in dieser Reise schon.'; return draw(true); }
-  try { await updateDoc(tdoc(T.id, 'people', T.me), { name, col: Pf.col }); toast('Gespeichert'); go('#/r/' + T.id); } catch (e) { console.error(e); Pf.err = FAIL; draw(true); } }
-async function savePin() { if (!PIN_OK(Pf.pin)) { Pf.err = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); } if (Pf.pin !== Pf.pin2) { Pf.err = 'Die beiden PINs sind nicht gleich.'; return draw(true); }
+  try { await updateDoc(tdoc(T.id, 'people', T.me), { name, col: Pf.col }); Pf.name = name; toast('Gespeichert'); draw(true); } catch (e) { console.error(e); Pf.err = FAIL; draw(true); } }
+async function savePin() { Pf.perr = ''; if (!PIN_OK(Pf.pin)) { Pf.perr = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); } if (Pf.pin !== Pf.pin2) { Pf.perr = 'Die beiden PINs sind nicht gleich.'; return draw(true); }
   try { const ph = await hash(T.id, T.me, Pf.pin), b = writeBatch(db); b.set(tdoc(T.id, 'people', T.me, 'priv', 'pin'), { ph }); b.update(tdoc(T.id, 'members', uid), { ph }); await b.commit();
-    Pf.pin = Pf.pin2 = ''; Pf.err = ''; toast('Neue PIN gespeichert'); draw(true); } catch (e) { console.error(e); Pf.err = FAIL; draw(true); } }
+    Pf.pin = Pf.pin2 = ''; Pf.perr = ''; toast('Neue PIN gespeichert'); draw(true); } catch (e) { console.error(e); Pf.perr = FAIL; draw(true); } }
 
 /* ---------- Einkaufsliste speichern ---------- */
 async function addShop(id, quiet) { const t = (shopDraft[id] || '').trim(); if (!t || !T) return; delete shopDraft[id];
@@ -1726,7 +1734,8 @@ async function saveCost() { const f = Cf; if (!f) return; const amt = parseAmt(f
   f.err = ''; const bad = m => { f.err = m; draw(true); };
   if (amt >= 10000000) return bad('Höchstens 99.999,99 € pro Ausgabe.');
   if (amt === 0) return bad('Der Betrag muss größer als 0 sein.');
-  if (!(amt > 0)) return bad('Bitte den Betrag so eingeben: 12,50 oder 1.234,56');
+  if (!String(f.amt || '').trim()) return bad('Bitte gib einen Betrag ein.');
+  if (!(amt > 0)) return bad('Bitte den Betrag so eingeben: 12,50 oder 1.234,56.');
   let data;
   if (f.pay) { if (!f.to || f.to === f.by) return bad('Bitte wähle, wer an wen überwiesen hat.'); data = { title: 'Ausgleich', kind: 'pay', amt, by: f.by, for: [f.to] }; }
   else { const t = f.t.trim(); if (!t) return bad('Bitte schreib, wofür.'); if (!f.for.length) return bad('Bitte wähle, für wen.');
@@ -1766,17 +1775,22 @@ async function saveDraft() { const e = Ed, d = e.d; if (!d) return; e.derr = '';
     const l = clone(T.info.stops || []), c = cleanStop(d), i = l.findIndex(z => z.id === d.id); i >= 0 ? (l[i] = c) : l.push(c);
     try { await updateDoc(tdoc(T.id), { stops: l }); delete PS['stay-' + d.id]; toast(e.isNew ? 'Hinzugefügt' : 'Gespeichert'); Object.assign(e, { kind: '', open: '', d: null, isNew: false }); draw(true); } catch (err) { console.error(err); e.derr = FAIL; draw(true); } return; }
   const x = { id: d.id, kind: KIND[d.kind] ? d.kind : 'auto', title: String(d.title || '').trim().slice(0, 60), from: String(d.from || '').trim().slice(0, 40), to: String(d.to || '').trim().slice(0, 40), date: DAY_OK(d.date) ? d.date : '', time: /^\d\d:\d\d$/.test(d.time || '') ? d.time : '', note: String(d.note || '').trim().slice(0, 300), who: (d.who || []).filter(id => T.people[id]) };
-  if (!x.title && !x.from && !x.to && !x.date) { e.derr = 'Bitte trag mindestens Strecke, Datum oder Nummer ein.'; return draw(true); }
+  if (!x.title && !x.from && !x.to && !x.date) { e.derr = 'Bitte trag mindestens Bezeichnung, Strecke oder Datum ein.'; return draw(true); }
   const l = clone(T.info.travel || []), i = l.findIndex(z => z.id === d.id); i >= 0 ? (l[i] = x) : l.push(x);
   try { await updateDoc(tdoc(T.id), { travel: l }); toast(e.isNew ? 'Hinzugefügt' : 'Gespeichert'); Object.assign(e, { kind: '', open: '', d: null, isNew: false }); draw(true); } catch (err) { console.error(err); e.derr = FAIL; draw(true); } }
 async function renewLink(sure) { if (!sure && !await ask({ t: 'Neuen Einladungs-Link erstellen?', m: 'Der bisherige Link funktioniert dann nicht mehr. Wer schon dabei ist, bleibt dabei.', ok: 'Neuer Link' })) return;
+  if (offline()) return toast(OFFLINE);
   const t = T, tok = rid(24); try { const b = writeBatch(db); b.set(tdoc(t.id, 'invites', tok), { ts: Date.now() }); t.toks.forEach(x => b.delete(tdoc(t.id, 'invites', x.id))); await b.commit(); LS.add({ id: t.id, tok }); toast('Neuer Link erstellt'); share(t.id, tok, t.info.name); }
   catch (e) { console.error(e); toast(FAIL); } }
-async function leaveTrip() { if (!await ask({ t: 'Reise auf diesem Gerät entfernen?', m: 'Deine Vorschläge und Stimmen bleiben. Mit dem Einladungs-Link, deinem Namen und deiner PIN kommst du jederzeit zurück.', ok: 'Entfernen', danger: true })) return;
-  const id = T.id; try { await deleteDoc(tdoc(id, 'members', uid)); } catch (e) { console.error(e); } LS.del(id); closeTrip(); go('#/'); toast('Entfernt'); }
+// Reise von diesem Gerät entfernen (Startseite und Reise gleich): Gerät meldet sich ab, die Person mit allem bleibt
+async function leaveTrip(id = T && T.id, name = T && T.info && T.info.name) { if (!id) return;
+  if (!await ask({ t: `„${name || 'Reise'}“ von diesem Gerät entfernen?`, m: 'Deine Vorschläge und Stimmen bleiben. Mit dem Einladungs-Link, deinem Namen und deiner PIN kommst du jederzeit zurück.', ok: 'Entfernen', danger: true })) return;
+  if (db && uid) deleteDoc(tdoc(id, 'members', uid)).catch(e => { if (!denied(e)) console.error(e); });   // ohne Netz: geht später raus
+  LS.del(id); if (T && T.id === id) { closeTrip(); go('#/'); } else draw(true); toast('Entfernt'); }
 async function deleteTrip() { const t = T;
   if (!await ask({ t: `„${t.info.name}“ für alle löschen?`, m: 'Alle Vorschläge, Kommentare, Kosten und Listen sind dann für alle weg. Das lässt sich nicht rückgängig machen.', ok: 'Weiter', danger: true })) return;
   if (!await ask({ t: 'Wirklich endgültig löschen?', ok: 'Endgültig löschen', danger: true })) return;
+  if (offline()) return toast(OFFLINE);
   try { await updateDoc(tdoc(t.id), { del: Date.now() });   // zuerst markieren: alle Geräte zeigen sofort „gibt es nicht mehr“
     const refs = [...t.acts.map(a => tdoc(t.id, 'acts', a.id)), ...t.sig.map(s => tdoc(t.id, 'signups', s.act + '_' + s.pid)), ...t.costs.map(c => tdoc(t.id, 'costs', c.id)), ...t.toks.map(x => tdoc(t.id, 'invites', x.id)), tdoc(t.id, 'lists', GEN)];
     for (let i = 0; i < refs.length; i += 400) { const b = writeBatch(db); refs.slice(i, i + 400).forEach(r => b.delete(r)); await b.commit(); }
@@ -1800,9 +1814,9 @@ function dots() { for (const r of [trow]) [...r.children].forEach(b => { const h
 
 /* ---------- Was steht in welchem ⋯-Menü ---------- */
 function menuFor(btn) { const k = btn.dataset.menu;
-  if (k === 'home') { const id = btn.closest('[data-id]').dataset.id, t = LS.one(id); return [[[MP.share, 'Einladungs-Link teilen', () => t && t.tok ? share(id, t.tok, t.name) : toast('Öffne die Reise einmal, dann ist der Link da')]], [[MP.remove, 'Von diesem Gerät entfernen', async () => { if (!await ask({ t: `„${t.name}“ von diesem Gerät entfernen?`, m: 'Mit dem Einladungs-Link, deinem Namen und deiner PIN kommst du jederzeit zurück.', ok: 'Entfernen', danger: true })) return; LS.del(id); draw(true); }, 'dg']]]; }
+  if (k === 'home') { const id = btn.closest('[data-id]').dataset.id, t = LS.one(id); return [[[MP.share, 'Einladungs-Link teilen', () => t && t.tok ? share(id, t.tok, t.name) : toast('Öffne die Reise einmal, dann ist der Link da')]], [[MP.remove, 'Von diesem Gerät entfernen', () => leaveTrip(id, t && t.name), 'dg']]]; }
   if (btn.id === 'more') { const g = [[[MP.share, 'Einladungs-Link teilen', () => T.tok ? share(T.id, T.tok, T.info.name) : toast('Einen Moment, der Link lädt noch')], [MP.ppl, 'Mitreisende', () => go('#/r/' + T.id + '/leute')], [MP.me, 'Mein Profil', () => go('#/r/' + T.id + '/profil')], [MP.help, 'Kurze Tour', () => setTimeout(startTour, 350)]]];
-    g.push(isAdmin() ? [[MP.gear, 'Reise bearbeiten', () => go('#/r/' + T.id + '/reise')], [MP.mood, 'Stimmung ändern', () => go('#/r/' + T.id + '/stimmung')]] : [[MP.remove, 'Reise auf diesem Gerät entfernen', leaveTrip]]);
+    g.push(isAdmin() ? [[MP.gear, 'Reise bearbeiten', () => go('#/r/' + T.id + '/reise')], [MP.mood, 'Stimmung ändern', () => go('#/r/' + T.id + '/stimmung')]] : [[MP.remove, 'Von diesem Gerät entfernen', () => leaveTrip()]]);
     return g; }
   if (k === 'act') { const id = btn.closest('[data-id]').dataset.id, a = T.acts.find(x => x.id === id); if (!a) return null; const g = [[], []];
     if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: (T.info.stops || []).some(z => z.id === a.stop) ? a.stop : '' }; if (F.day && T.info.from && !tripDays(T.info).includes(F.day)) F.day = ''; draw(true); openForm('#form'); }]);   // gelöschtes Ziel / Tag außerhalb der Reise: Formular zeigt „Egal wo“/„Flexibel“, also auch so speichern
@@ -1814,11 +1828,12 @@ function menuFor(btn) { const k = btn.dataset.menu;
     if (canEdit(a)) g.push([[MP.del, 'Löschen', () => delAct(id), 'dg']]);
     return g; }
   if (k === 'person') { const pid = btn.closest('[data-pid]').dataset.pid, p = T.people[pid]; if (!p) return null;
-    return [[[MP.star, p.admin ? 'Admin-Recht entziehen' : 'Zum Admin machen', async () => { if (!await ask({ t: p.admin ? `${p.name} ist dann kein Admin mehr.` : `${p.name} zum Admin machen?`, m: p.admin ? '' : 'Admins dürfen alle Vorschläge ändern, die Reise bearbeiten und weitere Admins bestimmen.', ok: p.admin ? 'Entziehen' : 'Zum Admin machen' })) return;
-      try { await updateDoc(tdoc(T.id, 'people', pid), { admin: !p.admin }); } catch (e) { console.error(e); toast(FAIL); } }]],
+    return [[[MP.star, p.admin ? 'Admin-Recht entziehen' : 'Zum Admin machen', async () => { if (!await ask({ t: p.admin ? `${p.name} das Admin-Recht entziehen?` : `${p.name} zum Admin machen?`, m: p.admin ? 'Danach kann die Person die Reise nicht mehr bearbeiten.' : 'Admins dürfen alle Vorschläge ändern, die Reise bearbeiten und weitere Admins bestimmen.', ok: p.admin ? 'Entziehen' : 'Zum Admin machen' })) return;
+      try { await updateDoc(tdoc(T.id, 'people', pid), { admin: !p.admin }); toast(p.admin ? `${p.name} ist kein Admin mehr` : `${p.name} ist jetzt Admin`); } catch (e) { console.error(e); toast(FAIL); } }]],
       [[MP.remove, 'Aus der Reise entfernen', async () => { if (!await ask({ t: `${p.name} aus der Reise entfernen?`, m: 'Vorschläge und Ausgaben bleiben. Mit dem Einladungs-Link kann die Person neu beitreten.', ok: 'Entfernen', danger: true })) return;
+        if (offline()) return toast(OFFLINE);
         try { const b = writeBatch(db); b.delete(tdoc(T.id, 'people', pid, 'priv', 'pin')); b.delete(tdoc(T.id, 'people', pid)); T.sig.filter(s => s.pid === pid).forEach(s => b.delete(tdoc(T.id, 'signups', s.act + '_' + pid))); await b.commit();
-          if (await ask({ t: `${p.name} ist entfernt.`, m: 'Mit dem bisherigen Einladungs-Link könnte die Person wieder beitreten. Neuen Link erstellen? Alle anderen bleiben dabei.', ok: 'Neuer Link' })) renewLink(true); } catch (e) { console.error(e); toast(FAIL); } }, 'dg']]]; }
+          if (await ask({ t: `${p.name} ist entfernt`, m: 'Mit dem bisherigen Einladungs-Link könnte die Person wieder beitreten. Neuen Link erstellen? Alle anderen bleiben dabei.', ok: 'Neuer Link', no: 'Nicht jetzt' })) renewLink(true); } catch (e) { console.error(e); toast(FAIL); } }, 'dg']]]; }
   return null; }
 
 /* ---------- Karte (OpenStreetMap über Leaflet, ohne Schlüssel) ---------- */
