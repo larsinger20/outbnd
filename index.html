@@ -434,13 +434,16 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .shop{margin-top:12px;border-top:.5px solid var(--bd)}
 .si{display:flex;align-items:center;gap:12px;min-height:44px;padding:4px 0;font-size:17px}
 .si .t{flex:1;min-width:0}
-.si.ok .t{color:var(--mu);text-decoration:line-through}
+/* Durchstreichen als Linie, die von links nach rechts durch den Text läuft (text-decoration lässt sich nicht bewegen) */
+.si .tx{background:linear-gradient(currentColor,currentColor) no-repeat 0 54%/0 1.5px;transition:background-size .34s cubic-bezier(.32,.72,0,1) .06s,color .3s}
+.si.ok .tx{background-size:100% 1.5px;color:var(--mu)}
 .si small{color:var(--mu);font-size:13px;margin-left:6px}
 .tick{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.8px var(--mu);display:flex;align-items:center;justify-content:center;position:relative;color:#fff;transition:background .2s,box-shadow .2s}
 .tick::after{content:'';position:absolute;inset:-9px}
 .tick svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:0}
 .tick.on,.si.ok .tick{background:var(--acb);box-shadow:none}.tick.on svg,.si.ok .tick svg{opacity:1}
-.tick svg{transition:opacity .15s}.si.tk.ok .tick{animation:tkp .32s cubic-bezier(.3,1.4,.5,1)}@keyframes tkp{from{transform:scale(.7)}}.si .t{transition:color .2s}
+.tick svg{transition:opacity .15s}.si.tk.ok .tick{animation:tkp .36s cubic-bezier(.3,1.4,.5,1)}@keyframes tkp{from{transform:scale(.72)}}.si.tk.ok .tick svg *{stroke-dasharray:24;animation:tkd .26s cubic-bezier(.32,.72,0,1) .1s both}@keyframes tkd{from{stroke-dashoffset:24}}
+@media (prefers-reduced-motion:reduce){.si .tx{transition:none}.si.tk.ok .tick,.si.tk.ok .tick svg *{animation:none}}
 .sadd{display:flex;gap:8px;align-items:center;margin-top:6px;border-radius:999px;background:var(--fill);padding:2px 4px 2px 14px}
 .sadd:focus-within{box-shadow:inset 0 0 0 2px var(--ac)}
 .sadd input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:40px;padding:0}
@@ -1468,7 +1471,7 @@ const GEN = 'gen';
 const shopSrc = id => id === GEN ? T.gen : T.acts.find(a => a.id === id);
 const shopItems = (id, arch = false) => Object.entries((shopSrc(id) || {}).shop || {}).filter(([k, x]) => x && x.t && !!x.arch === arch && !gone(id + ':' + k)).map(([k, x]) => ({ k, ...x })).sort((a, b) => (!!a.ok - !!b.ok) || (a.ts || 0) - (b.ts || 0));
 const shopRef = id => id === GEN ? tdoc(T.id, 'lists', GEN) : tdoc(T.id, 'acts', id);
-function shopRows(id) { return shopItems(id).map(x => `<div class="si${x.ok ? ' ok' : ''}" data-sid="${esc(id)}" data-k2="${esc(x.k)}"><button class="tick" type="button" data-a="stick" role="checkbox" aria-checked="${!!x.ok}" aria-label="${esc(x.t)} abhaken">${SY.check}</button><span class="t">${esc(x.t)}${x.by && x.by !== T.me && T.people[x.by] ? `<small>${esc(P(x.by).name)}</small>` : ''}</span><button class="cmx" type="button" data-a="sdel" aria-label="${esc(x.t)} löschen">${SY.x}</button></div>`).join(''); }
+function shopRows(id) { return shopItems(id).map(x => `<div class="si${x.ok ? ' ok' : ''}" data-sid="${esc(id)}" data-k2="${esc(x.k)}"><button class="tick" type="button" data-a="stick" role="checkbox" aria-checked="${!!x.ok}" aria-label="${esc(x.t)} abhaken">${SY.check}</button><span class="t"><span class="tx">${esc(x.t)}</span>${x.by && x.by !== T.me && T.people[x.by] ? `<small>${esc(P(x.by).name)}</small>` : ''}</span><button class="cmx" type="button" data-a="sdel" aria-label="${esc(x.t)} löschen">${SY.x}</button></div>`).join(''); }
 function sugChips(id) { const a = id === GEN ? null : shopSrc(id), have = new Set([...shopItems(id), ...shopItems(id, true)].map(x => fold(x.t))), list = suggestFor(a).filter(i => !have.has(fold(i))).slice(0, 14);
   if (!list.length) return ''; const o = sugOpen.has(id);
   return `<button class="txb" type="button" data-a="sugt" data-sid="${esc(id)}" aria-expanded="${o}">Ideen (${list.length})${CHEV}</button>${o ? `<div class="chips" data-sg="${esc(id)}">${list.map(i => `<button type="button" data-a="sugadd" data-sid="${esc(id)}" data-t="${esc(i)}">+ ${esc(i)}</button>`).join('')}</div>` : ''}`; }
@@ -1873,10 +1876,11 @@ async function addShop(id, quiet) { const t = (shopDraft[id] || '').trim(); if (
 let shopSnap = null;
 const shopTops = () => { const m = new Map(); document.querySelectorAll('#app .si').forEach(e => m.set(e.dataset.sid + ':' + e.dataset.k2, e.getBoundingClientRect().top + scrollY)); return { m, t: Date.now() }; };
 function shopFlip() { const sn = shopSnap; shopSnap = null; if (!sn || Date.now() - sn.t > 3000 || calm()) return;
-  document.querySelectorAll('#app .si').forEach(e => { const o = sn.m.get(e.dataset.sid + ':' + e.dataset.k2); if (o == null) return; const d = o - (e.getBoundingClientRect().top + scrollY); if (Math.abs(d) > 1) e.animate([{ transform: `translateY(${d}px)` }, { transform: 'none' }], { duration: 380, easing: MO.on }); }); }
+  document.querySelectorAll('#app .si').forEach(e => { const o = sn.m.get(e.dataset.sid + ':' + e.dataset.k2); if (o == null) return; const d = o - (e.getBoundingClientRect().top + scrollY); if (Math.abs(d) < 1) return; const an = e.animate([{ transform: `translateY(${d}px)` }, { transform: 'none' }], { duration: 400, easing: MO.on });
+    if (e.dataset.sid + ':' + e.dataset.k2 === sn.key) { e.style.cssText = 'position:relative;z-index:1;background:var(--card)'; an.finished.catch(() => {}).then(() => { e.style.cssText = ''; }); } }); }   // die abgehakte Zeile gleitet über den anderen, nichts scheint durch
 async function tickShop(id, k) { const x = shopItems(id).find(i => i.k === k); if (!x) return; const ok = !x.ok, row = [...document.querySelectorAll('#app .si')].find(e => e.dataset.sid === id && e.dataset.k2 === k);
   if (row) { row.classList.toggle('ok', ok); row.classList.add('tk'); row.querySelector('.tick').setAttribute('aria-checked', ok); }
-  slides++; setTimeout(() => { shopSnap = shopTops(); slideDone(); }, calm() ? 0 : 450);
+  slides++; setTimeout(() => { shopSnap = shopTops(); shopSnap.key = id + ':' + k; slideDone(); }, calm() ? 0 : 560);
   try { await updateDoc(shopRef(id), { ['shop.' + k + '.ok']: ok }); } catch (e) { console.error(e); toast(FAIL); draw(true); } }
 async function archShop() { const ids = [GEN, ...T.acts.filter(a => a.cat === 'food' && a.kind === 'cook' && !a.done && !a.noshop).map(a => a.id)], now = Date.now();
   const todo = ids.map(id => [id, shopItems(id).filter(x => x.ok)]).filter(x => x[1].length), n = todo.reduce((s, x) => s + x[1].length, 0);
