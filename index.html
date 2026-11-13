@@ -17,14 +17,14 @@
 :root{
   --bg:#f2f2f7;--card:#fff;--tx:#000;--mu:#636366;--ac:#008198;--acb:#008198;--bd:#e0e0e5;--fill:rgba(118,118,128,.12);--g:radial-gradient(120% 100% at 15% 0,#12a086 0,#0c807d 42%,#0d5f7a 100%);
   --lgbd:rgba(255,255,255,.8);--lghi:rgba(255,255,255,.95);
-  --pill:rgba(0,0,0,.07);--lens:rgba(255,255,255,.4);--lring:rgba(0,0,0,.03);--lsh1:rgba(255,255,255,.8);--lsh2:rgba(255,255,255,.55);--lhl:rgba(255,255,255,1);--lhm:rgba(0,0,0,.06);--tbg:rgba(252,252,252,.38);--shn:rgba(255,255,255,.5);--rim:rgba(255,255,255,.95);--rim2:rgba(0,0,0,.05);--tsh:0 6px 20px rgba(0,0,0,.1);
+  --pill:rgba(0,0,0,.07);--lens:rgba(255,255,255,.08);--lring:rgba(0,0,0,.03);--lsh1:rgba(255,255,255,.4);--lsh2:rgba(255,255,255,.2);--lhl:rgba(255,255,255,1);--lhm:rgba(0,0,0,.06);--tbg:rgba(252,252,252,.38);--shn:rgba(255,255,255,.5);--rim:rgba(255,255,255,.95);--rim2:rgba(0,0,0,.05);--tsh:0 6px 20px rgba(0,0,0,.1);
   --mg:rgba(252,252,252,.5);--msh:rgba(255,255,255,.55);--mrd:#e30000;--mdiv:rgba(0,0,0,.1);--mrim:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 .5px 0 rgba(255,255,255,.9);--halo:rgba(255,255,255,.75);--hlc:rgba(60,50,30,.09);--gb:rgba(255,255,255,.55);--gbsh:0 0 0 .5px rgba(60,50,30,.12),0 2px 6px rgba(60,50,30,.12);--glow:rgba(255,255,255,.75);--rd:#c0392b;--btn:rgba(118,118,128,.12);--dim:rgba(40,30,10,.22);--dlg:rgba(250,250,252,.78);
   --font:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;--rnd:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#000;--card:#1c1c1e;--tx:#fff;--mu:#98989f;--ac:#3bddec;--acb:#008198;--bd:#38383a;--fill:rgba(118,118,128,.24);
   --lgbd:rgba(255,255,255,.16);--lghi:rgba(255,255,255,.26);
-  --pill:rgba(0,0,0,.52);--lens:rgba(255,255,255,.075);--lring:rgba(0,0,0,.12);--lsh1:rgba(255,255,255,.17);--lsh2:rgba(255,255,255,.1);--lhl:rgba(255,255,255,.6);--lhm:rgba(255,255,255,.07);--tbg:rgba(44,44,46,.62);--shn:rgba(255,255,255,.07);--rim:rgba(255,255,255,.3);--rim2:rgba(255,255,255,.03);--tsh:0 6px 20px rgba(0,0,0,.4);
+  --pill:rgba(0,0,0,.52);--lens:rgba(255,255,255,0);--lring:rgba(0,0,0,.12);--lsh1:rgba(255,255,255,.06);--lsh2:rgba(255,255,255,.03);--lhl:rgba(255,255,255,.32);--lhm:rgba(255,255,255,.07);--tbg:rgba(44,44,46,.62);--shn:rgba(255,255,255,.07);--rim:rgba(255,255,255,.3);--rim2:rgba(255,255,255,.03);--tsh:0 6px 20px rgba(0,0,0,.4);
   --mg:rgba(34,34,36,.44);--msh:rgba(255,255,255,.09);--mrd:#ff453a;--mdiv:rgba(255,255,255,.1);--mrim:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 .5px 0 rgba(255,255,255,.12);--halo:rgba(0,0,0,.55);--hlc:rgba(255,255,255,.1);--gb:rgba(255,255,255,.1);--gbsh:0 0 0 .5px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.35);--glow:rgba(255,255,255,.28);--rd:#ef7b6e;--btn:rgba(118,118,128,.24);--dim:rgba(0,0,0,.45);--dlg:rgba(40,40,42,.72);color-scheme:dark}}
 
 /* Stimmung der Reise: Verlauf im Kopf + Akzentfarbe (Apples Systemfarben, kontraststarke Fassung) */
@@ -226,7 +226,7 @@ html.noglow .lq>.gl{transition:none!important;opacity:0!important}.navrow>.gl,.r
 .pill .pf{position:absolute;inset:0;border-radius:inherit;background:var(--pill);opacity:calc(1 - var(--l,0))}
 .pill .pg{position:absolute;inset:0;border-radius:inherit;opacity:var(--l,0);
   background:linear-gradient(165deg,var(--lsh1),var(--lens) 48%,var(--lsh2));
-  box-shadow:inset 0 0 7px 1px var(--lring),inset 3px -2px 4px -2px rgba(255,80,40,.5),inset -3px 2px 4px -2px rgba(50,140,255,.5),inset 0 2px 4px -2px rgba(110,255,170,.22),inset 0 -2px 4px -2px rgba(255,215,80,.22),0 4px 12px rgba(0,0,0,.16)}
+  box-shadow:inset 0 0 7px 1px var(--lring),inset 3px -2px 4px -2px rgba(255,80,40,.35),inset -3px 2px 4px -2px rgba(50,140,255,.35),inset 0 2px 4px -2px rgba(110,255,170,.18),inset 0 -2px 4px -2px rgba(255,215,80,.18),0 3px 10px rgba(0,0,0,.1)}   /* klares Glas wie die Uhr-App: kaum Tönung, feiner Rand */
 .pill .pg::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(180deg,var(--lhl),var(--lhm) 34%,var(--lhm) 66%,var(--lhl));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .pill .lw{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
@@ -1918,12 +1918,14 @@ function kick() { if (calm()) { XL.snap(); XR.snap(); Lf.snap(); drawBar(); retu
 function tick(t) { const dt = Math.min(.034, (t - last) / 1000); last = t;
   for (let s = 0; s < 4; s++) { XL.step(dt / 4); XR.step(dt / 4); Lf.step(dt / 4); }
   drawBar(); if (XL.busy() || XR.busy() || Lf.busy()) raf = requestAnimationFrame(tick); else { raf = 0; XL.snap(); XR.snap(); Lf.snap(); drawBar(); } }
+// Lupe wie in der Uhr-App (Video 13.11.2026, volle Auflösung): ca. 1,3-fach breiter, aber nur ca. 1,1-fach höher (bleibt fast in der Leiste), Inhalt nur leicht vergrößert
+const LG = { x: .3, y: .11, m: .08 };
 function drawBar() {
-  const l = Lf.x, lc = Math.max(0, Math.min(1, l)), s = 1 + .3 * l, mx = W - 10;
+  const l = Lf.x, lc = Math.max(0, Math.min(1, l)), s = 1 + LG.y * l, mx = W - 10;
   let a = XL.x, b = XR.x; if (a < 0) a *= .35; if (b > mx) b = mx + (b - mx) * .35;
-  const w = Math.max(tw * .72, b - a), px = a;
+  const w0 = Math.max(tw * .72, b - a), w = w0 * (1 + LG.x * l) / s, px = a - (w - w0) / 2;   // breiter über die Breite, nicht über die Skalierung: Enden bleiben Halbkreise
   pill.style.width = w.toFixed(2) + 'px'; pill.style.transform = `translate3d(${px}px,0,0) scale(${s.toFixed(4)})`;
-  const cs = (1 + .12 * lc) / s, e = 14 * lc, org = (px + w / 2 + 5).toFixed(1) + 'px 32px', tr = `translate3d(${-px}px,0,0) scale(${cs.toFixed(4)})`;
+  const cs = (1 + LG.m * lc) / s, e = 14 * lc, org = (px + w / 2 + 5).toFixed(1) + 'px 32px', tr = `translate3d(${-px}px,0,0) scale(${cs.toFixed(4)})`;
   const lm = $('lm'), lsl = $('lsl'), lsr = $('lsr'); lm.style.left = lm.style.right = e + 'px'; lsl.style.width = lsr.style.width = e + 'px';
   lens.style.left = (-5 - e) + 'px'; lensR.style.left = (-(w - e) - 5) + 'px';
   for (const el of [lens, lensL, lensR]) { el.style.transformOrigin = org; el.style.transform = tr; }
