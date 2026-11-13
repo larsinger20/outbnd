@@ -1187,13 +1187,13 @@ function listHTML(food) { const by = sigBy(), st = stops();
   open.sort(food ? (a, b) => ((by[b.id] || []).length - (by[a.id] || []).length) || (b.ts || 0) - (a.ts || 0) : (a, b) => (b.ts || 0) - (a.ts || 0));
   done.sort((a, b) => (b.done || 0) - (a.done || 0));
   // Ziel-Filter als Auswahl-Knopf wie bei Apple (Wunsch Lars 13.11.2026: zwei Umschalter übereinander sahen seltsam aus)
-  const cur = stopF && st.find(s => s.id === stopF), zrow = st.length < 2 ? '' : `<div class="zrow">${open.length ? `<small>${open.length === 1 ? '1 Vorschlag' : open.length + ' Vorschläge'}</small>` : ''}<button class="zsel lq" type="button" data-menu="stop" aria-label="Ziel wählen: ${esc(cur ? cur.name : 'Alle Ziele')}"><span>${esc(cur ? cur.name : 'Alle Ziele')}</span>${CHEV}<span class="gl"></span></button></div>`;
+  const cur = stopF && st.find(s => s.id === stopF), all = T.acts.filter(a => a.title && tabOf(a) === (food ? 'food' : 'act')).length, zrow = st.length < 2 || !all ? '' : `<div class="zrow">${open.length ? `<small>${open.length === 1 ? '1 Vorschlag' : open.length + ' Vorschläge'}</small>` : ''}<button class="zsel lq" type="button" data-menu="stop" aria-label="Ziel wählen: ${esc(cur ? cur.name : 'Alle Ziele')}"><span>${esc(cur ? cur.name : 'Alle Ziele')}</span>${CHEV}<span class="gl"></span></button></div>`;
   let h = F && F.id === 'new' ? formHTML() : `<div class="${areas().map ? 'addrow' : ''}"><button class="add lq" type="button" data-a="add">${SY.plus}<span>${food ? 'Essen vorschlagen' : 'Aktivität vorschlagen'}</span><span class="gl"></span></button>${areas().map ? `<button class="mapb lq" type="button" data-a="map" aria-label="Karte">${SY.map}<span class="gl"></span></button>` : ''}</div>`;
   h += zrow;
   // Favorit: beim Essen nur bei alleiniger Führung
   const v0 = open[0] && (by[open[0].id] || []).length, fav = food && open.length > 1 && v0 > 0 && v0 > ((by[open[1].id] || []).length) ? open[0].id : null;
   h += '<div class="list">' + (open.length ? open.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by).replace(fav === a.id ? '<p class="inf">' : '\u0000', '<p class="inf"><span style="color:var(--ac);font-weight:600">Favorit</span> · ')).join('')
-    : `<div class="card"><div class="empty"><b>${done.length ? 'Alles erledigt' : food ? 'Noch kein Essen' : 'Noch keine Aktivität'}</b>${done.length ? 'Neue Ideen? Einfach vorschlagen.' : food ? (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Kochen oder essen gehen: Was soll es geben?') : (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Was steht an? Der erste Vorschlag kommt von dir.')}</div></div>`) + '</div>';
+    : (cur && all && !done.length ? `<div class="card"><div class="empty"><b>Hier noch nichts</b>Für ${esc(cur.name)} ist noch nichts eingetragen.</div></div>` : `<div class="card"><div class="empty"><b>${done.length ? 'Alles erledigt' : food ? 'Noch kein Essen' : 'Noch keine Aktivität'}</b>${done.length ? 'Neue Ideen? Einfach vorschlagen.' : food ? (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Kochen oder essen gehen: Was soll es geben?') : (T.info.to && T.info.to < today() ? 'Hier war diesmal nichts eingetragen.' : 'Was steht an? Der erste Vorschlag kommt von dir.')}</div></div>`)) + '</div>';
   if (done.length) { const k = food ? 'food' : 'act', o = dOpen[k];
     h += `<button class="fold${o ? ' open' : ''}" type="button" data-a="dfold" aria-expanded="${o}"><span>Erledigt<small>${done.length}</small></span>${CHEV}</button>`;
     if (o) h += '<div class="list dl" style="margin-top:14px">' + done.map(a => F && F.id === a.id ? formHTML() : cardHTML(a, by)).join('') + '</div>'; }
@@ -1685,7 +1685,7 @@ async function saveAct() { const f = F; if (!f) return; const title = f.title.tr
   const pl = f.place && f.place.name ? { name: f.place.name.slice(0, 80), ...(typeof f.place.lat === 'number' ? { lat: f.place.lat, lng: f.place.lng } : {}), ...(f.place.addr ? { addr: f.place.addr.slice(0, 120) } : {}) } : null;
   const t = T, data = { title, desc: f.desc.trim(), day: f.day, time: f.time, stop: f.stop || '' }; F = null; delete PS.fplace; closeForm('#form');   // sofort schließen: kein Doppelspeichern bei schlechtem Netz
   try {
-    if (f.id === 'new') { const id = rid(16), b = writeBatch(db); flash = id;
+    if (f.id === 'new') { const id = rid(16), b = writeBatch(db); flash = id; if (stopF && data.stop && data.stop !== stopF) stopF = '';   // Neues für ein anderes Ziel: Filter auf alle, sonst wäre es unsichtbar
       b.set(tdoc(t.id, 'acts', id), { ...data, ...(pl ? { place: pl } : {}), cat: f.cat, kind: f.cat === 'food' ? f.kind : '', by: t.me, ts: Date.now() });
       b.set(tdoc(t.id, 'signups', id + '_' + t.me), { act: id, pid: t.me });   // wer vorschlägt, ist automatisch dabei
       await b.commit(); toast('Vorgeschlagen'); }
