@@ -1748,6 +1748,13 @@ const ndirty = () => !!(Ed && T && T.info && (Ed.name !== T.info.name || Ed.from
 async function saveNameDates() { const e = Ed, name = e.name.trim(); e.err = '';
   if (!name) { e.err = 'Bitte gib der Reise einen Namen.'; return draw(true); }
   if (e.to && e.from && e.to < e.from) { e.err = 'Das Ende liegt vor dem Anfang.'; return draw(true); }
+  // Wird der Zeitraum kleiner: nachfragen, wenn Ziele, Vorschläge oder Fahrten danach außerhalb liegen (Wunsch Lars 13.11.2026)
+  const nf = e.from, nt = e.from ? (e.to || e.from) : '', outD = v => DAY_OK(v) && (v < nf || v > nt);
+  if (nf && (nf !== (T.info.from || '') || nt !== (T.info.to || ''))) {
+    const n = [(T.info.stops || []).filter(z => outD(z.from) || outD(z.to)).length, (T.acts || []).filter(a => !a.done && outD(a.day)).length, (T.info.travel || []).filter(z => outD(z.date)).length];
+    const w = [['Ziel', 'Ziele'], ['Vorschlag', 'Vorschläge'], ['Fahrt', 'Fahrten']], parts = n.map((k, i) => k ? k + ' ' + w[i][k > 1 ? 1 : 0] : '').filter(Boolean);
+    if (parts.length && !await ask({ t: `${parts.length > 1 ? parts.slice(0, -1).join(', ') + ' und ' + parts.at(-1) : parts[0]} ${parts.length > 1 || n.find(Boolean) > 1 ? 'liegen' : 'liegt'} danach außerhalb. Trotzdem speichern?`, m: 'Die Einträge bleiben erhalten. Ihre Daten können wir danach anpassen.', ok: 'Speichern' })) return;
+  }
   try { await updateDoc(tdoc(T.id), { name: name.slice(0, 60), from: e.from, to: e.from ? (e.to || e.from) : '' }); Object.assign(e, { name: name.slice(0, 60), to: e.from ? (e.to || e.from) : '' }); toast('Gespeichert'); draw(true); }
   catch (err) { console.error(err); e.err = FAIL; draw(true); } }
 async function saveDraft() { const e = Ed, d = e.d; if (!d) return; e.derr = ''; const tf = T.info.from || '', tt = T.info.to || '';
