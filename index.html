@@ -841,7 +841,7 @@ const PS = {};         // Ortssuche je Feld: { res, q }
 let ownBack = false, ownRep = false;
 // Lichtschein vom Antippen sofort löschen, bevor die Seite wechselt: Safari fotografiert die Seite für die Zurück-Geste, sonst ist der Schein dort noch zu sehen
 function noGlow() { const R = document.documentElement; document.querySelectorAll('.lq.pr').forEach(e => e.classList.remove('pr')); R.classList.add('noglow'); void R.offsetWidth; setTimeout(() => R.classList.remove('noglow'), 600); }
-const go = (h, drawn) => { if (!drawn && !document.hidden) { noGlow(); return requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => go(h, true), 50))); }   // erst wechseln, wenn das Bild ohne Schein sicher auf dem Bildschirm ist
+const go = (h, drawn) => { if (!drawn && !document.hidden) { noGlow(); dropMenu(); return requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => go(h, true), 50))); }   // erst wechseln, wenn das Bild ohne Schein sicher auf dem Bildschirm ist
   if (location.hash === h) return route();
   if (stack.length > 1 && h === stack[stack.length - 2]) { ownBack = true; history.back(); setTimeout(() => { if (location.hash !== h && ownBack) location.hash = h; }, 450); return; }   // Sicherheitsnetz, falls der Verlauf woanders hinführt
   if (lastHash != null && depth(h) <= depth(lastHash) && depth(h) > 0) { ownRep = true; location.replace(h); } else location.hash = h; };
@@ -899,6 +899,7 @@ function parseInvite(s) { const m = /#\/e\/([A-Za-z0-9]{8,40})\/([A-Za-z0-9]{8,4
 const SUB = { leute: 'people', profil: 'profile', stimmung: 'mood', reise: 'edit', info: 'info' };
 // Tiefe einer Adresse: Start 0, Reise/Assistent/Beitritt 1, Unterseite einer Reise 2. Tiefer = hinein schieben, flacher = hinaus.
 const depth = h => { const p = (h || '').replace(/^#\/?/, '').split('/').filter(Boolean); return !p.length ? 0 : p[0] === 'r' && p[2] ? 2 : 1; };
+try { history.scrollRestoration = 'manual'; } catch (e) {}   // Scroll-Stelle setzt route selbst (scrollMem); Safari wartete nach der Zurück-Geste sonst mit dem Foto und sprang dann an eine falsche Stelle
 let lastHash = null, navBusy = false, stack = [], keepY = null; const scrollMem = {};   // stack: besuchte Seiten, Zurück führt zur vorigen
 function navTo(dir, fn) { const R = document.documentElement;
   if (!dir || dir === 'tab' || calm() || !document.startViewTransition || document.hidden) { fn(); return; }   // Reiter wechseln in iOS ohne Bewegung
@@ -2142,6 +2143,8 @@ function closeMenu(then) { const M = menu; if (!M || M.closing) return; M.c.remo
   M.inn.animate([{ filter: 'blur(0px)' }, { filter: 'blur(6px)' }], { duration: 110, fill: 'forwards' });
   M.m.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(.66)', opacity: 0 }], { duration: 120, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }).onfinish = () => {
     M.m.remove(); M.btn.classList.remove('hid'); if (menu === M) menu = null; }; }
+// Seitenwechsel aus dem Menü: Menü sofort weg, sonst ist es auf Safaris Foto für die Zurück-Geste noch zu sehen
+function dropMenu() { const M = menu; if (!M) return; M.c.remove(); M.m.remove(); M.btn.classList.remove('hid'); cancelAnimationFrame(mraf); mraf = 0; menu = null; }
 function hl(b) { const M = menu; if (!M) return; if (M.hl && M.hl !== b) M.hl.classList.remove('hl'); M.hl = b || null; if (b) b.classList.add('hl'); }
 function hlAt(x, y) { const el = document.elementFromPoint(x, y), b = el && el.closest && el.closest('.mn [data-mi]'); hl(b); }
 function pick(b) { const M = menu; if (!M || M.closing) return; b.classList.add('hl'); const x = M.flat[+b.dataset.mi]; setTimeout(() => { closeMenu(); if (x) x[2](); }, 110); }
