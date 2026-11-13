@@ -1074,7 +1074,7 @@ function whoHTML(o, people, pre) { return `<label class="fl" for="${pre}n">Dein 
     <label class="fl" for="${pre}p">Deine PIN (4 bis 8 Ziffern)</label><input class="fi" id="${pre}p" data-k="${pre}p" data-f="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" placeholder="Nur für diese Reise" value="${esc(o.pin)}">
     <span class="fl">Deine Farbe</span>${colsHTML(people, o.col)}`; }
 const moodsHTML = cur => '<div class="moods">' + MOODS.map(m => `<button class="mood lq${m[0] === moodOf(cur) ? ' on' : ''}" type="button" data-mood="${m[0]}" style="background:${m[2]}" aria-pressed="${m[0] === moodOf(cur)}"><span>${m[1]}</span>${SY.check}<span class="gl"></span></button>`).join('') + '</div>';
-function moodHTML() { return `<div class="hd"><h1>Stimmung</h1><p class="sub">Gilt für alle bei „${esc(T.info.name)}“</p></div>${moodsHTML(T.info.mood)}`; }
+function moodHTML() { return `<div class="hd"><h1>Stimmung</h1><p class="sub">Gilt für alle bei „${esc(T.info.name)}“</p></div>${isAdmin() ? moodsHTML(T.info.mood) : '<p class="hint c">Nur Admins können die Stimmung ändern.</p>'}`; }
 const AREAS = [['food', 'Essen und Einkaufsliste', 'Kochen, Restaurants, gemeinsame Einkaufsliste'], ['cost', 'Kosten teilen', 'Wer hat was bezahlt, wer schuldet wem'], ['plan', 'Mein Plan', 'Wobei ich dabei bin, nach Tagen sortiert'], ['map', 'Karte', 'Alle Orte auf einer Karte']];
 const areasHTML = a => '<div class="rows form">' + AREAS.map(([k, t, s]) => `<button class="swr" type="button" data-area="${k}" role="switch" aria-checked="${!!a[k]}"><span class="gr">${t}<small>${s}</small></span><span class="sw${a[k] ? ' on' : ''}"></span></button>`).join('') + '</div>';
 const kindChips = (cur, attr) => '<div class="ch">' + Object.entries(KIND).map(([k, v]) => `<button type="button" ${attr}="${k}" class="${cur === k ? 'on' : ''}" aria-pressed="${cur === k}">${v[0]}</button>`).join('') + '</div>';
@@ -1516,7 +1516,7 @@ $('app').addEventListener('pointerup', e => { if (!pk) return; const p = pk; pk 
 $('app').addEventListener('click', async e => {
   const pkb = e.target.closest('[data-pick]'); if (pkb) { if (e.detail === 0) { const r = PS[pkb.dataset.pick]; if (r && r.res[+pkb.dataset.i]) pickPlace(pkb.dataset.pick, r.res[+pkb.dataset.i]); } return; }
   const colB = e.target.closest('[data-col]'); if (colB) { const o = view.n === 'new' ? Wz : view.n === 'join' ? J : Pf; if (o && !colB.disabled) { o.col = colB.dataset.col; draw(true); } return; }
-  const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
+  const mo = e.target.closest('[data-mood]'); if (mo) { if (view.n === 'new') { Wz.mood = mo.dataset.mood; draw(true); } else if (view.n === 'mood' && T && T.st === 'ok') { if (!isAdmin()) return; try { await updateDoc(tdoc(T.id), { mood: mo.dataset.mood }); } catch (err) { console.error(err); toast(FAIL); } } return; }
   const ar = e.target.closest('[data-area]'); if (ar && view.n === 'edit') { const k = ar.dataset.area, a2 = { ...areas(), [k]: !areas()[k] }; try { await updateDoc(tdoc(T.id), { areas: a2 }); { const nm = (AREAS.find(x => x[0] === k) || [k, k])[1]; toast(`„${nm}“ ${a2[k] ? 'ist an' : 'ist aus'}`); } } catch (err) { console.error(err); toast(FAIL); } return; }
   if (ar) { const o = view.n === 'new' ? Wz.areas : null; if (o) { o[ar.dataset.area] = !o[ar.dataset.area]; draw(true); } return; }
   const wk = e.target.closest('[data-wkind]'); if (wk) { Wz.travel = Wz.travel === wk.dataset.wkind ? '' : wk.dataset.wkind; draw(true); return; }
@@ -1774,7 +1774,10 @@ async function deleteTrip() { const t = T;
     const refs = [...t.acts.map(a => tdoc(t.id, 'acts', a.id)), ...t.sig.map(s => tdoc(t.id, 'signups', s.act + '_' + s.pid)), ...t.costs.map(c => tdoc(t.id, 'costs', c.id)), ...t.toks.map(x => tdoc(t.id, 'invites', x.id)), tdoc(t.id, 'lists', GEN)];
     for (let i = 0; i < refs.length; i += 400) { const b = writeBatch(db); refs.slice(i, i + 400).forEach(r => b.delete(r)); await b.commit(); }
     const b = writeBatch(db); Object.keys(t.people).filter(id => id !== t.me).forEach(id => { b.delete(tdoc(t.id, 'people', id, 'priv', 'pin')); b.delete(tdoc(t.id, 'people', id)); }); await b.commit();
-    await deleteDoc(tdoc(t.id)); LS.del(t.id); closeTrip(); go('#/'); toast('Reise gelöscht'); }
+    // zuletzt eigene Daten mit der Reise in einem Stapel (danach wären wir ausgesperrt); eigene Person nur mit Regeln v4, sonst ohne sie
+    const fin = me => { const b = writeBatch(db); b.delete(tdoc(t.id, 'people', t.me, 'priv', 'pin')); if (me) b.delete(tdoc(t.id, 'people', t.me)); b.delete(tdoc(t.id, 'members', uid)); b.delete(tdoc(t.id)); return b.commit(); };
+    try { await fin(true); } catch (e) { if (!denied(e)) throw e; await fin(false); }
+    LS.del(t.id); closeTrip(); go('#/'); toast('Reise gelöscht'); }
   catch (e) { console.error(e); toast(FAIL); } }
 
 /* ---------- „Neu“: was wirklich im Bild war (≥ halb sichtbar, 0,8 s), merkt sich das Profil ---------- */

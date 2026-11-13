@@ -1,4 +1,5 @@
 rules_version = '2';
+// Fassung v4 (13.11.2026): Beim Löschen der ganzen Reise darf der Admin auch die eigene Person mitlöschen (sonst blieb der Name liegen)
 // Fassung v3 (12.11.2026): Reise und Mitreisende nur noch für Beigetretene lesbar, IDs und Kartenpunkte geprüft
 // outbndr: Jede Reise ist abgeschlossen. Lesen und schreiben darf nur, wer über den Einladungs-Link beigetreten ist.
 // Aufbau:
@@ -95,7 +96,7 @@ service cloud.firestore {
         allow update: if isIn() && personOk(request.resource.data) && (
           (myPid() == pid && request.resource.data.get('admin', false) == resource.data.get('admin', false))
           || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['admin'])));
-        allow delete: if isAdmin() && myPid() != pid;
+        allow delete: if isAdmin() && (myPid() != pid || !existsAfter(tpath()));   // eigene Person nur zusammen mit der ganzen Reise
 
         match /priv/pin {
           allow read: if false;
