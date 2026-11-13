@@ -1,4 +1,5 @@
 rules_version = '2';
+// Fassung v5 (13.11.2026): Reise darf ein eigenes Symbol haben (Feld icon)
 // Fassung v4 (13.11.2026): Beim Löschen der ganzen Reise darf der Admin auch die eigene Person mitlöschen (sonst blieb der Name liegen)
 // Fassung v3 (12.11.2026): Reise und Mitreisende nur noch für Beigetretene lesbar, IDs und Kartenpunkte geprüft
 // outbndr: Jede Reise ist abgeschlossen. Lesen und schreiben darf nur, wer über den Einladungs-Link beigetreten ist.
@@ -45,10 +46,10 @@ service cloud.firestore {
           && d.col is string && d.col.size() <= 9;
       }
       function tripOk(d) {
-        return d.keys().hasOnly(['name', 'from', 'to', 'mood', 'cby', 'ts', 'areas', 'stops', 'travel', 'del'])
+        return d.keys().hasOnly(['name', 'from', 'to', 'mood', 'icon', 'cby', 'ts', 'areas', 'stops', 'travel', 'del'])
           && d.name is string && d.name.size() > 0 && d.name.size() <= 80
           && d.from is string && d.from.size() <= 10 && d.to is string && d.to.size() <= 10
-          && d.get('mood', '') is string && d.get('mood', '').size() <= 12
+          && d.get('mood', '') is string && d.get('mood', '').size() <= 12 && d.get('icon', '') is string && d.get('icon', '').size() <= 12
           && d.get('areas', {}) is map && d.get('stops', []) is list && d.get('stops', []).size() <= 8
           && d.get('travel', []) is list && d.get('travel', []).size() <= 16;
       }
