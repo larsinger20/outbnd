@@ -439,7 +439,8 @@ main.wash .seg2{background:color-mix(in srgb,var(--card) 60%,transparent)}
 .tick{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.8px var(--mu);display:flex;align-items:center;justify-content:center;position:relative;color:#fff;transition:background .2s,box-shadow .2s}
 .tick::after{content:'';position:absolute;inset:-9px}
 .tick svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:0}
-.tick.on{background:var(--acb);box-shadow:none}.tick.on svg{opacity:1}
+.tick.on,.si.ok .tick{background:var(--acb);box-shadow:none}.tick.on svg,.si.ok .tick svg{opacity:1}
+.tick svg{transition:opacity .15s}.si.tk.ok .tick{animation:tkp .32s cubic-bezier(.3,1.4,.5,1)}@keyframes tkp{from{transform:scale(.7)}}.si .t{transition:color .2s}
 .sadd{display:flex;gap:8px;align-items:center;margin-top:6px;border-radius:999px;background:var(--fill);padding:2px 4px 2px 14px}
 .sadd:focus-within{box-shadow:inset 0 0 0 2px var(--ac)}
 .sadd input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--tx);font:17px/1.29 var(--font);min-height:40px;padding:0}
@@ -1149,7 +1150,7 @@ function draw(force) {
   topTitle(); document.documentElement.classList.toggle('fo', !!(view.n === 'trip' && (F || Cf || Rv)));   // Formular offen: Reiter-Leiste weg (verdeckt sonst die Knöpfe)
   if (fk) { const el = A.querySelector(`[data-k="${CSS.escape(fk)}"]`); if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   if (flash) { const el = A.querySelector(`[data-id="${flash}"]`); flash = null; if (el && !calm()) el.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' }); }
-  segPos();
+  segPos(); shopFlip();
   if (inTrip) { mark(); dots(); watchSeen(); }
 }
 document.addEventListener('focusout', () => setTimeout(() => { if (pending && !inField()) draw(); }, 60));
@@ -1868,8 +1869,15 @@ async function addShop(id, quiet) { const t = (shopDraft[id] || '').trim(); if (
     const w = arch ? updateDoc(ref, { ['shop.' + arch.k + '.arch']: deleteField(), ['shop.' + arch.k + '.ok']: false }) : setDoc(ref, { shop: { [rid(10)]: { t: t.slice(0, 80), by: T.me, ts: Date.now() } }, ...(id !== GEN ? { noshop: false } : {}) }, { merge: true });
     await Promise.race([w, new Promise(r => setTimeout(r, 80))]); draw(true); if (!quiet) document.querySelector(`#app [data-shi="${CSS.escape(id)}"]`)?.focus({ preventScroll: true }); await w; }
   catch (e) { console.error(e); shopDraft[id] = t; toast(FAIL); draw(true); } }
-async function tickShop(id, k) { const x = shopItems(id).find(i => i.k === k); if (!x) return;
-  try { await updateDoc(shopRef(id), { ['shop.' + k + '.ok']: !x.ok }); } catch (e) { console.error(e); toast(FAIL); } }
+// Abhaken wie in „Erinnerungen“: Der Kreis füllt sich sofort mit Haken, kurz danach gleitet die Zeile an ihren neuen Platz (statt zu springen)
+let shopSnap = null;
+const shopTops = () => { const m = new Map(); document.querySelectorAll('#app .si').forEach(e => m.set(e.dataset.sid + ':' + e.dataset.k2, e.getBoundingClientRect().top + scrollY)); return { m, t: Date.now() }; };
+function shopFlip() { const sn = shopSnap; shopSnap = null; if (!sn || Date.now() - sn.t > 3000 || calm()) return;
+  document.querySelectorAll('#app .si').forEach(e => { const o = sn.m.get(e.dataset.sid + ':' + e.dataset.k2); if (o == null) return; const d = o - (e.getBoundingClientRect().top + scrollY); if (Math.abs(d) > 1) e.animate([{ transform: `translateY(${d}px)` }, { transform: 'none' }], { duration: 380, easing: MO.on }); }); }
+async function tickShop(id, k) { const x = shopItems(id).find(i => i.k === k); if (!x) return; const ok = !x.ok, row = [...document.querySelectorAll('#app .si')].find(e => e.dataset.sid === id && e.dataset.k2 === k);
+  if (row) { row.classList.toggle('ok', ok); row.classList.add('tk'); row.querySelector('.tick').setAttribute('aria-checked', ok); }
+  slides++; setTimeout(() => { shopSnap = shopTops(); slideDone(); }, calm() ? 0 : 450);
+  try { await updateDoc(shopRef(id), { ['shop.' + k + '.ok']: ok }); } catch (e) { console.error(e); toast(FAIL); draw(true); } }
 async function archShop() { const ids = [GEN, ...T.acts.filter(a => a.cat === 'food' && a.kind === 'cook' && !a.done && !a.noshop).map(a => a.id)], now = Date.now();
   const todo = ids.map(id => [id, shopItems(id).filter(x => x.ok)]).filter(x => x[1].length), n = todo.reduce((s, x) => s + x[1].length, 0);
   if (!n || !await ask({ t: n === 1 ? '1 abgehakten Eintrag ins Archiv?' : n + ' abgehakte Einträge ins Archiv?', m: 'Von dort kommen sie mit einem Tipp zurück auf die Liste.', ok: 'Ins Archiv' })) return;
