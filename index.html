@@ -742,7 +742,7 @@ Object.assign(MICON, { flug: KIND.flug[1], auto: KIND.auto[1], zug: KIND.zug[1],
 const iconOf = (m, ic) => typeof ic === 'string' && Object.hasOwn(MICON, ic) ? ic : moodOf(m);
 const micon = (m, ic) => SV(MICON[iconOf(m, ic)]);
 // Aufbau oben: 'A' wie bisher, 'B' ruhiger Kopf, 'C' ruhiger Kopf + Plus neben der Leiste + Karte oben (Probier-Seite, Lars wählt)
-let LAY = 'A';
+let LAY = 'B';
 const ALLTABS = [['act', 'Aktivitäten'], ['food', 'Essen'], ['cost', 'Kosten'], ['plan', 'Mein Plan']];
 let TABS = ALLTABS.slice(0, 2);
 const ICF = {
