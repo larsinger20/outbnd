@@ -977,7 +977,8 @@ function selfHeal(o) { if (o.st !== 'load' || offline() || document.hidden) retu
 function live(t) { if (T !== t) return; if (t.info && t.people && t.acts && t.sig && t.costs) { t.st = 'ok'; draw(); maybeTour(); } else t.stage = 'Daten (' + [['Reise', t.info], ['Mitreisende', t.people], ['Vorschläge', t.acts], ['Stimmen', t.sig], ['Kosten', t.costs]].filter(x => !x[1]).map(x => x[0]).join(', ') + ')'; }
 // Gerät gehört (noch) nicht dazu: mit gemerktem Link zum Beitritt, sonst um den Link bitten
 function needJoin(t) { t.off.forEach(f => f()); t.off = []; const l = LS.one(t.id); if (l && l.tok) { T = null; go('#/e/' + t.id + '/' + l.tok); } else { t.st = 'nolink'; draw(); } }
-const areas = () => ({ food: true, cost: true, plan: true, map: true, ...((T && T.info && T.info.areas) || {}) });
+const areas = () => ({ food: true, shop: true, cost: true, plan: true, map: true, ...((T && T.info && T.info.areas) || {}) });
+const shopOn = () => { const a = areas(); return !!(a.food && a.shop); };   // Einkaufsliste gehört zu Essen, lässt sich aber einzeln ausschalten (fehlt das Feld: an)
 const stops = () => ((T && T.info && T.info.stops) || []).filter(s => s && s.name);
 // Reiter je nach gewählten Bereichen; Wechsel baut die Leiste neu
 function setTabs() { const a = areas(), next = ALLTABS.filter(([k]) => k === 'act' || a[k]); if (next.map(x => x[0]).join() !== TABS.map(x => x[0]).join()) { TABS = next; buildBar(); }
@@ -1022,7 +1023,7 @@ function jerr(m) { J.err = m; draw(true); }
 
 /* ---------- Assistent „Reise planen“: eine Frage pro Bildschirm ---------- */
 const WSTEPS = ['name', 'when', 'where', 'stay', 'travel', 'areas', 'mood', 'who', 'link'];
-const newWizard = () => ({ step: 0, name: '', from: '', to: '', stops: [], travel: '', tnote: '', areas: { food: true, cost: true, plan: true, map: true }, mood: 'meer', icon: '', me: '', pin: '', col: PALETTE[0], busy: false, err: '' });
+const newWizard = () => ({ step: 0, name: '', from: '', to: '', stops: [], travel: '', tnote: '', areas: { food: true, shop: true, cost: true, plan: true, map: true }, mood: 'meer', icon: '', me: '', pin: '', col: PALETTE[0], busy: false, err: '' });
 async function createTrip() { const w = Wz; if (w.busy) return; const me = w.me.trim();
   if (!me) { w.err = 'Bitte gib deinen Namen ein.'; return draw(true); } if (!PIN_OK(w.pin)) { w.err = 'Die PIN braucht 4 bis 8 Ziffern.'; return draw(true); }
   if (!db) { w.err = 'outbndr ist noch nicht eingerichtet.'; return draw(true); }
@@ -1202,8 +1203,8 @@ const moodsHTML = cur => '<div class="moods">' + MOODS.map(m => `<button class="
 // Symbole auf dem Verlauf der gewählten Stimmung, damit man sieht, wie beides zusammen aussieht
 const iconsHTML = (m, ic) => { const cur = iconOf(m, ic); return `<p class="sec">Symbol</p><div class="icons">` + Object.keys(MICON).map(k => `<button class="icn lq${k === cur ? ' on' : ''}" type="button" data-icon="${k}" style="background:${moodG(m)}" aria-label="Symbol ${k}" aria-pressed="${k === cur}">${SV(MICON[k])}<span class="gl"></span></button>`).join('') + '</div>'; };
 function moodHTML() { return `<div class="hd"><h1>Stimmung</h1><p class="sub">Farbe und Symbol für alle bei „${esc(T.info.name)}“</p></div>${isAdmin() ? moodsHTML(T.info.mood) + iconsHTML(T.info.mood, T.info.icon) : '<p class="hint c">Nur Admins können die Stimmung ändern.</p>'}`; }
-const AREAS = [['food', 'Essen und Einkaufsliste', 'Kochen, Restaurants, gemeinsame Einkaufsliste'], ['cost', 'Kosten teilen', 'Wer hat was bezahlt, wer schuldet wem'], ['plan', 'Mein Plan', 'Wobei ich dabei bin, nach Tagen sortiert'], ['map', 'Karte', 'Alle Orte auf einer Karte']];
-const areasHTML = a => '<div class="rows form">' + AREAS.map(([k, t, s]) => `<button class="swr" type="button" data-area="${k}" role="switch" aria-checked="${!!a[k]}"><span class="gr">${t}<small>${s}</small></span><span class="sw${a[k] ? ' on' : ''}"></span></button>`).join('') + '</div>';
+const AREAS = [['food', 'Essen', 'Kochen und Restaurants vorschlagen und abstimmen'], ['shop', 'Einkaufsliste', 'Gemeinsame Liste, auch je Kochvorschlag'], ['cost', 'Kosten teilen', 'Wer hat was bezahlt, wer schuldet wem'], ['plan', 'Mein Plan', 'Wobei ich dabei bin, nach Tagen sortiert'], ['map', 'Karte', 'Alle Orte auf einer Karte']];
+const areasHTML = a => '<div class="rows form">' + AREAS.filter(([k]) => k !== 'shop' || a.food).map(([k, t, s]) => `<button class="swr" type="button" data-area="${k}" role="switch" aria-checked="${!!a[k]}"><span class="gr">${t}<small>${s}</small></span><span class="sw${a[k] ? ' on' : ''}"></span></button>`).join('') + '</div>';
 const kindChips = (cur, attr) => '<div class="ch">' + Object.entries(KIND).map(([k, v]) => `<button type="button" ${attr}="${k}" class="${cur === k ? 'on' : ''}" aria-pressed="${cur === k}">${v[0]}</button>`).join('') + '</div>';
 function wizHTML() { const w = Wz, s = WSTEPS[w.step], err = w.err ? `<p class="err">${esc(w.err)}</p>` : '', nx = (t = 'Weiter') => `<button class="btn lq" type="button" data-a="wnext">${t}<span class="gl"></span></button>`, sk = t => `<button class="btn g lq" type="button" data-a="wskip">${t}<span class="gl"></span></button>`, head = (t, sub) => `<div class="q">${stepsHTML(w.step)}<h1>${t}</h1><p class="sub">${sub}</p>`;
   if (s === 'name') return head('Wie heißt die Reise?', 'Ein Name, an dem alle sie erkennen.') + `<input class="fi" data-k="wn" data-f="name" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="z. B. Kroatien 2027" value="${esc(w.name)}">${err}<div class="btns">${nx()}</div></div>`;
@@ -1295,7 +1296,7 @@ function cardHTML(a, by) { const food = a.cat === 'food', ids = by[a.id] || [], 
     ${a.place && a.place.name ? `<a class="pl" href="${esc(mapsUrl(a.place))}" target="_blank" rel="noopener">${SY.pin}<span>${esc(a.place.name)}</span></a>` : ''}
     ${a.res && (a.res.t || a.res.p) ? `<div class="rsv">${SY.clock}<span>Reserviert${a.res.t ? ' · ' + esc(a.res.t) + ' Uhr' : ''}${a.res.p ? ' · ' + esc(a.res.p) + (a.res.p == 1 ? ' Person' : ' Personen') : ''}</span></div>` : ''}
     ${Rv && Rv.id === a.id ? `<div class="rvw"><div class="rvf"><div><label class="fl" for="rvt">Uhrzeit</label><input class="fi" id="rvt" type="time" data-k="rvt" data-o="rv" data-f="t" value="${esc(Rv.t)}"></div><div><label class="fl" for="rvp">Personen</label><input class="fi" id="rvp" type="number" inputmode="numeric" min="1" max="99" data-k="rvp" data-o="rv" data-f="p" value="${esc(Rv.p)}"></div></div>${Rv.err ? `<p class="err">${esc(Rv.err)}</p>` : ''}<div class="btns two"><button class="btn g s" type="button" data-a="rvx">${a.res ? 'Entfernen' : 'Abbrechen'}</button><button class="btn s" type="button" data-a="rvsave">Speichern</button></div></div>` : ''}
-    ${food && a.kind === 'cook' && !a.done ? shopBox(a) : ''}`;
+    ${food && a.kind === 'cook' && !a.done && shopOn() ? shopBox(a) : ''}`;
   if (cms.length || open) h += `<div class="cmts${open ? ' open' : ''}"><button class="cmh" type="button" data-a="cm" aria-expanded="${open}"><span>${cms.length === 1 ? '1 Kommentar' : cms.length ? cms.length + ' Kommentare' : 'Kommentare'}${nCm && !open ? ` · <span style="color:var(--org)">${nCm} neu</span>` : ''}</span>${CHEV}</button>${open ? `<div class="cmb">${cms.map(([cid, c]) => `<div class="cm">${ava(P(c.by))}<p><b>${esc(nm(c.by))}</b><small>${esc(ago(c.ts || 0))}</small><br>${linkify(c.t)}</p>${c.by === T.me || isAdmin() ? `<button class="cmx" type="button" data-a="cmdel" data-c="${esc(cid)}" aria-label="Kommentar löschen">${SY.x}</button>` : ''}</div>`).join('')}
       <div class="cma"><textarea rows="1" data-k="cm-${esc(a.id)}" data-cmi maxlength="500" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Kommentar schreiben" aria-label="Kommentar schreiben">${esc(cmDraft[a.id] || '')}</textarea><button type="button" data-a="cmsend" aria-label="Senden">${SY.send}</button></div></div>` : ''}</div>`;
   h += `<div class="ft">${avs(sorted)}<span class="nm">${ids.length ? esc(names(sorted)) + (a.done ? (food ? '' : ' waren dabei') : '') : (food ? 'Noch keine Stimme' : 'Noch niemand dabei')}</span>
@@ -1408,6 +1409,7 @@ function tripHTML() {
   if (tab === 'act') h += recapHTML();
   if (LAY === 'A' && (tab === 'act' || tab === 'food')) { h += infoHTML(); }
   if (tab === 'act') h += listHTML(false);
+  else if (tab === 'food' && !shopOn()) h += listHTML(true);
   else if (tab === 'food') h += `<div class="seg2" data-seg="food"><span class="ind2"></span><button type="button" data-fseg="sug" class="${foodView === 'sug' ? 'on' : ''}">Vorschläge</button><button type="button" data-fseg="shop" class="${foodView === 'shop' ? 'on' : ''}">Einkaufsliste</button></div>` + (foodView === 'shop' ? shopHTML() : listHTML(true));
   else if (tab === 'cost') h += costHTML();
   else if (tab === 'plan') h += planHTML();
@@ -1985,7 +1987,7 @@ function menuFor(btn) { const k = btn.dataset.menu;
     if (canEdit(a)) g[0].push([MP.edit, 'Bearbeiten', () => { F = { id, cat: a.cat || 'act', title: a.title, desc: a.desc || '', day: a.day || '', time: a.time || '', kind: a.kind || '', place: a.place ? { ...a.place } : null, stop: (T.info.stops || []).some(z => z.id === a.stop) ? a.stop : '' }; if (F.day && T.info.from && !tripDays(T.info).includes(F.day)) F.day = ''; draw(true); openForm('#form'); }]);   // gelöschtes Ziel / Tag außerhalb der Reise: Formular zeigt „Egal wo“/„Flexibel“, also auch so speichern
     if (canEdit(a) && !a.done) g[0].push([MP.clock, a.res ? 'Reservierung ändern' : 'Reservierung', () => { Rv = { id, t: (a.res || {}).t || '', p: (a.res || {}).p || '' }; draw(true); openForm(`#app [data-id="${CSS.escape(id)}"] .rvw`); }]);
     g[0].push([MP.cm, 'Kommentar', () => { cmOpen.add(id); readCm(id); draw(true); const el = document.querySelector(`#app [data-k="cm-${CSS.escape(id)}"]`); if (el) { glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); el.focus({ preventScroll: true }); } }]);
-    if (a.cat === 'food' && a.kind === 'cook' && !a.done) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); const el = document.querySelector(`#app [data-shi="${CSS.escape(id)}"]`); if (el) glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); }]);
+    if (a.cat === 'food' && a.kind === 'cook' && !a.done && shopOn()) g[0].push([MP.cart, 'Einkaufsliste', () => { shopOpen.add(id); draw(true); const el = document.querySelector(`#app [data-shi="${CSS.escape(id)}"]`); if (el) glideTo(el.getBoundingClientRect().top + scrollY - innerHeight * .3); }]);
     if (areas().cost) g[0].push([MP.euro, 'Ausgabe eintragen', () => { tab = 'cost'; mark(); XL.t = idx() * tw; XR.t = XL.t + tw; kick(); Cf = { t: a.title, amt: '', dt: today(), by: T.me, for: (sigBy()[id] || []).length > 1 ? [...sigBy()[id]] : Object.keys(T.people) }; draw(true); scrollTo(0, 0); $('ca')?.focus({ preventScroll: true }); }]);
     g[1].push(a.done ? [MP.back, 'Wieder offen', () => setDone(id, false)] : [MP.done, 'Als erledigt markieren', () => setDone(id, true)]);
     if (canEdit(a)) g.push([[MP.del, 'Löschen', () => delAct(id), 'dg']]);
